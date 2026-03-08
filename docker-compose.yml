@@ -1,0 +1,113 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: georisk
+      POSTGRES_PASSWORD: georisk
+      POSTGRES_DB: georisk
+    ports:
+      - "5501:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U georisk"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6501:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend-api:
+    build: ./backend
+    command: >
+      bash -c "
+        python -c 'from app.core.seed import seed_database; seed_database()' &&
+        alembic upgrade head 2>/dev/null;
+        uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+      "
+    environment:
+      DATABASE_URL: postgresql+asyncpg://georisk:georisk@postgres:5432/georisk
+      DATABASE_URL_SYNC: postgresql://georisk:georisk@postgres:5432/georisk
+      REDIS_URL: redis://redis:6379/0
+      CELERY_BROKER_URL: redis://redis:6379/1
+      CELERY_RESULT_BACKEND: redis://redis:6379/2
+      NEWSDATA_API_KEY: ${NEWSDATA_API_KEY:-}
+      GUARDIAN_API_KEY: ${GUARDIAN_API_KEY:-}
+      CURRENTS_API_KEY: ${CURRENTS_API_KEY:-}
+      GNEWS_API_KEY: ${GNEWS_API_KEY:-}
+      CORS_ORIGINS: "*"
+      DEBUG: "true"
+    ports:
+      - "8501:8000"
+    volumes:
+      - ./backend:/app
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  backend-worker:
+    build: ./backend
+    command: celery -A app.services.tasks.celery_app worker --loglevel=info --concurrency=2
+    environment:
+      DATABASE_URL: postgresql+asyncpg://georisk:georisk@postgres:5432/georisk
+      DATABASE_URL_SYNC: postgresql://georisk:georisk@postgres:5432/georisk
+      REDIS_URL: redis://redis:6379/0
+      CELERY_BROKER_URL: redis://redis:6379/1
+      CELERY_RESULT_BACKEND: redis://redis:6379/2
+      NEWSDATA_API_KEY: ${NEWSDATA_API_KEY:-}
+      GUARDIAN_API_KEY: ${GUARDIAN_API_KEY:-}
+      CURRENTS_API_KEY: ${CURRENTS_API_KEY:-}
+      GNEWS_API_KEY: ${GNEWS_API_KEY:-}
+    volumes:
+      - ./backend:/app
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  backend-beat:
+    build: ./backend
+    command: celery -A app.services.tasks.celery_app beat --loglevel=info
+    environment:
+      DATABASE_URL: postgresql+asyncpg://georisk:georisk@postgres:5432/georisk
+      DATABASE_URL_SYNC: postgresql://georisk:georisk@postgres:5432/georisk
+      REDIS_URL: redis://redis:6379/0
+      CELERY_BROKER_URL: redis://redis:6379/1
+      CELERY_RESULT_BACKEND: redis://redis:6379/2
+      NEWSDATA_API_KEY: ${NEWSDATA_API_KEY:-}
+      GUARDIAN_API_KEY: ${GUARDIAN_API_KEY:-}
+      CURRENTS_API_KEY: ${CURRENTS_API_KEY:-}
+      GNEWS_API_KEY: ${GNEWS_API_KEY:-}
+    volumes:
+      - ./backend:/app
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3501:3000"
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8501/api/v1
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend-api
+
+volumes:
+  pgdata:

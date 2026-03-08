@@ -1,0 +1,3138 @@
+Prompt operativo per Claude Code
+Puoi passargli anche questo testo quasi tale e quale:
+
+“Costruisci una web app FastAPI + PostgreSQL + Redis + React dashboard che acquisisce eventi da feed RSS/API/news, li deduplica, li classifica in segnali geopolitici e calcola indici di rischio. Sostituisci il nodo IAEA inspections con Nuclear Opacity Index (NOI). Il NOI è composto da 6 sotto-indici: A site access loss 25%, B material knowledge loss 25%, C enrichment verification gap 20%, D underground activity 10%, E technical-diplomatic breakdown 10%, F conflicting narratives 10%. Range 0-100. Implementa rolling windows 24h/7d/30d, alert engine, scenario scoring su 5 scenari, explainability JSON e dashboard con grafici, timeline e semafori.”
+
+Nota metodologica
+Questo modello è adatto come sistema di early warning e scenario tracking, non come previsione deterministica. In particolare il NOI è utile perché, nelle condizioni attuali, la perdita di accesso e di continuità di conoscenza è essa stessa un fattore di escalation, indipendentemente dal fatto che l’IAEA stia o meno facendo ispezioni “normali”.
+
+Nel prossimo messaggio posso fare il passo successivo e scriverti:
+
+la struttura completa delle cartelle del progetto,
+
+le classi Pydantic,
+
+le tabelle SQLAlchemy,
+
+e i primi endpoint FastAPI già pronti da incollare.
+
+Preparato usando GPT-5.4
+Crea tutto quello che serve per facilitare il compito a Claude Code e fargli fare un'applicazione completa, quindi non essere pigro e scrivi già adesso tutto quello che serve da passare a Claude Code, inteso come:
+informazioni
+formule
+criteri
+idee
+gestione
+tutto quello che ti viene in mente che possa dare a Claude le informazioni per fare un progetto completo, reale e funzionante, soprattutto che non a luci di fiamma, ma che sia basato su informazioni concrete e soprattutto che nutra il database di aggiornamenti costanti da diverse fonti ritenute ovviamente attendibili.
+Sì. Ti preparo un pacchetto di specifiche completo da incollare in Claude Code per costruire un’app reale, robusta e manutenibile, non una demo fragile. La base concreta è: eventi strutturati quasi real-time da GDELT, news API multi-source per copertura editoriale, storage persistente con PostgreSQL, coda/cache con Redis e worker separati per ingestion e scoring.
+
+Visione prodotto
+L’app deve essere un sistema di early warning geopolitico focalizzato sulla crisi Iran-USA-Israele e sui rischi di escalation regionale e nucleare, non un motore di “predizione magica”. Deve raccogliere eventi da fonti attendibili, deduplicarli, estrarre segnali, aggiornare indici quantitativi e generare probabilità relative per scenari futuri con spiegazioni verificabili.
+
+L’obiettivo operativo è permettere a un analista di vedere:
+
+cosa è successo nelle ultime 24h/7d/30d;
+
+quali segnali stanno aumentando o diminuendo;
+
+perché il sistema alza o abbassa il rischio di certi scenari;
+
+quali fonti hanno causato il cambiamento.
+
+Requisiti prodotto
+Funzioni principali
+Ingestion continua da più fonti.
+
+Deduplica articoli/eventi.
+
+Classificazione in categorie geopolitiche.
+
+Costruzione indici di rischio.
+
+Calcolo scenario probabilities.
+
+Alerting.
+
+Dashboard con timeline, semafori, heatmap e drill-down per fonte/evento.
+
+Explainability per ogni scenario score.
+
+Possibilità di tuning manuale di pesi e soglie.
+
+Requisiti non funzionali
+Architettura resiliente: se Redis cade, lo stato si ricostruisce dagli eventi in DB.
+
+Idempotenza ingestione.
+
+Audit trail completo.
+
+Nessuna dipendenza da scraping fragile di siti con HTML instabile, salvo fallback controllati.
+
+Configurazione via environment variables.
+
+Logging strutturato.
+
+Test unitari e test di integrazione.
+
+Docker Compose per deploy locale/VPS.
+​
+​
+
+Fonti dati consigliate
+Tier 1: fonti strutturate e affidabili
+GDELT: base strutturata per eventi, mentions, attori, locations, codici CAMEO e aggiornamento ogni 15 minuti.
+
+NewsData.io o alternativa simile: copertura editoriale da decine di migliaia di fonti e molte lingue.
+
+GNews o World News API come ridondanza, se vuoi evitare dipendenza singola da un aggregatore.
+
+Tier 2: fonti istituzionali e semi-istituzionali
+IAEA.
+
+Reuters/AP/AFP/BBC/Al Jazeera/FT/CNN come fonti editoriali di baseline.
+
+CENTCOM, IDF, governo iraniano, ministeri esteri, Oman MFA, GCC statements.
+Queste possono entrare come feed RSS/API o come fonti whitelisted per affidabilità.
+
+Strategia multi-fonte
+GDELT per struttura evento.
+
+News API per testo e coverage.
+
+Feed ufficiali per conferma.
+
+Deduplica cross-source e scoring di affidabilità per evitare che un singolo outlet alteri il modello.
+
+Tassonomia eventi
+Categorie principali
+military_strike
+
+missile_drone_attack
+
+proxy_activity
+
+gulf_infrastructure_attack
+
+shipping_disruption
+
+hormuz_threat
+
+nuclear_site_damage
+
+nuclear_verification_gap
+
+enrichment_signal
+
+underground_activity_signal
+
+strategic_rhetoric
+
+diplomatic_contact
+
+deescalation_signal
+
+sanctions_or_economic_pressure
+
+cyber_operation
+
+civilian_casualty_mass_event
+
+Ogni evento può appartenere a una categoria primaria e a 0-N tag secondari.
+
+Attori da modellare
+Core actors
+Iran
+
+Israel
+
+United States
+
+IAEA
+
+Saudi Arabia
+
+UAE
+
+Bahrain
+
+Qatar
+
+Kuwait
+
+Oman
+
+Iraq
+
+Syria
+
+Lebanon
+
+Hezbollah
+
+Houthis
+
+Iraqi militias
+
+Russia
+
+China
+
+EU / E3
+
+Geografie chiave
+Natanz
+
+Fordow
+
+Isfahan
+
+Tehran
+
+Strait of Hormuz
+
+Gulf of Oman
+
+Bahrain
+
+Qatar
+
+UAE
+
+Saudi oil hubs
+
+Iraq-Syria corridor
+
+Lebanon border
+
+Yemen/Red Sea
+
+Indici del modello
+L’app deve mantenere 7 macro-indici da 0 a 100:
+
+NOI = Nuclear Opacity Index.
+
+GAI = Gulf Attack Index.
+
+HDI = Hormuz Disruption Index.
+​
+
+PAI = Proxy Activation Index.
+
+SRI = Strategic Rhetoric Index.
+
+BSI = Breakout Signal Index.
+
+DCI = Diplomatic Cooling Index.
+
+Nuclear Opacity Index
+Definizione
+Misura la perdita di verificabilità internazionale sul programma nucleare iraniano.
+
+Range 0-100.
+
+Sotto-componenti
+A site_access_loss = 25%
+
+B material_knowledge_loss = 25%
+
+C enrichment_verification_gap = 20%
+
+D underground_activity_signal = 10%
+
+E technical_diplomatic_breakdown = 10%
+
+F conflicting_narratives_uncertainty = 10%
+
+Formula
+N
+O
+I
+=
+0.25
+A
++
+0.25
+B
++
+0.20
+C
++
+0.10
+D
++
+0.10
+E
++
+0.10
+F
+NOI=0.25A+0.25B+0.20C+0.10D+0.10E+0.10F
+Clamp 0-100.
+
+Hard rules
+Se A >= 75 e B >= 90, allora NOI min = 80.
+
+Se C >= 75 e D >= 50, NOI += 5.
+
+Se E >= 80 e F >= 70, NOI += 3.
+
+Clamp finale 0-100.
+
+Soglie
+0-24 Verde
+
+25-49 Giallo
+
+50-69 Arancione
+
+70-84 Rosso
+
+85-100 Rosso scuro
+
+Altri indici
+GAI
+Misura attacchi contro il Golfo:
+
+basi USA,
+
+aeroporti,
+
+porti,
+
+impianti oil/gas,
+
+città o infrastrutture civili.
+
+Eventi ad alta severità e alta conferma aumentano molto il GAI.
+
+HDI
+Misura:
+
+minacce a Hormuz,
+
+interdizione,
+
+mine, boarding, harassment,
+
+riduzione transiti,
+
+attacchi a tanker o escort.
+​
+
+PAI
+Misura livello di attivazione dei proxy:
+
+Hezbollah
+
+Houthi
+
+milizie irachene
+
+reti in Siria/Iraq/Libano/Yemen
+
+SRI
+Misura linguaggio di soglia:
+
+“minaccia esistenziale”
+
+“ultima finestra”
+
+“nessuna opzione esclusa”
+
+“linea rossa”
+
+“conseguenze devastanti”
+
+riferimenti espliciti a deterrenza o opzioni estreme.
+
+BSI
+Misura segnali di breakout:
+
+enrichment vicino a 90
+
+relocation del materiale
+
+attività sospette su siti sotterranei
+
+weaponization indicators
+
+dispersione di asset sensibili
+
+DCI
+Misura raffreddamento:
+
+colloqui Oman
+
+hotline attive
+
+mediazione GCC
+
+pausa raid
+
+aperture diplomatiche credibili.
+
+Scenari da stimare
+contained_conflict
+
+regional_war
+
+nuclear_threshold_crisis
+
+coercive_go_nuclear
+
+actual_nuclear_use
+
+Base priors iniziali
+contained_conflict = 40
+
+regional_war = 25
+
+nuclear_threshold_crisis = 20
+
+coercive_go_nuclear = 10
+
+actual_nuclear_use = 5
+
+Questi valori sono solo un prior iniziale, poi il sistema li muove coi dati.
+
+Matrice pesi scenari
+Index	contained	regional	threshold	coercive	actual
+NOI	-0.20	+0.08	+0.30	+0.18	+0.05
+GAI	-0.10	+0.35	+0.05	+0.04	+0.02
+HDI	-0.12	+0.30	+0.08	+0.05	+0.03
+PAI	-0.08	+0.25	+0.03	+0.02	+0.01
+SRI	-0.10	+0.10	+0.18	+0.30	+0.10
+BSI	-0.15	+0.05	+0.35	+0.25	+0.12
+DCI	+0.30	-0.20	-0.25	-0.20	-0.10
+Trigger boosts
+NOI >= 70 and BSI >= 60 => threshold +10
+
+NOI >= 80 and SRI >= 65 => coercive +8
+
+NOI >= 85 and BSI >= 75 and SRI >= 75 => actual +7
+
+DCI >= 60 => riduci del 15% i quattro scenari più estremi
+
+Formula di aggiornamento indici
+Per ogni indice usa una rolling window multi-orizzonte:
+
+24h = 0.50
+
+7d = 0.30
+
+30d = 0.20
+
+I
+n
+d
+e
+x
+t
+=
+0.50
+⋅
+s
+c
+o
+r
+e
+24
+h
++
+0.30
+⋅
+s
+c
+o
+r
+e
+7
+d
++
+0.20
+⋅
+s
+c
+o
+r
+e
+30
+d
+Index 
+t
+ =0.50⋅score 
+24h
+ +0.30⋅score 
+7d
+ +0.20⋅score 
+30d
+ 
+Impatto evento
+e
+v
+e
+n
+t
+_
+i
+m
+p
+a
+c
+t
+=
+s
+o
+u
+r
+c
+e
+_
+r
+e
+l
+i
+a
+b
+i
+l
+i
+t
+y
+×
+c
+o
+n
+f
+i
+d
+e
+n
+c
+e
+×
+s
+e
+v
+e
+r
+i
+t
+y
+×
+n
+o
+v
+e
+l
+t
+y
+event_impact=source_reliability×confidence×severity×novelty
+Calcolo subindex
+s
+u
+b
+i
+n
+d
+e
+x
+=
+∑
+(
+e
+v
+e
+n
+t
+_
+i
+m
+p
+a
+c
+t
+×
+s
+i
+g
+n
+a
+l
+_
+v
+a
+l
+u
+e
+)
+∑
+(
+e
+v
+e
+n
+t
+_
+i
+m
+p
+a
+c
+t
+)
+subindex= 
+∑(event_impact)
+∑(event_impact×signal_value)
+ 
+Riduzione rumor
+usa smoothing esponenziale opzionale con alpha 0.35;
+
+imponi floor di almeno 2 fonti affidabili per eventi con impatto > soglia critica, tranne fonti ufficiali.
+
+Affidabilità fonte
+Ogni fonte deve avere:
+
+reliability_score 0-1
+
+source_type
+
+bias_profile opzionale
+
+country
+
+official_flag
+
+tier
+
+Esempio schema
+Reuters/AP/AFP/FT/BBC: 0.92-0.97
+
+IAEA/CENTCOM/official statements: 0.90 per esistenza dichiarazione, 0.70-0.85 per contenuto interpretativo
+
+News aggregators: 0.70-0.85
+
+social non verificato: escluso dal modello base
+
+Regola:
+
+un evento “critico” richiede una delle seguenti condizioni:
+
+2+ fonti tier1 indipendenti,
+
+1 fonte ufficiale + 1 tier1,
+
+1 Reuters/AP/AFP + GDELT mentions volume sopra soglia.
+
+Pipeline tecnica
+Architettura
+collector-service: ingest RSS/API/GDELT/news
+
+parser-service: normalizza in schema unico
+
+dedupe-service: cluster articoli/eventi
+
+signal-service: assegna categorie e signal payload
+
+scoring-service: aggiorna indici e scenari
+
+alert-service: genera alert
+
+api-service: espone REST endpoints
+
+frontend: dashboard React/Next.js
+
+postgres: source of truth
+
+redis: broker/cache
+
+celery workers: job asincroni
+​
+​
+
+Scelta stack
+Python 3.12
+
+FastAPI
+
+SQLAlchemy 2.x
+
+Pydantic v2
+
+PostgreSQL 16
+
+Redis 7
+
+Celery
+
+Alembic
+
+httpx
+
+feedparser
+
+tenacity
+
+pandas solo per batch admin, non per request path
+
+React/Next.js + Tailwind + ECharts o Recharts
+
+Docker Compose
+
+Struttura repository
+text
+georisk-app/
+  backend/
+    app/
+      api/
+        v1/
+          routes/
+            events.py
+            indices.py
+            scenarios.py
+            alerts.py
+            sources.py
+            admin.py
+      core/
+        config.py
+        logging.py
+        security.py
+      db/
+        base.py
+        session.py
+        models/
+          event.py
+          source.py
+          index_snapshot.py
+          scenario_snapshot.py
+          alert.py
+          article.py
+          event_cluster.py
+          tuning_config.py
+      schemas/
+        event.py
+        source.py
+        index.py
+        scenario.py
+        alert.py
+      services/
+        ingestion/
+          gdelt_client.py
+          rss_client.py
+          newsdata_client.py
+          gnews_client.py
+          official_feed_client.py
+        parsing/
+          normalizer.py
+          entity_extractor.py
+          classifier.py
+        dedupe/
+          fingerprint.py
+          clustering.py
+        scoring/
+          noi.py
+          indices.py
+          scenarios.py
+          explainability.py
+        alerts/
+          rules.py
+          notifier.py
+        tasks/
+          collect_tasks.py
+          parse_tasks.py
+          score_tasks.py
+      utils/
+        dates.py
+        text.py
+        hashing.py
+      main.py
+    tests/
+    alembic/
+    requirements.txt
+    Dockerfile
+  frontend/
+    app/
+    components/
+    lib/
+    package.json
+    Dockerfile
+  docker-compose.yml
+  .env.example
+  README.md
+Schema database
+sources
+sql
+id UUID PK
+name TEXT UNIQUE
+base_url TEXT
+source_type TEXT
+country TEXT
+language TEXT
+tier INT
+reliability_score FLOAT
+official_flag BOOLEAN
+active BOOLEAN
+rate_limit_per_hour INT
+created_at TIMESTAMP
+updated_at TIMESTAMP
+articles
+sql
+id UUID PK
+source_id UUID FK
+published_at TIMESTAMP
+title TEXT
+url TEXT UNIQUE
+author TEXT NULL
+language TEXT
+raw_summary TEXT
+raw_content TEXT NULL
+hash TEXT
+ingested_at TIMESTAMP
+metadata JSONB
+event_clusters
+sql
+id UUID PK
+cluster_key TEXT UNIQUE
+canonical_title TEXT
+first_seen_at TIMESTAMP
+last_seen_at TIMESTAMP
+event_category TEXT
+actor_tags JSONB
+country_tags JSONB
+location_tags JSONB
+confidence FLOAT
+source_count INT
+article_count INT
+status TEXT
+events
+sql
+id UUID PK
+cluster_id UUID FK
+timestamp_utc TIMESTAMP
+source_id UUID FK
+source_reliability FLOAT
+title TEXT
+summary TEXT
+category TEXT
+severity FLOAT
+confidence FLOAT
+novelty FLOAT
+actor_tags JSONB
+country_tags JSONB
+location_tags JSONB
+signal_payload JSONB
+dedupe_hash TEXT
+created_at TIMESTAMP
+index_snapshots
+sql
+id UUID PK
+timestamp_utc TIMESTAMP
+noi FLOAT
+gai FLOAT
+hdi FLOAT
+pai FLOAT
+sri FLOAT
+bsi FLOAT
+dci FLOAT
+noi_components JSONB
+window_24h JSONB
+window_7d JSONB
+window_30d JSONB
+created_at TIMESTAMP
+scenario_snapshots
+sql
+id UUID PK
+timestamp_utc TIMESTAMP
+contained_score FLOAT
+regional_score FLOAT
+threshold_score FLOAT
+coercive_score FLOAT
+actual_score FLOAT
+contained_prob FLOAT
+regional_prob FLOAT
+threshold_prob FLOAT
+coercive_prob FLOAT
+actual_prob FLOAT
+explanations JSONB
+created_at TIMESTAMP
+alerts
+sql
+id UUID PK
+timestamp_utc TIMESTAMP
+level TEXT
+title TEXT
+message TEXT
+trigger_type TEXT
+trigger_payload JSONB
+acknowledged BOOLEAN DEFAULT FALSE
+created_at TIMESTAMP
+tuning_configs
+sql
+id UUID PK
+version TEXT
+active BOOLEAN
+priors JSONB
+weights JSONB
+thresholds JSONB
+source_rules JSONB
+created_at TIMESTAMP
+Schema evento canonico
+json
+{
+  "id": "uuid",
+  "timestamp_utc": "2026-03-06T01:45:00Z",
+  "source_name": "Reuters",
+  "source_type": "newswire",
+  "source_reliability": 0.96,
+  "title": "IAEA says it cannot verify whether Iran suspended enrichment",
+  "summary": "The agency said it could not verify suspension and lacked access to affected sites.",
+  "category": "nuclear_verification_gap",
+  "severity": 0.88,
+  "confidence": 0.93,
+  "novelty": 0.71,
+  "actor_tags": ["IAEA", "Iran"],
+  "country_tags": ["Iran"],
+  "location_tags": ["Natanz", "Fordow", "Isfahan"],
+  "signal_payload": {
+    "NOI_A_site_access_loss": 95,
+    "NOI_B_material_knowledge_loss": 100,
+    "NOI_C_enrichment_verification_gap": 85,
+    "NOI_D_underground_activity_signal": 20,
+    "NOI_E_technical_diplomatic_breakdown": 60,
+    "NOI_F_conflicting_narratives_uncertainty": 35,
+    "GAI": 0,
+    "HDI": 0,
+    "PAI": 0,
+    "SRI": 10,
+    "BSI": 30,
+    "DCI": 0
+  }
+}
+Logica di deduplica
+Obiettivo
+Clusterizzare articoli diversi che parlano dello stesso evento.
+
+Strategia
+fingerprint su:
+
+titolo normalizzato,
+
+attori,
+
+location,
+
+categoria,
+
+bucket temporale,
+
+URL canonicale.
+
+similarità titolo/summary con RapidFuzz.
+
+cluster se similarità > 88 e attori/location coerenti.
+
+se GDELT event_id è disponibile, usarlo come strong hint ma non come unica chiave.
+​
+
+Regole
+Non deduplicare eventi distinti accaduti nello stesso luogo a ore diverse.
+
+Preferire come canonical article la fonte con reliability più alta.
+
+Conservare tutte le fonti nel cluster.
+
+Classificazione segnali
+Approccio
+Fase 1 rule-based robusta.
+
+Fase 2 opzionale LLM per migliorare precisione.
+
+Fase 3 override manuale admin.
+
+Regole di mapping esempio
+Se articolo contiene IAEA, cannot verify, enrichment, no access => nuclear_verification_gap
+
+Se contiene Strait of Hormuz, shipping, tanker, mine, harass => shipping_disruption / hormuz_threat
+
+Se contiene Houthis, Hezbollah, militia, rocket fire => proxy_activity
+
+Se contiene last resort, existential, all options, red line => strategic_rhetoric
+
+Output
+Ogni classifier deve produrre:
+
+category
+
+signal_payload
+
+classifier_confidence
+
+explanation
+
+API endpoints
+Public/Analyst endpoints
+GET /api/v1/health
+
+GET /api/v1/events
+
+GET /api/v1/events/{id}
+
+GET /api/v1/indices/latest
+
+GET /api/v1/indices/history?range=7d
+
+GET /api/v1/scenarios/latest
+
+GET /api/v1/scenarios/history?range=30d
+
+GET /api/v1/alerts
+
+GET /api/v1/sources
+
+GET /api/v1/dashboard/summary
+
+Admin endpoints
+POST /api/v1/admin/reingest
+
+POST /api/v1/admin/recompute-indices
+
+POST /api/v1/admin/recompute-scenarios
+
+PATCH /api/v1/admin/tuning-config
+
+POST /api/v1/admin/source/{id}/toggle
+
+POST /api/v1/admin/event/{id}/reclassify
+
+Dashboard UI
+Pagine
+Overview
+
+5 scenario cards con probabilità
+
+7 indici macro con semaforo
+
+ultimi alert
+
+top signals mover
+
+sparkline 24h/7d
+​
+
+Timeline
+
+feed cronologico eventi
+
+filtri per categoria, fonte, attore, paese
+
+cluster expand/collapse
+
+Scenario Tree
+
+albero decisionale interattivo
+
+nodi con peso attuale
+
+drill-down: “perché è salito?”
+
+Nuclear Opacity
+
+grafico NOI
+
+breakdown A-F
+
+ultimi eventi che hanno mosso il NOI
+
+mappa siti chiave
+
+Sources
+
+coverage per fonte
+
+affidabilità
+
+latenza
+
+error rate
+
+Admin
+
+tuning pesi/soglie
+
+gestione fonti
+
+re-run pipeline
+
+annotation e override
+
+Explainability
+Ogni snapshot scenario deve contenere:
+
+json
+{
+  "top_positive_drivers": [
+    {"index": "NOI", "contribution": 18.4},
+    {"index": "BSI", "contribution": 13.1}
+  ],
+  "top_negative_drivers": [
+    {"index": "DCI", "contribution": -6.8}
+  ],
+  "trigger_rules_fired": [
+    "NOI>=70_AND_BSI>=60"
+  ],
+  "supporting_event_clusters": [
+    {"cluster_id": "uuid", "title": "IAEA cannot verify enrichment", "source_count": 4}
+  ]
+}
+Alert engine
+Livelli
+info
+
+warning
+
+high
+
+critical
+
+Regole esempio
+NOI 50-69 => warning
+
+NOI 70-84 => high
+
+NOI >= 85 => critical
+
+GAI >= 70 => high
+
+HDI >= 75 => critical
+
+threshold_prob >= 35 => high
+
+coercive_prob >= 20 => high
+
+actual_prob >= 10 => critical
+
+Canali
+in-app
+
+email
+
+Telegram webhook
+
+Slack webhook
+
+Ingestion scheduling
+Frequenze consigliate
+GDELT: ogni 15 minuti.
+
+NewsData/GNews: ogni 5-10 minuti.
+
+RSS ufficiali: ogni 5 minuti.
+
+Recompute indici: ogni 10 minuti.
+
+Recompute scenari: ogni 10 minuti.
+
+Full reconciliation job: ogni 6 ore.
+
+Backfill job: notturno.
+
+Regole di qualità dati
+URL unique constraint.
+
+dedupe_hash unique parziale.
+
+source timeout 10s.
+
+retry con backoff esponenziale.
+
+quarantine table per payload malformati.
+
+non usare full article copyrighted content, salva solo titolo, summary, metadata e excerpt permesso dove applicabile.
+​
+
+rate-limit per fonte.
+
+Sicurezza
+Admin protetto con auth.
+
+API keys separate per servizi esterni.
+
+Secrets in env vars.
+
+CORS ristretto.
+
+Audit log su tuning e override.
+
+Nessun prompt injection diretto dal testo delle news nei componenti LLM.
+
+Sanitizzazione input/output.
+
+Deploy
+Docker Compose services
+postgres
+
+redis
+
+backend-api
+
+backend-worker
+
+backend-beat
+
+frontend
+
+nginx opzionale
+
+pgadmin opzionale per dev
+
+Osservabilità
+Prometheus metrics endpoint
+
+Grafana opzionale
+
+structured JSON logs
+
+Sentry opzionale
+
+Test plan
+Unit tests
+formula NOI
+
+hard rules NOI
+
+mapping segnali
+
+scenario scoring
+
+dedupe rules
+
+explainability output
+
+Integration tests
+ingest da mock feed
+
+clustering cross-source
+
+recompute pipeline end-to-end
+
+alert generation
+
+Acceptance tests
+“IAEA cannot verify enrichment” deve alzare NOI e threshold scenario.
+
+“attacco a oil facility nel Golfo” deve alzare GAI e regional scenario.
+
+“talks in Oman resume” deve alzare DCI e ridurre scenari estremi.
+
+Pseudocodice principale
+python
+def pipeline_cycle():
+    raw_items = collect_from_all_sources()
+    normalized_articles = normalize_articles(raw_items)
+    stored_articles = persist_articles(normalized_articles)
+
+    candidate_events = extract_events(stored_articles)
+    clustered_events = cluster_events(candidate_events)
+    classified_events = classify_and_score(clustered_events)
+
+    persist_events(classified_events)
+
+    indices = recompute_indices(windows=["24h", "7d", "30d"])
+    noi = compute_noi(indices["noi_components"])
+    indices["NOI"] = noi
+
+    scenarios = compute_scenarios(indices)
+    explanations = build_explanations(indices, scenarios, classified_events)
+
+    persist_index_snapshot(indices)
+    persist_scenario_snapshot(scenarios, explanations)
+
+    alerts = evaluate_alert_rules(indices, scenarios)
+    dispatch_alerts(alerts)
+Prompt master per Claude Code
+Puoi incollargli questo:
+
+“Voglio un progetto completo e production-minded chiamato georisk-app. Stack: Python 3.12, FastAPI, SQLAlchemy 2, Pydantic v2, PostgreSQL, Redis, Celery, Alembic, Docker Compose, frontend Next.js/React. L’app deve ingestire dati da GDELT, NewsData.io, GNews e feed RSS ufficiali, deduplicare articoli, clusterizzare eventi, classificarli in categorie geopolitiche e calcolare 7 indici di rischio: NOI, GAI, HDI, PAI, SRI, BSI, DCI. Il NOI sostituisce il vecchio nodo IAEA inspections ed è definito da 6 componenti ponderate: A 25%, B 25%, C 20%, D 10%, E 10%, F 10%, con hard rules e soglie come da specifica. L’app deve poi stimare 5 scenari: contained_conflict, regional_war, nuclear_threshold_crisis, coercive_go_nuclear, actual_nuclear_use, usando le matrici pesi e le trigger rules fornite. Implementa:
+
+backend completo con modelli DB, migrazioni, servizi di ingestione, scoring, alerting;
+
+API REST;
+
+frontend dashboard;
+
+tests;
+
+docker compose;
+
+env example;
+
+seeded source catalog;
+
+explainability JSON;
+
+scheduling periodico;
+
+documentazione README con setup, run e tuning.
+Non fare una demo minima: costruisci file e codice coerenti, pronti per esecuzione locale.”
+
+Consigli finali di implementazione
+Per partire bene, chiedi a Claude Code di fare il progetto in 4 milestone:
+
+M1: backend, DB, ingestion, indices.
+
+M2: scenarios, alerts, explainability.
+
+M3: frontend dashboard.
+
+M4: hardening, tests, docs.
+
+La scelta migliore è farlo partire con GDELT + NewsData + RSS ufficiali, e lasciare GNews come provider opzionale. GDELT ti dà la spina dorsale evento-strutturata con update frequenti, mentre NewsData aggiunge copertura editoriale ampia e multilingua.
+
+Se vuoi, nel messaggio successivo ti scrivo anche:
+
+.env.example
+
+docker-compose.yml
+
+schema SQLAlchemy
+
+e il file README.md già pronti da copiare.
+
+Preparato usando GPT-5.4
+Follow-up
+
+Quali miglioramenti UI per l'app di monitoraggio conflitti
+
+Come deployare l'app su Railway o Render
+
+Aggiungi alert email per nuovi eventi critici
+
+Integra dashboard interattivo con Plotly
+
+Estendi a simulazioni scenari guerra con dati storici
+Integra dashboard interattivo con Plotly
+Trailer di Build a Python Interactive Data Dashboard with Dash & Plotly ...
+Build a Python Interactive Data Dashboard with Dash & Plotly ...
+Trailer di Build an Interactive Dashboard in Plotly Dash – No JavaScript ...
+Build an Interactive Dashboard in Plotly Dash – No JavaScript ...
+Trailer di Create an Interactive Python Dashboard FAST with Dash ...
+Create an Interactive Python Dashboard FAST with Dash ...
+Sì: integrerei un dashboard interattivo con Plotly, ma non sostituirei il frontend React/Next.js con Dash come shell principale. Plotly è ottimo per grafici interattivi, mentre React/Next.js resta più adatto come applicazione completa con routing, filtri, tabelle, auth e pannelli admin; Plotly si integra bene via react-plotly.js oppure passando JSON di figure generate dal backend. Se invece vuoi un prototipo rapidissimo tutto in Python, Dash è una strada valida, ma per un progetto reale e più estendibile terrei FastAPI + React e userei Plotly per le visualizzazioni.
+
+Decisione architetturale
+Per Claude Code, aggiorna la specifica così:
+
+Backend: FastAPI.
+
+Frontend: Next.js/React.
+
+Libreria chart principale: Plotly via react-plotly.js.
+
+Opzione secondaria: endpoint backend che restituiscono anche figure Plotly JSON precomposte per grafici complessi.
+
+Questo approccio permette:
+
+massima interattività, zoom, hover, legend toggle e range slider;
+
+aggiornamenti quasi real-time con refresh frontend;
+
+separazione pulita tra logica dati e rendering UI.
+
+Cosa deve visualizzare Plotly
+I grafici interattivi minimi da implementare sono questi:
+
+Scenario Probability Timeline
+Line chart multi-serie per le 5 probabilità scenario su 24h, 7d, 30d.
+
+Risk Indices Panel
+7 gauge/bullet charts o indicator charts per NOI, GAI, HDI, PAI, SRI, BSI, DCI.
+​
+
+NOI Breakdown
+Stacked bar o radar chart per le 6 componenti A-F del Nuclear Opacity Index.
+
+Event Heatmap
+Heatmap tempo x categoria per volume e severity eventi.
+​
+
+Source Reliability / Coverage
+Bubble chart o scatter per numero eventi vs affidabilità vs latenza media fonte.
+​
+
+Actor Interaction Graph
+Scatter/network-style semplificato o Sankey per relazioni attore -> evento -> area geografica. Plotly supporta bene Sankey.
+​
+
+Alert Escalation Ladder
+Bar chart ordinata per severità alert nelle ultime 24h/7d.
+
+Hormuz / Gulf Disruption Timeline
+Area chart con markers per eventi marittimi e shipping disruption.
+
+Componenti UI da aggiungere
+Nel frontend crea questi componenti:
+
+text
+frontend/components/plotly/
+  ScenarioTimeline.tsx
+  IndexGauges.tsx
+  NoiBreakdownRadar.tsx
+  EventHeatmap.tsx
+  SourceCoverageScatter.tsx
+  AlertBarChart.tsx
+  HormuzDisruptionArea.tsx
+  SankeyEscalationFlow.tsx
+  PlotlyWrapper.tsx
+PlotlyWrapper.tsx
+Componente comune per:
+
+lazy loading di react-plotly.js
+
+gestione resize responsivo
+
+tema dark/light
+
+fallback loading skeleton
+
+gestione export PNG/SVG/JSON
+
+Endpoint backend per Plotly
+Aggiungi endpoint dedicati che restituiscono JSON già pronto per Plotly:
+
+GET /api/v1/charts/scenario-timeline?range=7d
+
+GET /api/v1/charts/indices-gauges
+
+GET /api/v1/charts/noi-breakdown?range=7d
+
+GET /api/v1/charts/event-heatmap?range=7d
+
+GET /api/v1/charts/source-coverage?range=30d
+
+GET /api/v1/charts/hormuz-disruption?range=30d
+
+GET /api/v1/charts/escalation-sankey?range=7d
+
+GET /api/v1/charts/alerts-bar?range=7d
+
+Risposta tipo
+json
+{
+  "data": [...],
+  "layout": {...},
+  "config": {
+    "responsive": true,
+    "displaylogo": false,
+    "modeBarButtonsToRemove": ["lasso2d", "select2d"]
+  },
+  "meta": {
+    "updated_at": "2026-03-06T01:50:00Z",
+    "range": "7d"
+  }
+}
+Questo pattern è coerente con l’uso di Plotly JSON servito da backend e renderizzato in React.
+
+Specifica grafici
+1. ScenarioTimeline
+Tipo:
+
+scatter
+
+mode: lines
+
+5 tracce
+
+Dati:
+
+x = timestamp
+
+y = probabilità scenario
+
+una serie per scenario
+
+Interazioni:
+
+range selector: 24h, 7d, 30d
+
+hover unified
+
+clic legenda per isolare scenario
+
+annotazioni automatiche sui trigger rules fired
+
+Layout:
+
+asse y 0-100
+
+tema scuro
+
+line smoothing basso
+
+markers solo per salti > soglia
+
+2. IndexGauges
+Tipo:
+
+indicator
+
+mode gauge+number+delta
+
+Ogni indice ha:
+
+valore corrente
+
+delta vs 24h fa
+
+soglie colorate:
+
+verde 0-24
+
+giallo 25-49
+
+arancione 50-69
+
+rosso 70-84
+
+rosso scuro 85-100
+
+Per DCI inverti semanticamente il colore o aggiungi label “cooling”.
+Plotly supporta bene indicator gauge charts.
+​
+
+3. NOI Breakdown
+Preferenza:
+
+radar chart per fotografia istantanea A-F
+
+stacked bar per trend storico A-F
+
+Quindi fai entrambi:
+
+radar “current state”
+
+stacked area/bar “evolution over time”
+
+4. Event Heatmap
+Assi:
+
+x = bucket temporali
+
+y = categorie
+
+z = score aggregato sum(severity * confidence) oppure count eventi
+
+Tooltip:
+
+top 3 eventi in quel bucket
+
+fonti dominanti
+
+area geografica prevalente
+
+5. Source Coverage Scatter
+Assi:
+
+x = reliability_score
+
+y = avg ingestion lag
+
+bubble size = event_count
+
+colore = tier o source_type
+
+Serve a capire qualità e copertura delle fonti.
+
+6. Sankey Escalation Flow
+Nodi:
+
+Source clusters
+
+Signal categories
+
+Risk indices
+
+Scenarios
+
+Flusso:
+
+“evento cluster” -> “indice impattato” -> “scenario influenzato”
+
+Questo è perfetto per explainability visuale.
+​
+
+API backend per aggregazioni
+Aggiungi servizi dedicati:
+
+text
+backend/app/services/charts/
+  scenario_timeline.py
+  indices_gauges.py
+  noi_breakdown.py
+  event_heatmap.py
+  source_coverage.py
+  hormuz_disruption.py
+  escalation_sankey.py
+  alerts_bar.py
+Ogni servizio:
+
+interroga Postgres
+
+aggrega i dati
+
+produce JSON Plotly
+
+applica tema coerente
+
+Tema Plotly
+Definisci un tema custom riusabile:
+
+python
+PLOTLY_THEME = {
+    "paper_bgcolor": "#0b1020",
+    "plot_bgcolor": "#0b1020",
+    "font": {"color": "#e5e7eb", "family": "Inter, sans-serif"},
+    "xaxis": {"gridcolor": "#1f2937", "zerolinecolor": "#374151"},
+    "yaxis": {"gridcolor": "#1f2937", "zerolinecolor": "#374151"},
+    "colorway": ["#60a5fa", "#f59e0b", "#f43f5e", "#34d399", "#a78bfa", "#fb7185", "#22d3ee"]
+}
+Usa palette coerente:
+
+contained = blu
+
+regional = ambra
+
+threshold = rosso chiaro
+
+coercive = viola
+
+actual = rosso scuro
+
+DCI = verde acqua
+
+Frequenza refresh frontend
+polling ogni 60 secondi per overview
+
+120 secondi per grafici storici
+
+manual refresh button
+
+WebSocket opzionale fase 2
+
+Non partire subito con WebSocket se non serve; polling robusto è più semplice e sufficiente per un MVP serio.
+
+Performance
+Per non appesantire Plotly:
+
+limita i punti visualizzati con downsampling per range lunghi
+
+usa aggregazioni per bucket
+
+precomputazione delle chart più pesanti ogni 5-10 minuti
+
+caching Redis degli endpoint chart
+
+lazy load delle pagine secondarie
+
+Regole pratiche
+24h = granularità 15m
+
+7d = granularità 1h
+
+30d = granularità 6h
+
+Database per chart caching
+Aggiungi tabella opzionale:
+
+sql
+chart_cache (
+  id UUID PK,
+  chart_key TEXT UNIQUE,
+  params_hash TEXT,
+  plotly_json JSONB,
+  generated_at TIMESTAMP,
+  expires_at TIMESTAMP
+)
+Oppure cache Redis con TTL:
+
+60s per overview
+
+300s per grafici storici
+
+600s per sankey/heatmap pesanti
+
+Frontend implementation notes
+Installa:
+
+bash
+npm install react-plotly.js plotly.js
+oppure:
+
+bash
+npm install react-plotly.js plotly.js-dist-min
+Per Next.js usa dynamic import per evitare problemi SSR:
+
+tsx
+import dynamic from "next/dynamic";
+
+const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
+Questo è un punto importante da dare a Claude Code.
+​
+
+UX importante
+Ogni chart deve avere:
+
+filtro range
+
+export immagine/JSON
+
+tooltip con valori e fonti
+
+click per drill-down su eventi
+
+stato loading e stato errore
+
+timestamp “last updated”
+
+Ogni visual deve rispondere alla domanda:
+
+cosa è salito?
+
+perché?
+
+da quali eventi?
+
+da quali fonti?
+
+Nuova sezione nel prompt per Claude Code
+Incolla anche questo:
+
+“Integra un dashboard interattivo con Plotly nel frontend React/Next.js usando react-plotly.js con dynamic import ssr: false. Non sostituire il frontend con Dash. Aggiungi una cartella components/plotly con componenti per: ScenarioTimeline, IndexGauges, NoiBreakdownRadar, EventHeatmap, SourceCoverageScatter, HormuzDisruptionArea, AlertBarChart e SankeyEscalationFlow. Implementa endpoint FastAPI che restituiscono figure Plotly JSON (data, layout, config, meta) per ciascun grafico. Usa un tema dark coerente, caching Redis, downsampling per serie temporali, polling frontend 60-120 secondi e interazioni complete: hover, zoom, legend toggle, export. Crea pagine Overview, Nuclear Opacity, Timeline e Explainability che usano questi grafici.”
+
+Scelta finale consigliata
+Per un progetto reale, la soluzione migliore è:
+
+React/Next.js come app shell,
+
+Plotly come motore grafico,
+
+FastAPI come generatore di dati e figure JSON,
+
+Redis per cache chart,
+
+Postgres per storico e aggregati.
+
+Se vuoi, nel prossimo messaggio ti scrivo già il blocco definitivo da incollare a Claude Code con:
+
+stack completo aggiornato,
+
+struttura file frontend Plotly,
+
+endpoints chart,
+
+e note implementative precise.
+
+Preparato usando GPT-5.4
+Preparo il file cloud.md e tutti gli altri file da dare in pasto a Claude Code per far fare l'applicazione. Ricorda che deve essere una web app che non ha bisogno di autorizzazioni di login, ma deve essere come un sito che tutti possono consultare.
+Sì. Ti preparo una struttura di file pensata per Claude Code, con un file principale cloud.md e una serie di file di supporto che gli danno contesto, requisiti, schema, criteri, deploy e vincoli di prodotto. Per una web app pubblica senza login, la priorità è hardening lato infrastruttura e API, non autenticazione utenti; quindi restano essenziali HTTPS, rate limiting, validazione input, secure headers e protezione delle chiavi dei provider esterni. Inoltre, essendo un sito pubblico consultabile da chiunque, conviene includere fin dall’inizio robots.txt, sitemap.xml, metadata SEO e deploy dietro reverse proxy.
+
+Struttura file
+Ti consiglio di creare questa cartella da dare in pasto a Claude Code:
+
+text
+claude-input/
+  cloud.md
+  product_requirements.md
+  architecture.md
+  data_model.md
+  risk_model.md
+  source_catalog.md
+  api_contract.md
+  frontend_dashboard.md
+  plotly_spec.md
+  ingestion_rules.md
+  security_and_public_site.md
+  deployment.md
+  testing.md
+  roadmap.md
+  prompts/
+    claude_master_prompt.md
+    claude_backend_prompt.md
+    claude_frontend_prompt.md
+    claude_devops_prompt.md
+  examples/
+    sample_event.json
+    sample_index_snapshot.json
+    sample_scenario_snapshot.json
+Cosa mettere in cloud.md
+Questo deve essere il file principale, quello che Claude Code legge per capire l’intero progetto. Ti scrivo un contenuto già pronto da copiare.
+
+text
+# GeoRisk App - Master Specification
+
+## Goal
+Build a public web application, accessible without login, that monitors geopolitical escalation signals related to the Iran-US-Israel crisis and estimates scenario probabilities in near real time.
+
+The app is not a prediction oracle. It is an early-warning and scenario-tracking system based on concrete event ingestion, source-weighted scoring, explainable risk indices, and interactive dashboards.
+
+## Product Type
+- Public website
+- No user authentication
+- Read-only for visitors
+- Admin and maintenance operations must not be exposed in the public UI
+- All content must be publicly consultable like an information site
+
+## Core Capabilities
+- Continuously ingest events from multiple trustworthy sources
+- Normalize and deduplicate articles/events
+- Extract structured geopolitical signals
+- Compute risk indices
+- Compute scenario probabilities
+- Explain why each scenario moved
+- Show interactive Plotly dashboards
+- Provide alert views and historical timelines
+- Run reliably via Docker Compose
+
+## Tech Stack
+- Backend: Python 3.12, FastAPI, SQLAlchemy 2, Pydantic v2, Alembic
+- Database: PostgreSQL
+- Queue/cache: Redis
+- Async jobs: Celery
+- Frontend: Next.js + React + Tailwind
+- Charts: Plotly via react-plotly.js
+- Deployment: Docker Compose, optional Nginx reverse proxy
+
+## Non-Goals
+- No user accounts
+- No payment system
+- No personalized private areas
+- No social login
+- No editable public content
+- No reliance on fragile scraping as primary ingestion method
+
+## Main Risk Indices
+- Nuclear Opacity Index (NOI)
+- Gulf Attack Index (GAI)
+- Hormuz Disruption Index (HDI)
+- Proxy Activation Index (PAI)
+- Strategic Rhetoric Index (SRI)
+- Breakout Signal Index (BSI)
+- Diplomatic Cooling Index (DCI)
+
+## Main Scenarios
+- contained_conflict
+- regional_war
+- nuclear_threshold_crisis
+- coercive_go_nuclear
+- actual_nuclear_use
+
+## Public Site Requirements
+- No login required
+- SEO-friendly pages
+- robots.txt present
+- sitemap.xml generated
+- Open Graph metadata
+- Fast loading
+- Responsive design
+- Public read-only APIs for frontend consumption
+- Rate limiting on API endpoints
+
+## Reliability Requirements
+- Idempotent ingestion
+- Source reliability scoring
+- Event deduplication
+- Explainability for each score
+- Caching for charts and summaries
+- Graceful degradation if one provider fails
+
+## Output Required from Claude Code
+Generate a complete working project, not a toy demo. Include:
+- backend code
+- frontend code
+- db models
+- migrations
+- ingestion services
+- scoring logic
+- scenario engine
+- plotly chart endpoints
+- public dashboard pages
+- Docker Compose
+- .env.example
+- README
+- tests
+- seed data for sources
+product_requirements.md
+text
+# Product Requirements
+
+## Users
+Primary users are analysts, observers, journalists, researchers, and public readers who want a continuously updated public dashboard on escalation risk.
+
+## Main user journeys
+1. Open homepage and see current risk level
+2. Explore scenario probabilities
+3. Inspect the Nuclear Opacity Index
+4. Browse recent events and their sources
+5. Understand why risk changed
+6. View historical trends for 24h / 7d / 30d
+
+## Pages
+- Home / Overview
+- Scenarios
+- Nuclear Opacity
+- Timeline
+- Sources
+- Methodology
+- About
+- API status page
+
+## Functional requirements
+- Public home page with latest snapshot
+- Public charts updated automatically
+- Public event timeline with filters
+- Public methodology page explaining indices and limitations
+- Source list with reliability values
+- Last updated timestamp
+- Export chart image/JSON from dashboard
+architecture.md
+text
+# Architecture
+
+## Services
+- backend-api
+- backend-worker
+- backend-beat
+- postgres
+- redis
+- frontend
+- nginx (optional but recommended)
+
+## Flow
+1. Collect raw items from GDELT, NewsData, GNews, RSS feeds
+2. Normalize article payloads
+3. Deduplicate articles and cluster events
+4. Classify event category and signal payload
+5. Store canonical events
+6. Recompute indices on schedule
+7. Recompute scenario probabilities
+8. Build explainability metadata
+9. Expose REST endpoints for frontend
+10. Render Plotly charts in public website
+
+## Design principles
+- PostgreSQL is source of truth
+- Redis is cache and broker, not only storage
+- All ingestion is retry-safe
+- Public site is read-only
+- Admin operations remain internal-only
+risk_model.md
+Qui metti il cuore quantitativo, già allineato con quanto definito prima.
+
+text
+# Risk Model
+
+## Nuclear Opacity Index (NOI)
+NOI measures the loss of international verifiability over the Iranian nuclear program.
+
+### Components
+- A site_access_loss = 25%
+- B material_knowledge_loss = 25%
+- C enrichment_verification_gap = 20%
+- D underground_activity_signal = 10%
+- E technical_diplomatic_breakdown = 10%
+- F conflicting_narratives_uncertainty = 10%
+
+### Formula
+NOI = 0.25A + 0.25B + 0.20C + 0.10D + 0.10E + 0.10F
+
+Clamp result to 0-100.
+
+### Hard rules
+- if A >= 75 and B >= 90 => NOI minimum 80
+- if C >= 75 and D >= 50 => NOI += 5
+- if E >= 80 and F >= 70 => NOI += 3
+- clamp final result to 0-100
+
+### Thresholds
+- 0-24 green
+- 25-49 yellow
+- 50-69 orange
+- 70-84 red
+- 85-100 dark red
+
+## Other indices
+Define GAI, HDI, PAI, SRI, BSI, DCI on 0-100 scale.
+
+## Time windows
+Each index must combine:
+- 24h score weight 0.50
+- 7d score weight 0.30
+- 30d score weight 0.20
+
+## Event impact
+event_impact = source_reliability * confidence * severity * novelty
+
+## Scenario priors
+- contained_conflict = 40
+- regional_war = 25
+- nuclear_threshold_crisis = 20
+- coercive_go_nuclear = 10
+- actual_nuclear_use = 5
+
+## Scenario weights
+[put the full weight matrix here exactly]
+data_model.md
+text
+# Data Model
+
+## Main entities
+- Source
+- Article
+- EventCluster
+- Event
+- IndexSnapshot
+- ScenarioSnapshot
+- Alert
+- TuningConfig
+- ChartCache
+
+## Rules
+- Articles are raw ingested items
+- Events are normalized classified units
+- Multiple articles can map to one event cluster
+- Index snapshots are immutable historical records
+- Scenario snapshots are immutable historical records
+- Alerts are generated from snapshots, not directly from raw articles
+Qui puoi anche includere gli schemi SQL già scritti.
+
+source_catalog.md
+text
+# Source Catalog
+
+## Primary structured sources
+- GDELT
+- NewsData.io
+- GNews
+
+## Institutional or official feeds
+- IAEA
+- CENTCOM
+- IDF
+- Iran MFA
+- Oman MFA
+- GCC-related official statements
+
+## Trusted editorial baseline
+- Reuters
+- AP
+- AFP
+- BBC
+- FT
+- Al Jazeera
+- CNN
+
+## Source policy
+- Assign each source a reliability_score between 0 and 1
+- Assign tier
+- Keep source metadata in database
+- Make source scoring configurable via seed file
+- Never let one low-confidence source trigger a critical scenario jump alone
+api_contract.md
+text
+# API Contract
+
+## Public endpoints
+GET /api/v1/health
+GET /api/v1/dashboard/summary
+GET /api/v1/events
+GET /api/v1/events/{id}
+GET /api/v1/indices/latest
+GET /api/v1/indices/history?range=24h|7d|30d
+GET /api/v1/scenarios/latest
+GET /api/v1/scenarios/history?range=24h|7d|30d
+GET /api/v1/alerts
+GET /api/v1/sources
+
+## Plotly endpoints
+GET /api/v1/charts/scenario-timeline
+GET /api/v1/charts/indices-gauges
+GET /api/v1/charts/noi-breakdown
+GET /api/v1/charts/event-heatmap
+GET /api/v1/charts/source-coverage
+GET /api/v1/charts/hormuz-disruption
+GET /api/v1/charts/escalation-sankey
+GET /api/v1/charts/alerts-bar
+
+## Notes
+- Public endpoints only
+- No login required
+- Add rate limiting
+- Add caching headers where appropriate
+frontend_dashboard.md
+text
+# Frontend Dashboard
+
+## Framework
+Next.js + React + Tailwind
+
+## Public pages
+- /
+- /scenarios
+- /nuclear-opacity
+- /timeline
+- /sources
+- /methodology
+- /about
+
+## UX rules
+- Public read-only website
+- No login UI
+- Responsive layout
+- Dark theme by default
+- Show last updated timestamp
+- Show source count and event count
+- Add drill-down modals or drawers for event details
+plotly_spec.md
+text
+# Plotly Specification
+
+## Integration mode
+Use react-plotly.js in Next.js with dynamic import and ssr disabled.
+
+## Charts
+- ScenarioTimeline
+- IndexGauges
+- NoiBreakdownRadar
+- EventHeatmap
+- SourceCoverageScatter
+- HormuzDisruptionArea
+- AlertBarChart
+- SankeyEscalationFlow
+
+## Endpoint payload format
+{
+  "data": [],
+  "layout": {},
+  "config": {},
+  "meta": {}
+}
+
+## Requirements
+- Hover tooltips
+- Zoom/pan
+- Legend toggle
+- Export image
+- Responsive resizing
+- Polling refresh every 60-120 seconds
+- Redis cache for heavy charts
+ingestion_rules.md
+text
+# Ingestion Rules
+
+## Collectors
+- GDELT collector every 15 min
+- NewsData every 5-10 min
+- GNews every 10 min
+- RSS feeds every 5 min
+
+## Deduplication
+- URL uniqueness
+- normalized title similarity
+- actor/location/time bucket similarity
+- canonical source chosen by highest reliability
+
+## Data quality
+- timeout 10s
+- retries with exponential backoff
+- quarantine malformed payloads
+- store raw metadata for debugging
+- avoid copyrighted full article storage where not allowed
+security_and_public_site.md
+Questo è importante perché hai detto niente login.
+
+text
+# Security and Public Site
+
+## Public access model
+The site is fully public and does not require user authentication.
+
+## Security requirements
+- HTTPS in production behind reverse proxy [web:173][web:175]
+- API rate limiting [web:173]
+- Input validation and output sanitization [web:173][web:175]
+- Secure headers
+- CORS restricted to site domain
+- Hide or disable public admin routes
+- Protect secrets via env vars [web:175]
+- Structured error handling
+- Do not expose provider API keys to frontend
+
+## SEO and crawlability
+- robots.txt must exist and include sitemap URL [web:176][web:179]
+- sitemap.xml must be generated [web:176][web:185]
+- canonical URLs
+-Sì. Ti preparo un pacchetto completo di file/contenuti da dare a Claude Code, impostato come **web app pubblica senza login**, consultabile da chiunque, con backend e frontend separati, ingestion continua da fonti attendibili, dashboard interattiva Plotly e deploy via Docker Compose dietro reverse proxy HTTPS. [web:173][web:175][web:177][web:180] Anche senza autenticazione utente, l’app deve comunque avere protezioni base come rate limiting, input sanitization, secure headers, gestione segreti via env e documentazione API eventualmente non esposta pubblicamente o limitata in produzione. [web:173][web:175]
+
+## Struttura dei file
+
+Ti consiglio di creare una cartella da passare a Claude Code con questi file:
+
+```text
+claude-input/
+  cloud.md
+  product_requirements.md
+  architecture.md
+  data_sources.md
+  risk_model.md
+  database_schema.md
+  api_spec.md
+  frontend_spec.md
+  plotly_spec.md
+  ingestion_pipeline.md
+  alerting_rules.md
+  scoring_examples.md
+  deployment_spec.md
+  security_public_app.md
+  seo_public_site.md
+  testing_spec.md
+  roadmap.md
+  prompts/
+    claude_master_prompt.md
+    claude_build_order.md
+Sotto ti scrivo il contenuto pronto di ciascun file.
+
+cloud.md
+text
+# GeoRisk Public Web App - Master Context
+
+Build a production-minded public web application called `georisk-app`.
+
+This is a public website with NO user login, NO registration, and NO private user accounts.
+Anyone should be able to open the site and consult the dashboard and scenario analysis.
+
+## Primary goal
+Create an early-warning geopolitical monitoring web app focused on the Iran-USA-Israel crisis and related regional escalation risk.
+
+The application must:
+- ingest events continuously from multiple trusted sources
+- normalize and deduplicate data
+- compute risk indices
+- compute scenario probabilities
+- display an interactive public dashboard
+- explain why probabilities changed
+- support near real-time refresh
+
+## Product constraints
+- Public website, no authentication for end users
+- Admin-only operations can exist internally but should not require building a user-facing login system
+- Sensitive admin routes can be disabled in production or protected behind internal network / env flag
+- Must be production-minded, not a toy demo
+- Must use reliable, structured, maintainable architecture
+- Must avoid fragile scraping as the primary ingestion strategy
+- Must use PostgreSQL as source of truth
+- Must use Redis for caching and task queue
+- Must use FastAPI backend
+- Must use Next.js/React frontend
+- Must integrate interactive Plotly charts
+- Must be deployable with Docker Compose
+- Must expose a public dashboard website
+
+## Technology stack
+- Python 3.12
+- FastAPI
+- SQLAlchemy 2.x
+- Pydantic v2
+- Alembic
+- PostgreSQL 16
+- Redis 7
+- Celery + Celery Beat
+- httpx
+- feedparser
+- tenacity
+- rapidfuzz
+- Next.js
+- React
+- Tailwind CSS
+- react-plotly.js
+- plotly.js-dist-min
+- Nginx reverse proxy
+- Docker Compose
+
+## Architecture summary
+- backend API service
+- worker service
+- beat scheduler service
+- postgres
+- redis
+- frontend
+- nginx reverse proxy
+
+## Key data sources
+- GDELT
+- NewsData.io
+- GNews as optional secondary provider
+- whitelisted RSS feeds from official and high-quality editorial sources
+
+## Key outputs
+- risk indices
+- scenario probabilities
+- alerts
+- explainability
+- public dashboard
+
+## Main indices
+- Nuclear Opacity Index (NOI)
+- Gulf Attack Index (GAI)
+- Hormuz Disruption Index (HDI)
+- Proxy Activation Index (PAI)
+- Strategic Rhetoric Index (SRI)
+- Breakout Signal Index (BSI)
+- Diplomatic Cooling Index (DCI)
+
+## Main scenarios
+- contained_conflict
+- regional_war
+- nuclear_threshold_crisis
+- coercive_go_nuclear
+- actual_nuclear_use
+
+## Important implementation guidance
+- Prioritize robust ingestion and data quality
+- Build explainability into the model from the start
+- Use Plotly JSON endpoints from backend for charts
+- No copyrighted full-text storage beyond what is legally safe; store metadata, title, excerpt, URL, and structured event data
+- Build for public consultation and readability
+product_requirements.md
+text
+# Product Requirements
+
+## Users
+Public readers, analysts, journalists, researchers, general visitors.
+
+## Public site requirements
+- no login
+- no sign-up
+- no paywall
+- no user-specific persistence required
+- fully consultable by anonymous visitors
+
+## Main user journeys
+1. Open homepage and immediately see current risk posture
+2. Understand the five scenario probabilities
+3. Inspect the Nuclear Opacity Index and its components
+4. Browse recent events
+5. Understand what changed and why
+6. Filter by time range, actor, category, geography
+7. Read methodology pages
+
+## Pages
+- Home / Overview
+- Scenario Dashboard
+- Nuclear Opacity
+- Timeline
+- Alerts
+- Sources & Methodology
+- About / Disclaimer
+
+## Home page must show
+- scenario probability cards
+- top alerts
+- key indices
+- latest updates
+- top drivers of change
+- Plotly charts summary
+
+## Non-functional requirements
+- responsive
+- accessible
+- SEO-friendly public pages
+- fast initial load
+- chart data cached
+- backend resilient to temporary source failures
+architecture.md
+text
+# System Architecture
+
+## Services
+1. frontend (Next.js)
+2. backend-api (FastAPI)
+3. worker (Celery)
+4. beat (Celery Beat)
+5. postgres
+6. redis
+7. nginx
+
+## Flow
+Sources -> collectors -> parsers -> article storage -> dedupe -> event clustering -> signal classification -> index scoring -> scenario scoring -> alert engine -> API -> frontend dashboard
+
+## Design principles
+- PostgreSQL is source of truth
+- Redis used for queue + short-lived cache
+- All ingestion jobs idempotent
+- Background jobs isolated from request/response path
+- API returns already aggregated JSON for charts when possible
+- Frontend renders charts with Plotly
+
+## Public access model
+- frontend is publicly accessible
+- read-only API endpoints are public
+- admin endpoints disabled by default in production or guarded by env flag / IP allowlist
+data_sources.md
+text
+# Data Sources
+
+## Tier 1 structured
+### GDELT
+Use for:
+- event backbone
+- mentions volume
+- locations
+- actors
+- event categories
+Polling every 15 minutes.
+
+### NewsData.io
+Use for:
+- broad editorial coverage
+- multilingual support
+- article metadata
+Polling every 5-10 minutes.
+
+### GNews (optional)
+Use as backup/secondary provider.
+Polling every 10 minutes.
+
+## Tier 2 whitelisted RSS/editorial
+Examples:
+- Reuters
+- AP
+- AFP
+- BBC
+- Financial Times
+- Al Jazeera
+- major regional outlets with stable RSS
+
+## Tier 3 official feeds
+Examples:
+- IAEA
+- CENTCOM
+- IDF
+- relevant ministries / statements feeds
+- Oman / GCC diplomatic channels if available via RSS or structured source
+
+## Reliability model
+Each source must have:
+- reliability_score
+- source_type
+- tier
+- official_flag
+- country
+- language
+- active flag
+
+## Anti-fragility rule
+Do not rely on scraping HTML pages as primary input.
+Prefer APIs, RSS, structured feeds, and GDELT.
+Use scraping only as controlled fallback.
+risk_model.md
+text
+# Risk Model
+
+## Indices
+- NOI
+- GAI
+- HDI
+- PAI
+- SRI
+- BSI
+- DCI
+
+## Nuclear Opacity Index (NOI)
+Purpose:
+Measure loss of international verifiability regarding the Iranian nuclear program.
+
+Range:
+0-100
+
+### NOI components
+- A: site_access_loss = 25%
+- B: material_knowledge_loss = 25%
+- C: enrichment_verification_gap = 20%
+- D: underground_activity_signal = 10%
+- E: technical_diplomatic_breakdown = 10%
+- F: conflicting_narratives_uncertainty = 10%
+
+### Formula
+NOI = 0.25*A + 0.25*B + 0.20*C + 0.10*D + 0.10*E + 0.10*F
+
+Clamp result 0..100.
+
+### Hard rules
+- if A >= 75 and B >= 90 then NOI = max(NOI, 80)
+- if C >= 75 and D >= 50 then NOI += 5
+- if E >= 80 and F >= 70 then NOI += 3
+- clamp final NOI 0..100
+
+### NOI thresholds
+- 0-24 green
+- 25-49 yellow
+- 50-69 orange
+- 70-84 red
+- 85-100 dark red
+
+## Other indices
+### GAI
+Attacks on Gulf infrastructure, ports, bases, airports, oil/gas assets, cities
+
+### HDI
+Shipping disruption, Strait of Hormuz threats, mines, interdiction, boarding, tanker attacks
+
+### PAI
+Proxy activity in Lebanon, Yemen, Iraq, Syria and allied networks
+
+### SRI
+Strategic rhetoric, existential threat language, “all options”, final window, red lines
+
+### BSI
+Signals consistent with nuclear breakout risk or accelerated concealment
+
+### DCI
+Diplomatic cooling, Oman talks, GCC mediation, hotlines, reduced raids
+
+## Scenario priors
+- contained_conflict = 40
+- regional_war = 25
+- nuclear_threshold_crisis = 20
+- coercive_go_nuclear = 10
+- actual_nuclear_use = 5
+
+## Scenario weight matrix
+| Index | contained | regional | threshold | coercive | actual |
+|---|---:|---:|---:|---:|---:|
+| NOI | -0.20 | +0.08 | +0.30 | +0.18 | +0.05 |
+| GAI | -0.10 | +0.35 | +0.05 | +0.04 | +0.02 |
+| HDI | -0.12 | +0.30 | +0.08 | +0.05 | +0.03 |
+| PAI | -0.08 | +0.25 | +0.03 | +0.02 | +0.01 |
+| SRI | -0.10 | +0.10 | +0.18 | +0.30 | +0.10 |
+| BSI | -0.15 | +0.05 | +0.35 | +0.25 | +0.12 |
+| DCI | +0.30 | -0.20 | -0.25 | -0.20 | -0.10 |
+
+## Scenario boost rules
+- NOI >= 70 and BSI >= 60 => threshold +10
+- NOI >= 80 and SRI >= 65 => coercive +8
+- NOI >= 85 and BSI >= 75 and SRI >= 75 => actual +7
+- DCI >= 60 => reduce extreme scenarios by 15%
+
+## Time windows
+Use:
+- 24h weight 0.50
+- 7d weight 0.30
+- 30d weight 0.20
+
+### Event impact
+event_impact = source_reliability * confidence * severity * novelty
+
+### Subindex formula
+subindex = sum(event_impact * signal_value) / sum(event_impact)
+database_schema.md
+text
+# Database Schema
+
+## Main tables
+- sources
+- articles
+- event_clusters
+- events
+- index_snapshots
+- scenario_snapshots
+- alerts
+- tuning_configs
+- chart_cache (optional)
+
+## sources
+id UUID PK
+name TEXT UNIQUE
+base_url TEXT
+source_type TEXT
+country TEXT
+language TEXT
+tier INT
+reliability_score FLOAT
+official_flag BOOLEAN
+active BOOLEAN
+rate_limit_per_hour INT
+created_at TIMESTAMP
+updated_at TIMESTAMP
+
+## articles
+id UUID PK
+source_id UUID FK
+published_at TIMESTAMP
+title TEXT
+url TEXT UNIQUE
+author TEXT NULL
+language TEXT
+raw_summary TEXT
+raw_content TEXT NULL
+hash TEXT
+ingested_at TIMESTAMP
+metadata JSONB
+
+## event_clusters
+id UUID PK
+cluster_key TEXT UNIQUE
+canonical_title TEXT
+first_seen_at TIMESTAMP
+last_seen_at TIMESTAMP
+event_category TEXT
+actor_tags JSONB
+country_tags JSONB
+location_tags JSONB
+confidence FLOAT
+source_count INT
+article_count INT
+status TEXT
+
+## events
+id UUID PK
+cluster_id UUID FK
+timestamp_utc TIMESTAMP
+source_id UUID FK
+source_reliability FLOAT
+title TEXT
+summary TEXT
+category TEXT
+severity FLOAT
+confidence FLOAT
+novelty FLOAT
+actor_tags JSONB
+country_tags JSONB
+location_tags JSONB
+signal_payload JSONB
+dedupe_hash TEXT
+created_at TIMESTAMP
+
+## index_snapshots
+id UUID PK
+timestamp_utc TIMESTAMP
+noi FLOAT
+gai FLOAT
+hdi FLOAT
+pai FLOAT
+sri FLOAT
+bsi FLOAT
+dci FLOAT
+noi_components JSONB
+window_24h JSONB
+window_7d JSONB
+window_30d JSONB
+created_at TIMESTAMP
+
+## scenario_snapshots
+id UUID PK
+timestamp_utc TIMESTAMP
+contained_score FLOAT
+regional_score FLOAT
+threshold_score FLOAT
+coercive_score FLOAT
+actual_score FLOAT
+contained_prob FLOAT
+regional_prob FLOAT
+threshold_prob FLOAT
+coercive_prob FLOAT
+actual_prob FLOAT
+explanations JSONB
+created_at TIMESTAMP
+
+## alerts
+id UUID PK
+timestamp_utc TIMESTAMP
+level TEXT
+title TEXT
+message TEXT
+trigger_type TEXT
+trigger_payload JSONB
+acknowledged BOOLEAN DEFAULT FALSE
+created_at TIMESTAMP
+
+## tuning_configs
+id UUID PK
+version TEXT
+active BOOLEAN
+priors JSONB
+weights JSONB
+thresholds JSONB
+source_rules JSONB
+created_at TIMESTAMP
+
+## chart_cache
+id UUID PK
+chart_key TEXT UNIQUE
+params_hash TEXT
+plotly_json JSONB
+generated_at TIMESTAMP
+expires_at TIMESTAMP
+api_spec.md
+text
+# API Specification
+
+## Public endpoints
+GET /api/v1/health
+GET /api/v1/events
+GET /api/v1/events/{id}
+GET /api/v1/indices/latest
+GET /api/v1/indices/history?range=24h|7d|30d
+GET /api/v1/scenarios/latest
+GET /api/v1/scenarios/history?range=24h|7d|30d
+GET /api/v1/alerts
+GET /api/v1/sources
+GET /api/v1/dashboard/summary
+GET /api/v1/methodology
+
+## Plotly chart endpoints
+GET /api/v1/charts/scenario-timeline?range=7d
+GET /api/v1/charts/indices-gauges
+GET /api/v1/charts/noi-breakdown?range=7d
+GET /api/v1/charts/event-heatmap?range=7d
+GET /api/v1/charts/source-coverage?range=30d
+GET /api/v1/charts/hormuz-disruption?range=30d
+GET /api/v1/charts/escalation-sankey?range=7d
+GET /api/v1/charts/alerts-bar?range=7d
+
+## Optional internal/admin endpoints
+These should be disabled by default in production public mode:
+POST /api/v1/admin/reingest
+POST /api/v1/admin/recompute-indices
+POST /api/v1/admin/recompute-scenarios
+PATCH /api/v1/admin/tuning-config
+POST /api/v1/admin/source/{id}/toggle
+POST /api/v1/admin/event/{id}/reclassify
+
+## Response format for charts
+{
+  "data": [],
+  "layout": {},
+  "config": {},
+  "meta": {
+    "updated_at": "ISO_TIMESTAMP",
+    "range": "7d"
+  }
+}
+frontend_spec.md
+text
+# Frontend Specification
+
+## Framework
+Next.js + React + Tailwind CSS
+
+## Public pages
+- /
+- /scenarios
+- /nuclear-opacity
+- /timeline
+- /alerts
+- /sources
+- /methodology
+- /about
+
+## Components
+- Header
+- Footer
+- Hero status strip
+- Scenario cards
+- Index cards
+- Latest alerts list
+- Event timeline table
+- Methodology blocks
+- Source catalog table
+- Plotly chart wrapper
+
+## UX
+- public, simple, consultable without login
+- responsive
+- dark mode as default
+- mobile usable
+- clear timestamps
+- “last updated” visible
+- links to source URLs where appropriate
+- no hidden private views
+
+## Polling
+- overview every 60s
+- historical charts every 120s
+- manual refresh button
+plotly_spec.md
+text
+# Plotly Dashboard Specification
+
+## Plotly integration choice
+Use Next.js/React frontend with react-plotly.js and plotly.js-dist-min.
+Do not replace the app shell with Dash.
+
+## Install
+npm install react-plotly.js plotly.js-dist-min
+
+## SSR rule
+Use dynamic import with ssr: false.
+
+## Chart components
+- ScenarioTimeline.tsx
+- IndexGauges.tsx
+- NoiBreakdownRadar.tsx
+- NoiBreakdownTrend.tsx
+- EventHeatmap.tsx
+- SourceCoverageScatter.tsx
+- HormuzDisruptionArea.tsx
+- AlertBarChart.tsx
+- SankeyEscalationFlow.tsx
+- PlotlyWrapper.tsx
+
+## Required charts
+1. Scenario probability timeline
+2. 7 index gauges
+3. NOI radar + trend
+4. Event heatmap by category/time
+5. Source coverage scatter
+6. Hormuz disruption area chart
+7. Alerts severity bar chart
+8. Sankey event -> index -> scenario
+
+## Theme
+Dark theme, consistent palette, responsive charts, export enabled, hover unified where relevant.
+
+## Performance
+- Redis chart cache
+- downsampling for long ranges
+- bucket aggregation
+- lazy load secondary charts
+ingestion_pipeline.md
+text
+# Ingestion Pipeline
+
+## Services
+- gdelt_client
+- newsdata_client
+- gnews_client
+- rss_client
+- official_feed_client
+
+## Normalization pipeline
+raw item -> normalized article -> article storage -> event extraction -> clustering -> classification -> signal payload
+
+## Scheduling
+- GDELT every 15m
+- NewsData every 5-10m
+- GNews every 10m
+- RSS every 5m
+- index recompute every 10m
+- scenario recompute every 10m
+- full reconciliation every 6h
+
+## Dedupe logic
+- normalized title
+- actor tags
+- location tags
+- category
+- time bucket
+- URL canonicalization
+- rapidfuzz similarity
+
+## Clustering logic
+Cluster related articles into event clusters.
+Choose canonical article by highest reliability score.
+
+## Quality controls
+- retries with exponential backoff
+- quarantine malformed payloads
+- source timeout
+- logging per source
+- per-source rate limit awareness
+alerting_rules.md
+text
+# Alerting Rules
+
+## Levels
+- info
+- warning
+- high
+- critical
+
+## Index alerts
+- NOI 50-69 => warning
+- NOI 70-84 => high
+- NOI >= 85 => critical
+- GAI >= 70 => high
+- HDI >= 75 => critical
+- BSI >= 70 => high
+
+## Scenario alerts
+- threshold_prob >= 35 => high
+- coercive_prob >= 20 => high
+- actual_prob >= 10 => critical
+
+## Combined alerts
+- NOI >= 80 and SRI >= 70 => high
+- NOI >= 80 and BSI >= 60 => high
+- GAI >= 70 and HDI >= 70 => critical
+- DCI >= 60 => generate cooling info alert if extreme probabilities decrease
+
+## Delivery
+- store all alerts in database
+- optional webhooks for Telegram/Slack/email
+scoring_examples.md
+text
+# Scoring Examples
+
+## Example 1
+Event:
+IAEA says it cannot verify whether Iran suspended enrichment and lacks access to affected sites.
+
+Suggested payload:
+A=95
+B=100
+C=85
+D=20
+E=60
+F=35
+GAI=0
+HDI=0
+PAI=0
+SRI=10
+BSI=30
+DCI=0
+
+## Example 2
+Event:
+Confirmed attack on Gulf oil facility by Iranian missile/drone.
+
+Suggested payload:
+A=0
+B=0
+C=0
+D=0
+E=0
+F=10
+GAI=90
+HDI=20
+PAI=25
+SRI=15
+BSI=0
+DCI=0
+
+## Example 3
+Event:
+Oman mediates new direct contact and both sides reduce raids.
+
+Suggested payload:
+A=0
+B=0
+C=0
+D=0
+E=0
+F=0
+GAI=0
+HDI=0
+PAI=0
+SRI=0
+BSI=0
+DCI=75
+deployment_spec.md
+text
+# Deployment Specification
+
+## Deployment model
+Public website behind Nginx reverse proxy.
+
+## Containers
+- postgres
+- redis
+- backend-api
+- backend-worker
+- backend-beat
+- frontend
+- nginx
+
+## Production notes
+- enforce HTTPS at reverse proxy
+- gzip/brotli where practical
+- caching headers for static assets
+- health checks for backend and frontend
+- restart policies
+- env-driven config
+- persistent volumes for postgres
+
+## Public mode
+- no login
+- docs/openapi can be disabled in production
+- admin endpoints disabled by env flag
+security_public_app.md
+text
+# Security for Public No-Login App
+
+This app is public and read-only for end users, but still requires baseline protection.
+
+## Required protections
+- HTTPS in production
+- secure headers
+- rate limiting on public API endpoints
+- input validation
+- output escaping
+- no secrets in code
+- env-based configuration
+- CORS restricted to public frontend domain
+- disable or hide admin endpoints in production
+- API docs disabled in production unless explicitly enabled
+- request logging and error logging
+
+## Important
+No user auth system is needed for public visitors.
+Do not build login/signup flows for the public site.
+
+## Admin operations
+If implemented, expose only behind environment flag and optional IP allowlist.
+seo_public_site.md
+text
+# SEO and Public Site Requirements
+
+This is a public website and should be indexable unless intentionally disabled.
+
+## Requirements
+- generate sitemap.xml
+- expose robots.txt
+- reference sitemap in robots.txt
+- include canonical URLs
+- include metadata for pages
+- do not block CSS or JS assets from crawlers
+- include Open Graph metadata
+- expose last-updated timestamps on key pages
+
+## Pages to index
+- homepage
+- methodology
+- sources
+- alerts archive if useful
+- scenario pages
+testing_spec.md
+text
+# Testing Specification
+
+## Unit tests
+- NOI formula
+- hard rule triggers
+- scenario scoring
+- event impact formula
+- dedupe hash generation
+- source reliability weighting
+
+## Integration tests
+- ingestion from mock GDELT payload
+- ingestion from mock NewsData payload
+- cluster merge across sources
+- chart endpoint generation
+- alert generation from synthetic events
+
+## Acceptance tests
+- nuclear verification loss increases NOI and threshold scenario
+- Gulf attack increases GAI and regional scenario
+- Oman diplomatic signal increases DCI and lowers extreme scenarios
+- public homepage loads without login
+- chart endpoints return valid Plotly JSON
+roadmap.md
+text
+# Build Roadmap
+
+## Milestone 1
+Backend foundation
+- FastAPI
+- SQLAlchemy models
+- Alembic
+- source catalog
+- ingestion clients
+- article storage
+
+## Milestone 2
+Event pipeline
+- dedupe
+- clustering
+- classification
+- signal payload generation
+
+## Milestone 3
+Risk engine
+- indices
+- NOI
+- scenario scoring
+- alerts
+- explainability
+
+## Milestone 4
+Frontend public website
+- pages
+- cards
+- tables
+- Plotly charts
+- methodology pages
+
+## Milestone 5
+Hardening
+- Docker Compose
+- Nginx
+- caching
+- tests
+- SEO
+- production polish
+prompts/claude_master_prompt.md
+text
+Build the full project described in all files in this folder.
+
+Read every markdown file first, then produce a complete repository for a production-minded public web app called `georisk-app`.
+
+Requirements:
+- Public website
+- No user login
+- No registration
+- No end-user authentication
+- FastAPI backend
+- Next.js frontend
+- Plotly interactive charts
+- PostgreSQL source of truth
+- Redis cache and queue
+- Celery workers
+- Docker Compose deployment
+- Nginx reverse proxy
+- robust ingestion from GDELT + NewsData + RSS
+- scenario model and Nuclear Opacity Index as specified
+
+Important:
+- Do not create a toy app
+- Do not create fake placeholder business logic where detailed specs exist
+- Follow the formulas and schema exactly unless implementation detail requires a close equivalent
+- Prefer maintainable, modular code
+- Include README, env example, migrations, tests, and seeded sources
+- Make the site public and consultable without authentication
+prompts/claude_build_order.md
+text
+Recommended build order:
+1. Create repo structure
+2. Implement backend config, DB, models, migrations
+3. Implement source catalog and ingestion clients
+4. Implement article normalization, dedupe, clustering
+5. Implement signal classification
+6. Implement NOI and other indices
+7. Implement scenario scoring and alert engine
+8. Implement public read-only API endpoints
+9. Implement Plotly chart endpoints
+10. Implement Next.js public frontend
+11. Implement Docker Compose and Nginx
+12. Implement tests
+13. Finalize README and setup docs
+Note importanti per il tuo caso
+Non essendoci login pubblico, l’app va pensata come sito consultabile da tutti, con API pubbliche in sola lettura e admin non esposto. [web:173][web:175] Questo semplifica molto UX e sviluppo, ma rende ancora più importante:
+
+rate limiting;
+
+caching;
+
+sicurezza del reverse proxy;
+
+protezione degli endpoint interni;
+
+SEO e indicizzazione corretta con robots.txt e sitemap.xml. [web:173][web:176][web:179][web:182]

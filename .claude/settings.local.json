@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pip install:*)",
+      "Bash(docker compose:*)",
+      "Bash(npm install:*)",
+      "Bash(netstat:*)",
+      "Bash(curl:*)",
+      "mcp__MCP_DOCKER__browser_install",
+      "mcp__MCP_DOCKER__browser_navigate",
+      "mcp__MCP_DOCKER__browser_click",
+      "mcp__MCP_DOCKER__browser_fill_form",
+      "mcp__MCP_DOCKER__browser_snapshot",
+      "mcp__MCP_DOCKER__browser_wait_for",
+      "WebFetch(domain:openclaw.ai)",
+      "Bash(mkdir:*)",
+      "Bash(rm:*)",
+      "Bash(rmdir explain:*)",
+      "Bash(npx next:*)",
+      "Bash(ls:*)",
+      "Bash(cp:*)"
+    ]
+  }
+}
