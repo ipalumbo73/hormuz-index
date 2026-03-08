@@ -11,7 +11,30 @@ setup_logging()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    from app.db.base import engine
+    from app.db.base import engine, Base
+    import structlog
+    logger = structlog.get_logger()
+    # Create tables if they don't exist
+    try:
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+        logger.info("Database tables ensured")
+    except Exception as e:
+        logger.error("Failed to create tables", error=str(e))
+    # Seed sources
+    try:
+        from sqlalchemy import create_engine
+        from sqlalchemy.orm import sessionmaker
+        from app.core.seed import seed_sources
+        sync_engine = create_engine(settings.DATABASE_URL_SYNC)
+        Session = sessionmaker(bind=sync_engine)
+        db = Session()
+        seed_sources(db)
+        db.close()
+        sync_engine.dispose()
+        logger.info("Sources seeded")
+    except Exception as e:
+        logger.warning("Seed skipped", error=str(e))
     yield
     await engine.dispose()
 
