@@ -8,19 +8,22 @@ import app.db.models  # noqa: ensure models are registered
 
 setup_logging()
 
+import structlog
+_logger = structlog.get_logger()
+_logger.info("georisk-api starting", version="1.0.1")
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     from app.db.base import engine, Base
-    import structlog
-    logger = structlog.get_logger()
     # Create tables if they don't exist
+    _logger.info("Creating database tables...")
     try:
         async with engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
-        logger.info("Database tables ensured")
+        _logger.info("Database tables created successfully")
     except Exception as e:
-        logger.error("Failed to create tables", error=str(e))
+        _logger.error("Failed to create tables", error=str(e))
     # Seed sources
     try:
         from sqlalchemy import create_engine
