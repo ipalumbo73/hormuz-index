@@ -1,11 +1,11 @@
-#!/bin/bash
+#\!/bin/bash
 set -e
 
 echo "Creating database tables..."
 python -c "
 import asyncio
 from app.db.base import engine, Base
-import app.db.models  # register all models
+import app.db.models
 
 async def create():
     async with engine.begin() as conn:
@@ -13,7 +13,7 @@ async def create():
     print('Tables created successfully')
 
 asyncio.run(create())
-" || echo "Table creation failed, will retry on startup"
+" || echo "Table creation failed"
 
 echo "Seeding initial data..."
 python -c "
