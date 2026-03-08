@@ -30,15 +30,8 @@ async def on_startup():
         _logger.error("on_startup: FAILED", error=str(e))
     # Seed
     try:
-        from sqlalchemy import create_engine as ce
-        from sqlalchemy.orm import sessionmaker
-        from app.core.seed import seed_sources
-        se = ce(settings.DATABASE_URL_SYNC)
-        S = sessionmaker(bind=se)
-        db = S()
-        seed_sources(db)
-        db.close()
-        se.dispose()
+        from app.core.seed import seed_database
+        seed_database()
         _logger.info("on_startup: sources seeded")
     except Exception as e:
         _logger.warning("on_startup: seed skipped", error=str(e))

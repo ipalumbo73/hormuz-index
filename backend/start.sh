@@ -17,22 +17,9 @@ asyncio.run(create())
 
 echo "Seeding initial data..."
 python -c "
-from app.core.seed import seed_sources, seed_tuning_config
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from app.core.config import settings
-
-engine = create_engine(settings.DATABASE_URL_SYNC)
-Session = sessionmaker(bind=engine)
-db = Session()
-try:
-    seed_sources(db)
-    seed_tuning_config(db)
-    db.close()
-    print('Seed complete')
-except Exception as e:
-    print(f'Seed skipped: {e}')
-    db.close()
+from app.core.seed import seed_database
+seed_database()
+print('Seed complete')
 " || echo "Seed skipped"
 
 echo "Starting API server..."
