@@ -10,6 +10,24 @@ logger = structlog.get_logger()
 router = APIRouter(prefix="/admin", tags=["admin"])
 
 
+@router.post("/seed")
+async def seed_db(db: AsyncSession = Depends(get_db)):
+    """Seed sources into database."""
+    from app.core.seed import INITIAL_SOURCES
+    import uuid
+    from datetime import datetime, timezone
+    count = 0
+    for src in INITIAL_SOURCES:
+        existing = await db.execute(select(Source).where(Source.name == src["name"]))
+        if existing.scalar_one_or_none():
+            continue
+        s = Source(id=uuid.uuid4(), **src, active=True, created_at=datetime.now(timezone.utc))
+        db.add(s)
+        count += 1
+    await db.commit()
+    return {"status": "seeded", "new_sources": count}
+
+
 @router.post("/reingest")
 async def reingest(db: AsyncSession = Depends(get_db)):
     """Trigger a manual re-ingestion cycle."""
