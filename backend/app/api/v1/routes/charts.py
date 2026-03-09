@@ -361,6 +361,7 @@ async def event_heatmap(
 # ---------------------------------------------------------------------------
 
 GEO_LOOKUP: dict[str, tuple[float, float]] = {
+    # --- Countries ---
     "iran": (32.4, 53.7),
     "israel": (31.0, 34.8),
     "iraq": (33.2, 43.7),
@@ -371,21 +372,139 @@ GEO_LOOKUP: dict[str, tuple[float, float]] = {
     "qatar": (25.3, 51.2),
     "bahrain": (26.0, 50.5),
     "uae": (23.4, 53.8),
+    "united arab emirates": (23.4, 53.8),
     "kuwait": (29.3, 47.5),
     "oman": (21.5, 55.9),
     "turkey": (39.9, 32.9),
+    "turkiye": (39.9, 32.9),
     "egypt": (26.8, 30.8),
     "jordan": (30.6, 36.2),
-    "gaza": (31.4, 34.4),
-    "strait of hormuz": (26.6, 56.3),
-    "beirut": (33.9, 35.5),
-    "tehran": (35.7, 51.4),
-    "natanz": (33.5, 51.9),
-    "fordow": (34.9, 51.6),
-    "isfahan": (32.7, 51.7),
+    "palestine": (31.9, 35.2),
+    "pakistan": (30.4, 69.3),
+    "afghanistan": (33.9, 67.7),
     "usa": (38.9, -77.0),
+    "united states": (38.9, -77.0),
     "russia": (55.8, 37.6),
     "china": (39.9, 116.4),
+    "india": (20.6, 78.9),
+    "uk": (51.5, -0.1),
+    "united kingdom": (51.5, -0.1),
+    "france": (48.9, 2.3),
+    "germany": (52.5, 13.4),
+    # --- Gaza / West Bank ---
+    "gaza": (31.4, 34.4),
+    "gaza strip": (31.4, 34.4),
+    "west bank": (31.9, 35.2),
+    "rafah": (31.3, 34.2),
+    "khan younis": (31.3, 34.3),
+    "khan yunis": (31.3, 34.3),
+    "jabalia": (31.5, 34.5),
+    "nablus": (32.2, 35.3),
+    "jenin": (32.5, 35.3),
+    "ramallah": (31.9, 35.2),
+    "hebron": (31.5, 35.1),
+    # --- Iran cities / nuclear sites ---
+    "tehran": (35.7, 51.4),
+    "isfahan": (32.7, 51.7),
+    "esfahan": (32.7, 51.7),
+    "natanz": (33.5, 51.9),
+    "fordow": (34.9, 51.6),
+    "bushehr": (28.9, 50.8),
+    "arak": (34.1, 49.7),
+    "tabriz": (38.1, 46.3),
+    "shiraz": (29.6, 52.5),
+    "mashhad": (36.3, 59.6),
+    "bandar abbas": (27.2, 56.3),
+    "chabahar": (25.3, 60.6),
+    "kharg island": (29.2, 50.3),
+    "parchin": (35.5, 51.8),
+    "dimona": (31.1, 35.1),
+    # --- Lebanon ---
+    "beirut": (33.9, 35.5),
+    "tyre": (33.3, 35.2),
+    "sidon": (33.6, 35.4),
+    "baalbek": (34.0, 36.2),
+    "tripoli": (34.4, 35.8),
+    # --- Syria ---
+    "damascus": (33.5, 36.3),
+    "aleppo": (36.2, 37.2),
+    "homs": (34.7, 36.7),
+    "latakia": (35.5, 35.8),
+    "deir ez-zor": (35.3, 40.1),
+    "idlib": (35.9, 36.6),
+    "daraa": (32.6, 36.1),
+    # --- Iraq ---
+    "baghdad": (33.3, 44.4),
+    "basra": (30.5, 47.8),
+    "erbil": (36.2, 44.0),
+    "mosul": (36.3, 43.1),
+    "kirkuk": (35.5, 44.4),
+    "sulaymaniyah": (35.6, 45.4),
+    "tikrit": (34.6, 43.7),
+    "fallujah": (33.3, 43.8),
+    "karbala": (32.6, 44.0),
+    "najaf": (32.0, 44.3),
+    # --- Yemen ---
+    "sanaa": (15.4, 44.2),
+    "aden": (12.8, 45.0),
+    "hodeidah": (14.8, 42.9),
+    "marib": (15.5, 45.3),
+    "taiz": (13.6, 44.0),
+    # --- Saudi Arabia ---
+    "riyadh": (24.7, 46.7),
+    "jeddah": (21.5, 39.2),
+    "mecca": (21.4, 39.8),
+    "medina": (24.5, 39.6),
+    "dhahran": (26.3, 50.1),
+    "abqaiq": (25.9, 49.7),
+    "yanbu": (24.1, 38.1),
+    "neom": (27.0, 36.5),
+    "ras tanura": (26.6, 50.2),
+    # --- Gulf / Strategic ---
+    "strait of hormuz": (26.6, 56.3),
+    "hormuz": (26.6, 56.3),
+    "bab el-mandeb": (12.6, 43.3),
+    "suez canal": (30.5, 32.3),
+    "suez": (30.0, 32.5),
+    "persian gulf": (26.0, 52.0),
+    "gulf of oman": (24.5, 58.5),
+    "red sea": (20.0, 38.0),
+    "arabian sea": (15.0, 60.0),
+    # --- Israel cities ---
+    "tel aviv": (32.1, 34.8),
+    "jerusalem": (31.8, 35.2),
+    "haifa": (32.8, 35.0),
+    "beer sheva": (31.3, 34.8),
+    "eilat": (29.6, 34.9),
+    "ashkelon": (31.7, 34.6),
+    "sderot": (31.5, 34.6),
+    "golan heights": (33.0, 35.8),
+    "negev": (30.8, 34.8),
+    # --- Jordan ---
+    "amman": (31.9, 35.9),
+    # --- Egypt ---
+    "cairo": (30.0, 31.2),
+    "sinai": (29.5, 33.8),
+    # --- Turkey ---
+    "ankara": (39.9, 32.9),
+    "istanbul": (41.0, 29.0),
+    "incirlik": (37.0, 35.4),
+    # --- Other relevant ---
+    "abu dhabi": (24.5, 54.4),
+    "dubai": (25.2, 55.3),
+    "doha": (25.3, 51.5),
+    "muscat": (23.6, 58.5),
+    "kuwait city": (29.4, 47.9),
+    "manama": (26.2, 50.6),
+    # --- US bases / relevant locations ---
+    "al udeid": (25.1, 51.3),
+    "al dhafra": (24.2, 54.5),
+    "camp arifjan": (29.1, 48.1),
+    "diego garcia": (-7.3, 72.4),
+    "pentagon": (38.9, -77.1),
+    "washington": (38.9, -77.0),
+    "new york": (40.7, -74.0),
+    "vienna": (48.2, 16.4),  # IAEA HQ
 }
 
 
@@ -406,13 +525,20 @@ def _category_color(category: str) -> str:
 
 
 def _resolve_coords(event: "Event") -> tuple[float, float] | None:
-    """Return (lat, lon) for an event by scanning its location and country tags."""
+    """Return (lat, lon) for an event by scanning tags, then title/summary text."""
+    # 1. Try structured tags first (most reliable)
     for tag_list in (event.location_tags or [], event.country_tags or []):
         if isinstance(tag_list, list):
             for tag in tag_list:
                 coords = GEO_LOOKUP.get(str(tag).lower())
                 if coords:
                     return coords
+    # 2. Fall back to scanning title + summary for known place names
+    text = f"{event.title or ''} {event.summary or ''}".lower()
+    # Check longer names first to avoid partial matches
+    for name in sorted(GEO_LOOKUP.keys(), key=len, reverse=True):
+        if name in text:
+            return GEO_LOOKUP[name]
     return None
 
 
@@ -453,6 +579,9 @@ async def event_map(
                 "hoverinfo": "text",
                 "mode": "markers",
                 "name": cat_label,
+                "category_key": ev.category,
+                "timestamps": [],
+                "severities": [],
                 "marker": {
                     "color": color,
                     "size": [],
@@ -466,6 +595,8 @@ async def event_map(
         trace["text"].append(ev.title)
         trace["hovertext"].append(hover)
         trace["marker"]["size"].append(size)
+        trace["timestamps"].append(ev.timestamp_utc.isoformat() if ev.timestamp_utc else "")
+        trace["severities"].append(round(float(ev.severity or 0.5), 3))
 
     return {
         "data": list(cat_traces.values()),
