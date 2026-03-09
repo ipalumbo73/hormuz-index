@@ -224,12 +224,12 @@ export default function MethodologyPage() {
             ['Guerra Regionale', '25.0', 'ICG: spillover regionale in ~20-30% delle crisi serie storicamente.'],
             ['Soglia Nucleare', '15.0', 'Crisi con dimensione nucleare: pochissimi casi post-1945 (Cuba 1962, Kargil 1999).'],
             ['Coercizione Nucleare', '7.0', 'Segnalazione nucleare coercitiva: ~5-7 casi dal 1945 (Berlino 1948, Corea 1953, Taiwan 1954/58, Cuba 1962, Kargil 1999).'],
-            ['Uso Nucleare Effettivo', '2.0', 'Zero casi dal 1945. Sondaggi esperti GCR Institute 2020: probabilità annualizzata 0.3-1.5%. Metaculus community forecast.'],
+            ['Uso Nucleare Effettivo', '2.0', 'Zero casi dal 1945. Sondaggi esperti Global Challenges Foundation 2020: probabilità annualizzata 0.3-1.5%. Metaculus community forecast.'],
           ]} />
           <p className="text-xs text-white/40 mt-2">
             <strong>Riferimenti:</strong> International Crisis Group, CrisisWatch Database (2003-2024);
-            GCR Institute (2020), &quot;Expert Survey on Global Catastrophic Risks&quot;;
-            Metaculus, &quot;Nuclear weapon detonation by 2030&quot; community forecast.
+            Global Challenges Foundation (2020), &quot;Global Catastrophic Risks 2020&quot;;
+            Metaculus, &quot;At least 1 nuclear detonation in war by 2050&quot; community forecast.
           </p>
         </SubSection>
 
@@ -517,7 +517,7 @@ export default function MethodologyPage() {
           <li>Albright, D. &amp; Burkhard, S. (2021). &quot;Iran&apos;s Nuclear Program: Status and Uncertainties.&quot; <em>Institute for Science and International Security.</em></li>
           <li>Efron, B. &amp; Tibshirani, R. (1993). <em>An Introduction to the Bootstrap.</em> Chapman &amp; Hall/CRC.</li>
           <li>EU Joint Research Centre (2014). &quot;Global Conflict Risk Index (GCRI): A quantitative model.&quot; <em>JRC Technical Reports.</em></li>
-          <li>GCR Institute (2020). &quot;Expert Survey on Global Catastrophic Risks.&quot;</li>
+          <li>Global Challenges Foundation (2020). &quot;Expert Survey on Global Catastrophic Risks.&quot;</li>
           <li>Goldstein, J.S. (1992). &quot;A Conflict-Cooperation Scale for WEIS International Events Data.&quot; <em>Journal of Conflict Resolution</em>, 36(2), 369-385.</li>
           <li>International Crisis Group. <em>CrisisWatch Database</em> (2003-2024). crisisgroup.org</li>
           <li>NATO. <em>STANAG 2511 / AJP-2.1: Evaluation of Intelligence Sources and Information.</em></li>
@@ -525,7 +525,7 @@ export default function MethodologyPage() {
           <li>OECD/JRC (2008). <em>Handbook on Constructing Composite Indicators: Methodology and User Guide.</em> Paris: OECD Publishing.</li>
           <li>Saltelli, A., Tarantola, S., Campolongo, F. &amp; Ratto, M. (2004). <em>Sensitivity Analysis in Practice.</em> Wiley.</li>
           <li>IAEA. <em>Safeguards Implementation Reports</em> (GOV/ series, annual).</li>
-          <li>Metaculus. &quot;Nuclear weapon detonation by 2030.&quot; Community forecast.</li>
+          <li>Metaculus. &quot;At least 1 nuclear detonation in war by 2050.&quot; Community forecast.</li>
         </ol>
       </Section>
 
