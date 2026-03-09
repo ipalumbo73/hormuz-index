@@ -139,6 +139,26 @@ async def reset_tuning(db: AsyncSession = Depends(get_db)):
     return {"status": "tuning reset", "version": DEFAULT_TUNING["version"]}
 
 
+@router.post("/reclassify")
+async def reclassify_events(db: AsyncSession = Depends(get_db)):
+    """Re-classify all events with updated classifier severity values."""
+    from app.db.models import Event
+    from app.services.parsing.classifier import classify_event
+    result = await db.execute(select(Event))
+    events = result.scalars().all()
+    updated = 0
+    for ev in events:
+        classification = classify_event(ev.title, ev.summary or "")
+        if classification["category"] != "unclassified":
+            ev.severity = classification["severity"]
+            ev.confidence = classification["confidence"]
+            ev.category = classification["category"]
+            ev.signal_payload = classification.get("signal_payload", {})
+            updated += 1
+    await db.commit()
+    return {"status": "reclassified", "events_updated": updated}
+
+
 @router.get("/tuning-config")
 async def get_tuning_config(db: AsyncSession = Depends(get_db)):
     result = await db.execute(
