@@ -17,7 +17,7 @@
 
 ## What is Hormuz Index?
 
-Hormuz Index is an open-source intelligence monitoring tool that automatically collects, classifies, and scores news from 30+ international media sources to track geopolitical tensions in the Persian Gulf region. It computes 7 risk indices and 5 escalation scenarios updated every 5-15 minutes.
+Hormuz Index is an open-source media monitoring tool that automatically collects, classifies, and scores news from 30+ international media sources to track geopolitical tensions in the Persian Gulf region. It computes 7 risk indices and 5 escalation scenarios updated every 5-15 minutes.
 
 ### Important disclaimer
 
