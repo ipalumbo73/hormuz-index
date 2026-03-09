@@ -12,14 +12,14 @@ export default function MethodologyDisclaimer() {
         border: '1px solid rgba(255,255,255,0.10)',
       }}
     >
-      {/* Collapsed header row */}
+      {/* Always visible banner */}
       <button
         onClick={() => setExpanded(!expanded)}
         className="w-full flex items-center justify-between px-4 py-2.5 cursor-pointer hover:bg-white/[0.02] transition-colors"
       >
         <span className="flex items-center gap-2 text-[12px] text-white/50">
           <span className="flex-shrink-0">{'\u26A0\uFE0F'}</span>
-          <span>Modello sperimentale &mdash; Metodologia e limiti</span>
+          <span>Questo sistema analizza notizie pubbliche, non fatti verificati &mdash; Leggi le avvertenze</span>
         </span>
         <span
           className="text-white/30 text-[11px] transition-transform"
@@ -33,46 +33,43 @@ export default function MethodologyDisclaimer() {
       {expanded && (
         <div className="px-4 pb-4 pt-1 space-y-3 text-[11px] text-white/45 leading-relaxed">
           <div>
-            <div className="text-[12px] text-white/60 font-semibold mb-1">Nota metodologica</div>
+            <div className="text-[12px] text-white/60 font-semibold mb-1">Avvertenza importante</div>
             <p>
-              Hormuz Index &egrave; un sistema sperimentale di aggregazione e analisi automatica di
-              notizie. I valori numerici rappresentano stime indicative, non previsioni calibrate.
+              Hormuz Index <strong className="text-white/60">non &egrave; un sistema di intelligence</strong>.
+              Analizza esclusivamente notizie pubbliche provenienti da media internazionali (agenzie stampa,
+              RSS, aggregatori). I dati riflettono il <strong className="text-white/60">tono mediatico</strong>,
+              non necessariamente la realt&agrave; sul campo. I media tendono a enfatizzare notizie
+              allarmistiche &mdash; questo bias si riflette nei valori degli indici.
             </p>
           </div>
 
           <div>
-            <div className="text-white/55 font-medium mb-0.5">Fonti</div>
+            <div className="text-white/55 font-medium mb-0.5">Cosa misurano gli indici</div>
             <p>
-              I dati provengono da 30+ fonti pubbliche (agenzie stampa, RSS, API) e GDELT. La
-              classificazione eventi usa pattern matching rule-based.
+              Gli indici (0-100) rappresentano l&rsquo;intensit&agrave; della <strong className="text-white/60">copertura
+              mediatica</strong> su ciascun tema, non il livello di rischio reale. Un indice alto significa
+              che i media parlano molto di quel tema, non che il rischio sia effettivamente elevato.
             </p>
           </div>
 
           <div>
-            <div className="text-white/55 font-medium mb-0.5">Modello</div>
+            <div className="text-white/55 font-medium mb-0.5">Scenari nucleari</div>
             <p>
-              Gli indici (0-100) sono medie pesate di segnali estratti dalle notizie con finestra
-              temporale (50% 24h, 30% 7gg, 20% 30gg). Gli scenari usano una matrice di pesi con
-              priors bayesiani e bootstrap Monte Carlo per le bande di incertezza.
-            </p>
-          </div>
-
-          <div>
-            <div className="text-white/55 font-medium mb-0.5">Limiti</div>
-            <p>
-              I pesi del modello sono calibrati su framework accademici (GCRI, NTI Nuclear Security
-              Index, scala Goldstein) ma non sono stati validati con back-testing completo su crisi
-              storiche. Le probabilit&agrave; includono bande di incertezza (intervallo al 90%) per
-              riflettere questa limitazione.
+              L&rsquo;Iran non possiede armi nucleari. Gli scenari &ldquo;coercive&rdquo; e &ldquo;actual nuclear
+              use&rdquo; si riferiscono esclusivamente alla possibilit&agrave; che USA o Israele (gli unici
+              attori con armi nucleari nella regione) le utilizzino. Storicamente, nessuna arma nucleare
+              &egrave; stata usata dal 1945. Le probabilit&agrave; mostrate sono stime indicative basate
+              sul tono delle notizie, non previsioni calibrate.
             </p>
           </div>
 
           <div>
             <div className="text-white/55 font-medium mb-0.5">Come interpretare</div>
             <p>
-              Usare come strumento esplorativo di monitoraggio, non come previsione. I trend e le
-              variazioni relative sono pi&ugrave; significativi dei valori assoluti. Confrontare
-              sempre con fonti primarie e analisi esperte.
+              Usare come strumento esplorativo per seguire le tendenze della copertura mediatica.
+              I <strong className="text-white/60">trend relativi</strong> (variazioni nel tempo) sono pi&ugrave;
+              significativi dei valori assoluti. Confrontare sempre con fonti primarie, rapporti istituzionali
+              (IAEA, ICG) e analisi esperte prima di trarre conclusioni.
             </p>
           </div>
 

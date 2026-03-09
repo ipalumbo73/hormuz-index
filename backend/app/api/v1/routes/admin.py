@@ -40,17 +40,44 @@ async def reingest(db: AsyncSession = Depends(get_db)):
 
 @router.post("/reingest-sync")
 async def reingest_sync():
-    """Run ingestion synchronously (no Celery needed). Returns when done."""
-    from app.services.tasks.collect_tasks import collect_gdelt, collect_rss
+    """Run ingestion directly (no Celery needed). Returns when done."""
+    from app.services.ingestion.gdelt_client import GDELTClient
+    from app.services.ingestion.rss_client import RSSClient
+    from app.services.tasks.collect_tasks import _process_and_store, _get_sync_session
     results = {}
+
+    # GDELT
     try:
-        results["gdelt"] = collect_gdelt()
+        client = GDELTClient()
+        try:
+            raw_items = await client.fetch_latest()
+        finally:
+            await client.close()
+        session = _get_sync_session()
+        try:
+            count = _process_and_store(session, raw_items, default_source_type="structured")
+            results["gdelt"] = {"fetched": len(raw_items), "stored": count}
+        finally:
+            session.close()
     except Exception as e:
         results["gdelt"] = {"error": str(e)}
+
+    # RSS
     try:
-        results["rss"] = collect_rss()
+        client = RSSClient()
+        try:
+            raw_items = await client.fetch_all()
+        finally:
+            await client.close()
+        session = _get_sync_session()
+        try:
+            count = _process_and_store(session, raw_items, default_source_type="rss")
+            results["rss"] = {"fetched": len(raw_items), "stored": count}
+        finally:
+            session.close()
     except Exception as e:
         results["rss"] = {"error": str(e)}
+
     return {"status": "done", "results": results}
 
 
@@ -66,8 +93,12 @@ async def recompute_indices(db: AsyncSession = Depends(get_db)):
 async def recompute_sync():
     """Run index/scenario recomputation synchronously."""
     from app.services.tasks.score_tasks import recompute_all
+    import concurrent.futures
     try:
-        result = recompute_all()
+        with concurrent.futures.ThreadPoolExecutor() as pool:
+            import asyncio
+            loop = asyncio.get_event_loop()
+            result = await loop.run_in_executor(pool, recompute_all)
         return {"status": "done", "result": result}
     except Exception as e:
         return {"status": "error", "error": str(e)}
@@ -83,6 +114,29 @@ async def toggle_source(source_id: UUID, db: AsyncSession = Depends(get_db)):
     source.active = not source.active
     logger.info("source_toggled", source=source.name, active=source.active)
     return {"source": source.name, "active": source.active}
+
+
+@router.post("/reset-tuning")
+async def reset_tuning(db: AsyncSession = Depends(get_db)):
+    """Reset tuning config to latest defaults (v1.1.0 calibrated)."""
+    from app.core.seed import DEFAULT_TUNING
+    import uuid
+    # Deactivate old configs
+    result = await db.execute(select(TuningConfig).where(TuningConfig.active == True))
+    for old in result.scalars().all():
+        old.active = False
+    # Create new
+    config = TuningConfig(
+        id=uuid.uuid4(),
+        version=DEFAULT_TUNING["version"],
+        active=True,
+        priors=DEFAULT_TUNING["priors"],
+        weights=DEFAULT_TUNING["weights"],
+        thresholds=DEFAULT_TUNING["thresholds"],
+    )
+    db.add(config)
+    await db.commit()
+    return {"status": "tuning reset", "version": DEFAULT_TUNING["version"]}
 
 
 @router.get("/tuning-config")
