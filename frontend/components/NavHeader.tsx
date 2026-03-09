@@ -16,6 +16,7 @@ export default function NavHeader({ lang = 'it' }: NavHeaderProps) {
         { href: '/en/nuclear', label: 'Nuclear' },
         { href: '/en/sources', label: 'Sources' },
         { href: '/en/explain', label: 'Model' },
+        { href: '/en/admin', label: 'Admin' },
       ]
     : [
         { href: '/', label: 'Dashboard' },
@@ -24,6 +25,7 @@ export default function NavHeader({ lang = 'it' }: NavHeaderProps) {
         { href: '/nuclear', label: 'Nuclear' },
         { href: '/sources', label: 'Sources' },
         { href: '/explain', label: 'Modello' },
+        { href: '/admin', label: 'Admin' },
       ];
 
   const footerText = isEn

@@ -23,6 +23,7 @@ function InfoIcon({ tooltip }: { tooltip: string }) {
 export default function DashboardPageEN() {
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
   const [scenarioChart, setScenarioChart] = useState<PlotlyFigure | null>(null);
+  const [indicesChart, setIndicesChart] = useState<PlotlyFigure | null>(null);
   const [noiChart, setNoiChart] = useState<PlotlyFigure | null>(null);
   const [heatmap, setHeatmap] = useState<PlotlyFigure | null>(null);
   const [loading, setLoading] = useState(true);
@@ -30,14 +31,16 @@ export default function DashboardPageEN() {
 
   const fetchData = async () => {
     try {
-      const [sum, sc, noi, hm] = await Promise.allSettled([
+      const [sum, sc, idx, noi, hm] = await Promise.allSettled([
         fetch(`${API}/dashboard/summary`).then(r => r.ok ? r.json() : null),
         fetch(`${API}/charts/scenario-timeline?range=7d`).then(r => r.ok ? r.json() : null),
+        fetch(`${API}/charts/indices-timeline?range=7d`).then(r => r.ok ? r.json() : null),
         fetch(`${API}/charts/noi-breakdown?range=7d`).then(r => r.ok ? r.json() : null),
         fetch(`${API}/charts/event-heatmap?range=7d`).then(r => r.ok ? r.json() : null),
       ]);
       if (sum.status === 'fulfilled' && sum.value) setSummary(sum.value);
       if (sc.status === 'fulfilled' && sc.value) setScenarioChart(sc.value);
+      if (idx.status === 'fulfilled' && idx.value) setIndicesChart(idx.value);
       if (noi.status === 'fulfilled' && noi.value) setNoiChart(noi.value);
       if (hm.status === 'fulfilled' && hm.value) setHeatmap(hm.value);
       setError(null);
@@ -215,14 +218,25 @@ export default function DashboardPageEN() {
           )}
         </div>
         <div className="card">
-          <div className="text-[13px] font-semibold text-white/80 mb-1">Nuclear Opacity Index (NOI)</div>
-          <p className="text-[10px] text-white/30 mb-3">6 components measuring the opacity of the Iranian nuclear program</p>
-          {noiChart ? (
-            <PlotlyWrapper data={noiChart.data} layout={noiChart.layout} config={noiChart.config} height={220} />
+          <div className="text-[13px] font-semibold text-white/80 mb-1">Risk Indices Trend (7 days)</div>
+          <p className="text-[10px] text-white/30 mb-3">All 7 indices — dashed = DCI (inverse scale, higher = more diplomatic)</p>
+          {indicesChart ? (
+            <PlotlyWrapper data={indicesChart.data} layout={indicesChart.layout} config={indicesChart.config} height={220} />
           ) : (
             <div className="h-56 flex items-center justify-center text-white/30 text-sm">Data incoming</div>
           )}
         </div>
+      </div>
+
+      {/* NOI Breakdown */}
+      <div className="card">
+        <div className="text-[13px] font-semibold text-white/80 mb-1">Nuclear Opacity Index (NOI)</div>
+        <p className="text-[10px] text-white/30 mb-3">6 components measuring the opacity of the Iranian nuclear program</p>
+        {noiChart ? (
+          <PlotlyWrapper data={noiChart.data} layout={noiChart.layout} config={noiChart.config} height={220} />
+        ) : (
+          <div className="h-56 flex items-center justify-center text-white/30 text-sm">Data incoming</div>
+        )}
       </div>
 
       {/* Event Heatmap */}

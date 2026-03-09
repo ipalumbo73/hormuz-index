@@ -127,6 +127,90 @@ async def scenario_timeline(
     }
 
 
+@router.get("/indices-timeline")
+async def indices_timeline(
+    range: str = Query("7d", regex=r"^\d+[hd]$"),
+    db: AsyncSession = Depends(get_db),
+):
+    """Return a Plotly line chart with the 7 risk indices over time."""
+    since = parse_range(range)
+    result = await db.execute(
+        select(IndexSnapshot)
+        .where(IndexSnapshot.timestamp_utc >= since)
+        .order_by(IndexSnapshot.timestamp_utc)
+    )
+    snapshots = result.scalars().all()
+    timestamps = [s.timestamp_utc.isoformat() for s in snapshots]
+
+    INDEX_ORDER = [
+        ("NOI", "noi"), ("GAI", "gai"), ("HDI", "hdi"), ("PAI", "pai"),
+        ("SRI", "sri"), ("BSI", "bsi"), ("DCI", "dci"),
+    ]
+    INDEX_LABEL = {
+        "NOI": "Opacità Nucleare", "GAI": "Attacchi Golfo",
+        "HDI": "Disruzione Hormuz", "PAI": "Attivazione Proxy",
+        "SRI": "Retorica Strategica", "BSI": "Segnale Breakout",
+        "DCI": "Raffreddamento Dipl.",
+    }
+
+    traces = []
+    for label, db_field in INDEX_ORDER:
+        values = [round(float(getattr(s, db_field, 0) or 0), 1) for s in snapshots]
+        full_label = INDEX_LABEL.get(label, label)
+        hover = [
+            f"<b>{label}</b> ({full_label}): {v}<br>{s.timestamp_utc.strftime('%d %b %H:%M')}"
+            for v, s in zip(values, snapshots)
+        ]
+        line_cfg = {"color": INDEX_COLORS.get(label, "#888"), "width": 2}
+        if label == "DCI":
+            line_cfg["dash"] = "dot"
+        traces.append({
+            "x": timestamps,
+            "y": values,
+            "type": "scatter",
+            "mode": "lines",
+            "name": label,
+            "line": line_cfg,
+            "hovertext": hover,
+            "hoverinfo": "text",
+        })
+
+    return {
+        "data": traces,
+        "layout": {
+            "xaxis": {
+                "showgrid": False,
+                "type": "date",
+                "tickformat": "%d/%m\n%H:%M",
+                "nticks": 6,
+                "tickfont": {"size": 9},
+            },
+            "yaxis": {
+                "title": {"text": "Valore (0-100)", "font": {"size": 10}},
+                "range": [0, 100],
+                "gridcolor": "rgba(55,65,81,0.5)",
+                "dtick": 20,
+                "tickfont": {"size": 9},
+            },
+            "template": "plotly_dark",
+            "legend": {
+                "orientation": "v",
+                "y": 1,
+                "x": 1.02,
+                "xanchor": "left",
+                "yanchor": "top",
+                "font": {"size": 10},
+                "bgcolor": "rgba(0,0,0,0)",
+                "tracegroupgap": 2,
+            },
+            "margin": {"t": 8, "r": 100, "b": 40, "l": 42},
+            "hovermode": "x unified",
+        },
+        "config": PLOTLY_CONFIG,
+        "meta": {"range": range},
+    }
+
+
 @router.get("/indices-gauges")
 async def indices_gauges(db: AsyncSession = Depends(get_db)):
     result = await db.execute(
@@ -505,41 +589,116 @@ GEO_LOOKUP: dict[str, tuple[float, float]] = {
     "washington": (38.9, -77.0),
     "new york": (40.7, -74.0),
     "vienna": (48.2, 16.4),  # IAEA HQ
+    # --- Additional locations for entity extractor coverage ---
+    "abadan": (30.3, 48.3),
+    "ahvaz": (31.3, 48.7),
+    "kerman": (30.3, 57.1),
+    "qom": (34.6, 50.9),
+    "kiryat shmona": (33.2, 35.6),
+    "metula": (33.3, 35.6),
+    "nahariya": (33.0, 35.1),
+    "tiberias": (32.8, 35.5),
+    "tulkarm": (32.3, 35.0),
+    "deir al-balah": (31.4, 34.3),
+    "tripoli lebanon": (34.4, 35.8),
+    "dahiyeh": (33.8, 35.5),
+    "litani river": (33.3, 35.3),
+    "nabatieh": (33.4, 35.5),
+    "lebanon border": (33.1, 35.5),
+    "raqqa": (35.9, 39.0),
+    "tartus": (34.9, 35.9),
+    "t4 air base": (34.5, 37.6),
+    "al-bukamal": (34.5, 40.3),
+    "iraq-syria corridor": (34.4, 41.0),
+    "ain al-asad": (33.8, 42.4),
+    "green zone": (33.3, 44.4),
+    "mocha": (13.3, 43.3),
+    "saudi oil hubs": (26.0, 50.0),
+    "gulf of aden": (12.5, 47.0),
+    "mediterranean": (34.0, 30.0),
+    "new york un": (40.7, -74.0),
+    "islamabad": (33.7, 73.0),
 }
 
 
-def _category_color(category: str) -> str:
-    """Return a marker colour based on event category."""
-    cat = (category or "").lower()
-    if cat == "military_strike":
-        return "#ef4444"          # red
-    if cat.startswith("nuclear"):
-        return "#a855f7"          # purple
-    if cat.startswith("hormuz"):
-        return "#3b82f6"          # blue
-    if cat.startswith("proxy"):
-        return "#f97316"          # orange
-    if cat.startswith("diplomatic") or cat.startswith("deescalation"):
-        return "#22c55e"          # green
-    return "#94a3b8"              # gray (default)
+CATEGORY_COLORS_MAP = {
+    "military_strike": "#ef4444",
+    "missile_drone_attack": "#f97316",
+    "nuclear_posture_signal": "#a855f7",
+    "nuclear_verification_gap": "#9333ea",
+    "enrichment_signal": "#7c3aed",
+    "nuclear_site_damage": "#dc2626",
+    "nuclear_transfer_signal": "#b91c1c",
+    "proxy_activity": "#f59e0b",
+    "gulf_infrastructure_attack": "#ef4444",
+    "shipping_disruption": "#3b82f6",
+    "hormuz_threat": "#0ea5e9",
+    "strategic_rhetoric": "#8b5cf6",
+    "diplomatic_contact": "#22c55e",
+    "deescalation_signal": "#10b981",
+    "sanctions_or_economic_pressure": "#6366f1",
+    "cyber_operation": "#06b6d4",
+    "civilian_casualty_mass_event": "#dc2626",
+    "underground_activity_signal": "#7c3aed",
+}
 
 
-def _resolve_coords(event: "Event") -> tuple[float, float] | None:
-    """Return (lat, lon) for an event by scanning tags, then title/summary text."""
-    # 1. Try structured tags first (most reliable)
-    for tag_list in (event.location_tags or [], event.country_tags or []):
-        if isinstance(tag_list, list):
-            for tag in tag_list:
-                coords = GEO_LOOKUP.get(str(tag).lower())
-                if coords:
-                    return coords
-    # 2. Fall back to scanning title + summary for known place names
+def _resolve_coords(event: "Event") -> tuple[float, float, str] | None:
+    """Return (lat, lon, precision) for an event.
+
+    precision is 'city' (exact), 'region', or 'country' (centroid fallback).
+    """
+    # 1. Try location_tags first (most specific: cities, sites)
+    for tag in (event.location_tags or []):
+        coords = GEO_LOOKUP.get(str(tag).lower())
+        if coords:
+            return coords[0], coords[1], "city"
+
+    # 2. Try country_tags (centroid fallback)
+    for tag in (event.country_tags or []):
+        coords = GEO_LOOKUP.get(str(tag).lower())
+        if coords:
+            return coords[0], coords[1], "country"
+
+    # 3. Fall back to scanning title + summary for known place names
     text = f"{event.title or ''} {event.summary or ''}".lower()
     # Check longer names first to avoid partial matches
     for name in sorted(GEO_LOOKUP.keys(), key=len, reverse=True):
         if name in text:
-            return GEO_LOOKUP[name]
+            lat, lon = GEO_LOOKUP[name]
+            # Determine precision: if it's a country name, mark as 'country'
+            country_names = {
+                "iran", "israel", "iraq", "syria", "lebanon", "yemen",
+                "saudi arabia", "qatar", "bahrain", "uae", "united arab emirates",
+                "kuwait", "oman", "turkey", "turkiye", "egypt", "jordan",
+                "palestine", "pakistan", "afghanistan", "usa", "united states",
+                "russia", "china", "india", "uk", "united kingdom", "france", "germany",
+            }
+            prec = "country" if name in country_names else "city"
+            return lat, lon, prec
+
     return None
+
+
+def _jitter_coords(
+    lat: float, lon: float, precision: str, event_hash: str
+) -> tuple[float, float]:
+    """Apply deterministic jitter to prevent marker stacking.
+
+    City-level gets small jitter (±0.05°), country-level gets wider spread (±0.8°).
+    """
+    import hashlib
+
+    h = hashlib.md5(event_hash.encode()).hexdigest()
+    # Use different bits of the hash for lat/lon offsets
+    lat_offset = (int(h[:4], 16) / 65535.0 - 0.5) * 2  # [-1, 1]
+    lon_offset = (int(h[4:8], 16) / 65535.0 - 0.5) * 2  # [-1, 1]
+
+    if precision == "city":
+        return lat + lat_offset * 0.05, lon + lon_offset * 0.05
+    elif precision == "country":
+        return lat + lat_offset * 0.8, lon + lon_offset * 0.8
+    return lat + lat_offset * 0.3, lon + lon_offset * 0.3
 
 
 @router.get("/event-map")
@@ -547,7 +706,7 @@ async def event_map(
     range: str = Query("7d", regex=r"^\d+[hd]$"),
     db: AsyncSession = Depends(get_db),
 ):
-    """Return a Plotly scattergeo figure of recent events on a Middle East map."""
+    """Return flat event list with coordinates for the Leaflet map."""
     since = parse_range(range)
     result = await db.execute(
         select(Event)
@@ -556,81 +715,53 @@ async def event_map(
     )
     events = result.scalars().all()
 
-    # Collect per-category traces so the legend groups by category
-    cat_traces: dict[str, dict] = {}
+    map_events = []
     for ev in events:
-        coords = _resolve_coords(ev)
-        if coords is None:
+        resolved = _resolve_coords(ev)
+        if resolved is None:
             continue
-        lat, lon = coords
-        color = _category_color(ev.category)
-        cat_label = CATEGORY_LABELS.get(ev.category, (ev.category or "unknown").replace("_", " ").title())
-        size = max(6, min(22, (ev.severity or 0.5) * 20))
-        ts_str = ev.timestamp_utc.strftime("%d %b %Y %H:%M") if ev.timestamp_utc else ""
-        hover = f"<b>{ev.title}</b><br>{cat_label}<br>{ts_str}"
+        lat, lon, precision = resolved
+        # Apply jitter using dedupe_hash or title as seed
+        jitter_seed = ev.dedupe_hash or ev.title or str(ev.id)
+        lat_j, lon_j = _jitter_coords(lat, lon, precision, jitter_seed)
 
-        if ev.category not in cat_traces:
-            cat_traces[ev.category] = {
-                "type": "scattergeo",
-                "lat": [],
-                "lon": [],
-                "text": [],
-                "hovertext": [],
-                "hoverinfo": "text",
-                "mode": "markers",
-                "name": cat_label,
-                "category_key": ev.category,
-                "timestamps": [],
-                "severities": [],
-                "marker": {
-                    "color": color,
-                    "size": [],
-                    "opacity": 0.85,
-                    "line": {"width": 0.5, "color": "rgba(255,255,255,0.3)"},
-                },
-            }
-        trace = cat_traces[ev.category]
-        trace["lat"].append(lat)
-        trace["lon"].append(lon)
-        trace["text"].append(ev.title)
-        trace["hovertext"].append(hover)
-        trace["marker"]["size"].append(size)
-        trace["timestamps"].append(ev.timestamp_utc.isoformat() if ev.timestamp_utc else "")
-        trace["severities"].append(round(float(ev.severity or 0.5), 3))
+        map_events.append({
+            "id": str(ev.id),
+            "lat": round(lat_j, 4),
+            "lon": round(lon_j, 4),
+            "lat_raw": lat,
+            "lon_raw": lon,
+            "title": ev.title or "",
+            "summary": (ev.summary or "")[:200],
+            "category": ev.category or "unknown",
+            "severity": round(float(ev.severity or 0.5), 3),
+            "confidence": round(float(ev.confidence or 0.5), 3),
+            "source_reliability": round(float(ev.source_reliability or 0.7), 2),
+            "timestamp": ev.timestamp_utc.isoformat() if ev.timestamp_utc else "",
+            "precision": precision,
+            "actors": ev.actor_tags or [],
+            "locations": ev.location_tags or [],
+            "countries": ev.country_tags or [],
+        })
+
+    # Category stats
+    cat_counts: dict[str, int] = {}
+    for e in map_events:
+        cat_counts[e["category"]] = cat_counts.get(e["category"], 0) + 1
+
+    # Region stats (count by raw coords)
+    region_counts: dict[str, int] = {}
+    for e in map_events:
+        for country in (e["countries"] or []):
+            region_counts[country] = region_counts.get(country, 0) + 1
 
     return {
-        "data": list(cat_traces.values()),
-        "layout": {
-            "template": "plotly_dark",
-            "plot_bgcolor": "rgba(0,0,0,0)",
-            "paper_bgcolor": "rgba(0,0,0,0)",
-            "geo": {
-                "scope": "world",
-                "projection": {
-                    "type": "natural earth",
-                    "scale": 4,
-                },
-                "center": {"lat": 28, "lon": 48},
-                "showland": True,
-                "landcolor": "#1e293b",
-                "showocean": True,
-                "oceancolor": "#0f172a",
-                "showcountries": True,
-                "countrycolor": "#334155",
-                "showlakes": False,
-                "bgcolor": "rgba(0,0,0,0)",
-            },
-            "legend": {
-                "orientation": "v",
-                "y": 1,
-                "x": 1.02,
-                "xanchor": "left",
-                "yanchor": "top",
-                "font": {"size": 9},
-                "bgcolor": "rgba(0,0,0,0)",
-            },
-            "margin": {"l": 0, "r": 100, "t": 8, "b": 0},
+        "events": map_events,
+        "stats": {
+            "total": len(map_events),
+            "geolocated_pct": round(len(map_events) / max(len(events), 1) * 100, 1),
+            "categories": dict(sorted(cat_counts.items(), key=lambda x: -x[1])),
+            "regions": dict(sorted(region_counts.items(), key=lambda x: -x[1])[:15]),
         },
-        "config": PLOTLY_CONFIG,
         "meta": {"range": range},
     }
