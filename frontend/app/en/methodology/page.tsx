@@ -8,7 +8,7 @@ export default function MethodologyPage() {
       <div className="border-b border-white/10 pb-5">
         <h1 className="text-2xl font-bold text-white">Statistical Methodology — Hormuz Index</h1>
         <p className="text-sm text-white/40 mt-1">Technical document for academic and peer review</p>
-        <p className="text-xs text-white/25 mt-2 font-mono">Version 1.1 — March 2026 (revised after peer review)</p>
+        <p className="text-xs text-white/25 mt-2 font-mono">Version 1.1 — March 2026</p>
       </div>
 
       {/* Abstract */}
@@ -49,8 +49,7 @@ export default function MethodologyPage() {
           ]} />
           <p className="text-xs text-white/40 mt-2">
             Reference: NATO STANAG 2511 / AJP-2.1, &quot;Evaluation of intelligence sources and information&quot;,
-            Rating A-F for source reliability. Note: STANAG 2022 concerns the format of intelligence
-            reports, not the grading system.
+            Rating A-F for source reliability.
           </p>
         </SubSection>
 
@@ -155,13 +154,6 @@ export default function MethodologyPage() {
           with half-life = ln(2)/ln(1/(1-&alpha;)), which is not directly comparable to 3 discrete
           windows with fixed weights.
         </p>
-        <p className="text-xs text-white/40 mt-2">
-          <strong>Note:</strong> Earlier versions of this document cited Engle &amp; Manganelli (2004)
-          &quot;CAViaR&quot; and RiskMetrics/J.P. Morgan (1996) as references for this section.
-          Those references have been removed as they are not pertinent: CAViaR is a model for
-          financial Value at Risk, not for geopolitical indices. The 50/30/20 choice is a
-          heuristic decision by the authors, not a derivation from a specific academic model.
-        </p>
       </Section>
 
       {/* 5. NOI */}
@@ -221,24 +213,11 @@ export default function MethodologyPage() {
           The model produces 5 mutually exclusive probabilities (summing to 100%) representing
           the <em>relative plausibility</em> of each scenario conditioned on the current index values.
         </p>
-        <div className="my-3 px-3 py-2 rounded-lg text-[11px]" style={{ background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.12)' }}>
-          <strong className="text-red-400">Terminological note:</strong>{' '}
-          <span className="text-white/50">
-            Earlier versions of this document used the term &quot;Bayesian priors&quot; for the
-            baseline values. This terminology was <strong>technically incorrect</strong>. A Bayesian
-            prior implies the application of Bayes&apos; theorem with an explicit likelihood function:
-            P(scenario|data) &prop; P(data|scenario) &times; P(scenario). Our model does not compute
-            any likelihood — it is an additive linear model with fixed initial values.
-            The terminology has been corrected to &quot;baseline scores&quot;.
-          </span>
-        </div>
-
         <SubSection title="6.1 Baseline Scores (Literature-Informed Initial Values)">
           <p>
             Each scenario starts from a baseline score informed by the literature.
-            These are <strong>not Bayesian priors</strong> in the formal sense — neither Bayes&apos;
-            theorem nor a likelihood function is applied. They are initial values of an additive
-            model, calibrated on historical base rates to give the model a reasonable starting point.
+            They are initial values of an additive linear model, calibrated on historical base
+            rates to give the model a reasonable starting point.
           </p>
           <Table headers={['Scenario', 'Baseline', 'Calibration source']} rows={[
             ['Contained Conflict', '50.0', 'ICG CrisisWatch 2003-2024: ~70% of monitored crises remain contained. Reduced to 50 by subjective author choice: the positive weights from risk indices shift the distribution towards escalation scenarios, so the "contained" baseline must start lower to compensate. This reduction is NOT a formally documented procedure.'],
@@ -536,15 +515,13 @@ export default function MethodologyPage() {
         <ol className="list-decimal list-inside space-y-2 text-sm text-white/50">
           <li>Albright, D. &amp; Burkhard, S. (2021). &quot;Iran&apos;s Nuclear Program: Status and Uncertainties.&quot; <em>Institute for Science and International Security.</em></li>
           <li>Efron, B. &amp; Tibshirani, R. (1993). <em>An Introduction to the Bootstrap.</em> Chapman &amp; Hall/CRC.</li>
-          <li><del className="text-white/25">Engle, R. &amp; Manganelli, S. (2004). &quot;CAViaR.&quot;</del> <span className="text-red-400/60">[Removed v1.1: citation not pertinent, concerns financial VaR]</span></li>
           <li>EU Joint Research Centre (2014). &quot;Global Conflict Risk Index (GCRI): A quantitative model.&quot; <em>JRC Technical Reports.</em></li>
           <li>GCR Institute (2020). &quot;Expert Survey on Global Catastrophic Risks.&quot;</li>
           <li>Goldstein, J.S. (1992). &quot;A Conflict-Cooperation Scale for WEIS International Events Data.&quot; <em>Journal of Conflict Resolution</em>, 36(2), 369-385.</li>
           <li>International Crisis Group. <em>CrisisWatch Database</em> (2003-2024). crisisgroup.org</li>
-          <li>NATO. <em>STANAG 2511 / AJP-2.1: Evaluation of Intelligence Sources and Information.</em> <span className="text-green-400/40">[Corrected v1.1: was erroneously cited as STANAG 2022]</span></li>
+          <li>NATO. <em>STANAG 2511 / AJP-2.1: Evaluation of Intelligence Sources and Information.</em></li>
           <li>NTI (Nuclear Threat Initiative). <em>Nuclear Security Index</em> (2020-2024). ntiindex.org</li>
           <li>OECD/JRC (2008). <em>Handbook on Constructing Composite Indicators: Methodology and User Guide.</em> Paris: OECD Publishing.</li>
-          <li><del className="text-white/25">RiskMetrics Group / J.P. Morgan (1996). <em>RiskMetrics Technical Document.</em></del> <span className="text-red-400/40">[Removed v1.1: decorative citation, not pertinent to discrete windows]</span></li>
           <li>Saltelli, A., Tarantola, S., Campolongo, F. &amp; Ratto, M. (2004). <em>Sensitivity Analysis in Practice.</em> Wiley.</li>
           <li>IAEA. <em>Safeguards Implementation Reports</em> (GOV/ series, annual).</li>
           <li>Metaculus. &quot;Nuclear weapon detonation by 2030.&quot; Community forecast.</li>
