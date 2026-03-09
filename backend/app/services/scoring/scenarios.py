@@ -55,29 +55,31 @@ SCENARIOS = ["contained", "regional", "threshold", "coercive", "actual"]
 # CrisisWatch and expert surveys.
 PRIORS = {
     # Base case: ~70% of crises remain contained per ICG CrisisWatch data.
-    # Set to 50 (not 70) to leave room for index-driven shifts in both
-    # directions. This reduction is an authorial modeling choice, not a
-    # formally derived adjustment.
-    "contained": 50.0,
+    # Set to 55 to reflect that most crises, even severe ones, do not
+    # escalate to nuclear dimensions.
+    "contained": 55.0,
 
     # Regional spillover occurs in ~20-30% of serious crises historically.
     "regional": 25.0,
 
     # Nuclear threshold crises (serious consideration of nuclear dimension)
     # are extremely rare -- a handful of cases in the post-1945 era.
-    "threshold": 15.0,
+    # Iran does NOT have nuclear weapons; "threshold" tracks proximity to
+    # breakout capability, not to actual use.
+    "threshold": 12.0,
 
     # Coercive nuclear signaling has occurred only ~5-7 times since 1945
     # (Berlin 1948, Korea 1953, Taiwan Strait 1954/58, Cuba 1962, Kargil 1999).
-    "coercive": 7.0,
+    # In this crisis, only USA/Israel could engage in nuclear coercion.
+    # Iran cannot coerce with weapons it does not possess.
+    "coercive": 5.0,
 
     # Actual nuclear use: zero instances since 1945. Expert surveys (GCR
-    # Institute 2020) place annualized probability at 0.3-1.5%. Prior of 2.0
-    # reflects non-zero but extremely low baseline. In this crisis, actual
-    # use can ONLY come from USA/Israel (who possess nuclear weapons) or
-    # from a hypothetical Russian/Chinese transfer to Iran. Iran's own
-    # program is far from producing a deliverable weapon.
-    "actual": 2.0,
+    # Institute 2020) place annualized probability at 0.3-1.5%. Prior of 1.0
+    # reflects near-zero baseline. In this crisis, actual use can ONLY come
+    # from USA/Israel — and the political/strategic cost would be
+    # catastrophic, making it the most extreme and unlikely scenario.
+    "actual": 1.0,
 }
 
 # ---------------------------------------------------------------------------
@@ -113,13 +115,27 @@ PRIORS = {
 #     Iran's indigenous program is far from producing a deliverable weapon.
 #
 WEIGHT_MATRIX = {
-    "NOI": {"contained": -0.15, "regional": 0.06, "threshold": 0.25, "coercive": 0.15, "actual": 0.00},
-    "GAI": {"contained": -0.12, "regional": 0.30, "threshold": 0.04, "coercive": 0.03, "actual": 0.01},
-    "HDI": {"contained": -0.10, "regional": 0.25, "threshold": 0.06, "coercive": 0.04, "actual": 0.02},
-    "PAI": {"contained": -0.08, "regional": 0.20, "threshold": 0.03, "coercive": 0.02, "actual": 0.01},
-    "SRI": {"contained": -0.08, "regional": 0.08, "threshold": 0.15, "coercive": 0.25, "actual": 0.10},
-    "BSI": {"contained": -0.12, "regional": 0.04, "threshold": 0.30, "coercive": 0.22, "actual": 0.08},
-    "DCI": {"contained":  0.25, "regional": -0.15, "threshold": -0.20, "coercive": -0.18, "actual": -0.12},
+    # NOI: Iran's nuclear program opacity. Drives "threshold" (approach to
+    # capability) but NOT coercive/actual — Iran cannot threaten or use
+    # weapons it does not have.
+    "NOI": {"contained": -0.12, "regional": 0.05, "threshold": 0.20, "coercive": 0.08, "actual": 0.00},
+    # GAI: conventional military conflict — primary driver of regional war.
+    "GAI": {"contained": -0.10, "regional": 0.30, "threshold": 0.03, "coercive": 0.02, "actual": 0.01},
+    # HDI: Hormuz disruption — conventional/regional, minimal nuclear link.
+    "HDI": {"contained": -0.08, "regional": 0.25, "threshold": 0.04, "coercive": 0.02, "actual": 0.01},
+    # PAI: proxy activity — regional driver, no nuclear link.
+    "PAI": {"contained": -0.06, "regional": 0.20, "threshold": 0.02, "coercive": 0.01, "actual": 0.00},
+    # SRI: strategic rhetoric — can signal nuclear posturing from USA/Israel
+    # but rhetoric is far from action. Reduced weight on actual.
+    "SRI": {"contained": -0.06, "regional": 0.08, "threshold": 0.12, "coercive": 0.18, "actual": 0.04},
+    # BSI: breakout signals — mostly tracks Iran's program (threshold).
+    # Heavily reduced on coercive/actual because Iran enriching uranium
+    # is NOT the same as nuclear weapons being used. Only nuclear_transfer
+    # or posture signals from USA/Israel should drive actual, and those
+    # are extremely rare events.
+    "BSI": {"contained": -0.08, "regional": 0.03, "threshold": 0.25, "coercive": 0.10, "actual": 0.03},
+    # DCI: diplomatic channels — the main brake on escalation.
+    "DCI": {"contained":  0.25, "regional": -0.15, "threshold": -0.18, "coercive": -0.15, "actual": -0.10},
 }
 
 # ---------------------------------------------------------------------------
@@ -146,17 +162,20 @@ TRIGGER_RULES = [
     },
     {
         # Actual nuclear use requires: extreme rhetoric (SRI) + active
-        # nuclear posture signals (BSI) + high conventional conflict (GAI).
+        # nuclear posture signals (BSI) + high conventional conflict (GAI)
+        # + total diplomatic collapse (DCI very low).
         # NOI is excluded — Iran cannot use weapons it does not have.
-        # This trigger represents USA/Israel considering tactical nuclear
-        # options in an extreme conventional escalation scenario.
-        "label": "SRI>=85_AND_BSI>=80_AND_GAI>=80_ACTUAL",
+        # This trigger represents the most extreme scenario: USA/Israel
+        # considering tactical nuclear options with no diplomatic off-ramp.
+        # Thresholds set very high — this should almost never fire.
+        "label": "SRI>=90_AND_BSI>=90_AND_GAI>=90_AND_DCI<=20_ACTUAL",
         "condition": lambda idx: (
-            idx.get("SRI", 0) >= 85
-            and idx.get("BSI", 0) >= 80
-            and idx.get("GAI", 0) >= 80
+            idx.get("SRI", 0) >= 90
+            and idx.get("BSI", 0) >= 90
+            and idx.get("GAI", 0) >= 90
+            and idx.get("DCI", 0) <= 20
         ),
-        "boost": {"actual": 3},
+        "boost": {"actual": 2},
     },
     {
         # Active diplomacy dampens all escalation scenarios

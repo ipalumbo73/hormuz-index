@@ -22,16 +22,16 @@ INITIAL_SOURCES = [
 ]
 
 DEFAULT_TUNING = {
-    "version": "1.1.0",
-    "priors": {"contained": 50, "regional": 25, "threshold": 15, "coercive": 7, "actual": 2},
+    "version": "1.2.0",
+    "priors": {"contained": 55, "regional": 25, "threshold": 12, "coercive": 5, "actual": 1},
     "weights": {
-        "NOI": {"contained": -0.15, "regional": 0.06, "threshold": 0.25, "coercive": 0.15, "actual": 0.00},
-        "GAI": {"contained": -0.12, "regional": 0.30, "threshold": 0.04, "coercive": 0.03, "actual": 0.01},
-        "HDI": {"contained": -0.10, "regional": 0.25, "threshold": 0.06, "coercive": 0.04, "actual": 0.02},
-        "PAI": {"contained": -0.08, "regional": 0.20, "threshold": 0.03, "coercive": 0.02, "actual": 0.01},
-        "SRI": {"contained": -0.08, "regional": 0.08, "threshold": 0.15, "coercive": 0.25, "actual": 0.10},
-        "BSI": {"contained": -0.12, "regional": 0.04, "threshold": 0.30, "coercive": 0.22, "actual": 0.08},
-        "DCI": {"contained": 0.25, "regional": -0.15, "threshold": -0.20, "coercive": -0.18, "actual": -0.12},
+        "NOI": {"contained": -0.12, "regional": 0.05, "threshold": 0.20, "coercive": 0.08, "actual": 0.00},
+        "GAI": {"contained": -0.10, "regional": 0.30, "threshold": 0.03, "coercive": 0.02, "actual": 0.01},
+        "HDI": {"contained": -0.08, "regional": 0.25, "threshold": 0.04, "coercive": 0.02, "actual": 0.01},
+        "PAI": {"contained": -0.06, "regional": 0.20, "threshold": 0.02, "coercive": 0.01, "actual": 0.00},
+        "SRI": {"contained": -0.06, "regional": 0.08, "threshold": 0.12, "coercive": 0.18, "actual": 0.04},
+        "BSI": {"contained": -0.08, "regional": 0.03, "threshold": 0.25, "coercive": 0.10, "actual": 0.03},
+        "DCI": {"contained": 0.25, "regional": -0.15, "threshold": -0.18, "coercive": -0.15, "actual": -0.10},
     },
     "thresholds": {
         "NOI": {"green": 25, "yellow": 50, "orange": 70, "red": 85},
