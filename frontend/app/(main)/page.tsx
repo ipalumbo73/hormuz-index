@@ -180,11 +180,11 @@ export default function DashboardPage() {
           Indici di Rischio
           <InfoIcon tooltip="7 indici indipendenti, ciascuno misura un aspetto diverso della crisi. Scala 0-100. Insieme alimentano gli scenari di escalation." />
         </div>
-        <div className="text-[11px] text-white/35 mb-3 leading-relaxed max-w-[800px]">
+        <p className="text-[13px] text-white/50 mb-3 leading-relaxed max-w-[800px]">
           Immagina 7 termometri, ognuno misura un aspetto diverso della tensione in Medio Oriente: attacchi militari, minacce nucleari, retorica aggressiva, ecc.
           Quando un termometro sale (da 0 a 100), significa che nelle ultime ore sono arrivate molte notizie preoccupanti su quel tema.
           Se scende, la situazione su quel fronte si sta calmando. Il colore (verde → giallo → rosso) indica il livello di allarme.
-        </div>
+        </p>
         <div className="grid gap-2.5" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(165px, 1fr))' }}>
           {INDEX_ORDER.map(name => {
             const idx = indices[name] || { value: 0, delta: 0, level: 'green', history: [] };
@@ -199,12 +199,12 @@ export default function DashboardPage() {
           Scenari di Escalation
           <InfoIcon tooltip="Ogni card rappresenta uno scenario possibile. La somma delle probabilità è sempre 100%." />
         </div>
-        <div className="text-[11px] text-white/35 mb-3 leading-relaxed max-w-[800px]">
+        <p className="text-[13px] text-white/50 mb-3 leading-relaxed max-w-[800px]">
           Questi 5 riquadri mostrano &quot;cosa potrebbe succedere&quot; secondo il modello. La percentuale non è una previsione certa:
           indica quanto ogni scenario è plausibile rispetto agli altri, in base alle notizie di oggi.
           Le percentuali sommano sempre a 100% — se uno scenario sale, un altro scende.
           Esempio: se &quot;Conflitto Contenuto&quot; è al 55%, significa che le notizie attuali suggeriscono che la situazione probabilmente resta sotto controllo.
-        </div>
+        </p>
         <div className="grid gap-2.5" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))' }}>
           {SCENARIO_ORDER.map(name => {
             const sc = scenarios[name] || { probability: 0, score: 0, delta: 0 };
