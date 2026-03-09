@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.core.logging import setup_logging
-from app.api.v1.routes import events, indices, scenarios, alerts, sources, admin, dashboard, charts, explain
+from app.api.v1.routes import events, indices, scenarios, alerts, sources, admin, dashboard, charts, explain, briefing
 import app.db.models  # noqa: ensure models are registered
 
 setup_logging()
@@ -63,6 +63,7 @@ app.include_router(admin.router, prefix=prefix)
 app.include_router(dashboard.router, prefix=prefix)
 app.include_router(charts.router, prefix=prefix)
 app.include_router(explain.router, prefix=prefix)
+app.include_router(briefing.router, prefix=prefix)
 
 
 @app.get(f"{prefix}/health")

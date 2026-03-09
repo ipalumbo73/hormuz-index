@@ -11,6 +11,7 @@ export default function NavHeader({ lang = 'it' }: NavHeaderProps) {
   const links = isEn
     ? [
         { href: '/en', label: 'Dashboard' },
+        { href: '/en/briefing', label: 'Briefing' },
         { href: '/en/timeline', label: 'Timeline' },
         { href: '/en/nuclear', label: 'Nuclear' },
         { href: '/en/sources', label: 'Sources' },
@@ -18,6 +19,7 @@ export default function NavHeader({ lang = 'it' }: NavHeaderProps) {
       ]
     : [
         { href: '/', label: 'Dashboard' },
+        { href: '/briefing', label: 'Briefing' },
         { href: '/timeline', label: 'Timeline' },
         { href: '/nuclear', label: 'Nuclear' },
         { href: '/sources', label: 'Sources' },

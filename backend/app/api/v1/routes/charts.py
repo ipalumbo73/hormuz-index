@@ -354,3 +354,152 @@ async def event_heatmap(
         },
         "config": PLOTLY_CONFIG,
     }
+
+
+# ---------------------------------------------------------------------------
+# Event Map – scattergeo of recent events on a Middle East map
+# ---------------------------------------------------------------------------
+
+GEO_LOOKUP: dict[str, tuple[float, float]] = {
+    "iran": (32.4, 53.7),
+    "israel": (31.0, 34.8),
+    "iraq": (33.2, 43.7),
+    "syria": (35.0, 38.0),
+    "lebanon": (33.9, 35.5),
+    "yemen": (15.5, 48.5),
+    "saudi arabia": (23.9, 45.1),
+    "qatar": (25.3, 51.2),
+    "bahrain": (26.0, 50.5),
+    "uae": (23.4, 53.8),
+    "kuwait": (29.3, 47.5),
+    "oman": (21.5, 55.9),
+    "turkey": (39.9, 32.9),
+    "egypt": (26.8, 30.8),
+    "jordan": (30.6, 36.2),
+    "gaza": (31.4, 34.4),
+    "strait of hormuz": (26.6, 56.3),
+    "beirut": (33.9, 35.5),
+    "tehran": (35.7, 51.4),
+    "natanz": (33.5, 51.9),
+    "fordow": (34.9, 51.6),
+    "isfahan": (32.7, 51.7),
+    "usa": (38.9, -77.0),
+    "russia": (55.8, 37.6),
+    "china": (39.9, 116.4),
+}
+
+
+def _category_color(category: str) -> str:
+    """Return a marker colour based on event category."""
+    cat = (category or "").lower()
+    if cat == "military_strike":
+        return "#ef4444"          # red
+    if cat.startswith("nuclear"):
+        return "#a855f7"          # purple
+    if cat.startswith("hormuz"):
+        return "#3b82f6"          # blue
+    if cat.startswith("proxy"):
+        return "#f97316"          # orange
+    if cat.startswith("diplomatic") or cat.startswith("deescalation"):
+        return "#22c55e"          # green
+    return "#94a3b8"              # gray (default)
+
+
+def _resolve_coords(event: "Event") -> tuple[float, float] | None:
+    """Return (lat, lon) for an event by scanning its location and country tags."""
+    for tag_list in (event.location_tags or [], event.country_tags or []):
+        if isinstance(tag_list, list):
+            for tag in tag_list:
+                coords = GEO_LOOKUP.get(str(tag).lower())
+                if coords:
+                    return coords
+    return None
+
+
+@router.get("/event-map")
+async def event_map(
+    range: str = Query("7d", regex=r"^\d+[hd]$"),
+    db: AsyncSession = Depends(get_db),
+):
+    """Return a Plotly scattergeo figure of recent events on a Middle East map."""
+    since = parse_range(range)
+    result = await db.execute(
+        select(Event)
+        .where(Event.timestamp_utc >= since)
+        .order_by(desc(Event.timestamp_utc))
+    )
+    events = result.scalars().all()
+
+    # Collect per-category traces so the legend groups by category
+    cat_traces: dict[str, dict] = {}
+    for ev in events:
+        coords = _resolve_coords(ev)
+        if coords is None:
+            continue
+        lat, lon = coords
+        color = _category_color(ev.category)
+        cat_label = CATEGORY_LABELS.get(ev.category, (ev.category or "unknown").replace("_", " ").title())
+        size = max(6, min(22, (ev.severity or 0.5) * 20))
+        ts_str = ev.timestamp_utc.strftime("%d %b %Y %H:%M") if ev.timestamp_utc else ""
+        hover = f"<b>{ev.title}</b><br>{cat_label}<br>{ts_str}"
+
+        if ev.category not in cat_traces:
+            cat_traces[ev.category] = {
+                "type": "scattergeo",
+                "lat": [],
+                "lon": [],
+                "text": [],
+                "hovertext": [],
+                "hoverinfo": "text",
+                "mode": "markers",
+                "name": cat_label,
+                "marker": {
+                    "color": color,
+                    "size": [],
+                    "opacity": 0.85,
+                    "line": {"width": 0.5, "color": "rgba(255,255,255,0.3)"},
+                },
+            }
+        trace = cat_traces[ev.category]
+        trace["lat"].append(lat)
+        trace["lon"].append(lon)
+        trace["text"].append(ev.title)
+        trace["hovertext"].append(hover)
+        trace["marker"]["size"].append(size)
+
+    return {
+        "data": list(cat_traces.values()),
+        "layout": {
+            "template": "plotly_dark",
+            "plot_bgcolor": "rgba(0,0,0,0)",
+            "paper_bgcolor": "rgba(0,0,0,0)",
+            "geo": {
+                "scope": "world",
+                "projection": {
+                    "type": "natural earth",
+                    "scale": 4,
+                },
+                "center": {"lat": 28, "lon": 48},
+                "showland": True,
+                "landcolor": "#1e293b",
+                "showocean": True,
+                "oceancolor": "#0f172a",
+                "showcountries": True,
+                "countrycolor": "#334155",
+                "showlakes": False,
+                "bgcolor": "rgba(0,0,0,0)",
+            },
+            "legend": {
+                "orientation": "v",
+                "y": 1,
+                "x": 1.02,
+                "xanchor": "left",
+                "yanchor": "top",
+                "font": {"size": 9},
+                "bgcolor": "rgba(0,0,0,0)",
+            },
+            "margin": {"l": 0, "r": 100, "t": 8, "b": 0},
+        },
+        "config": PLOTLY_CONFIG,
+        "meta": {"range": range},
+    }

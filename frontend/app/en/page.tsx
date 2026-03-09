@@ -6,6 +6,7 @@ import AlertBanner from '@/components/AlertBanner';
 import MethodologyDisclaimerEN from '@/components/MethodologyDisclaimerEN';
 import GaugeArc from '@/components/GaugeArc';
 import PlotlyWrapper from '@/components/plotly/PlotlyWrapper';
+import EventFeed from '@/components/EventFeed';
 import type { DashboardSummary, PlotlyFigure } from '@/lib/types';
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
@@ -23,21 +24,24 @@ export default function DashboardPageEN() {
   const [scenarioChart, setScenarioChart] = useState<PlotlyFigure | null>(null);
   const [noiChart, setNoiChart] = useState<PlotlyFigure | null>(null);
   const [heatmap, setHeatmap] = useState<PlotlyFigure | null>(null);
+  const [eventMap, setEventMap] = useState<PlotlyFigure | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const fetchData = async () => {
     try {
-      const [sum, sc, noi, hm] = await Promise.allSettled([
+      const [sum, sc, noi, hm, em] = await Promise.allSettled([
         fetch(`${API}/dashboard/summary`).then(r => r.ok ? r.json() : null),
         fetch(`${API}/charts/scenario-timeline?range=7d`).then(r => r.ok ? r.json() : null),
         fetch(`${API}/charts/noi-breakdown?range=7d`).then(r => r.ok ? r.json() : null),
         fetch(`${API}/charts/event-heatmap?range=7d`).then(r => r.ok ? r.json() : null),
+        fetch(`${API}/charts/event-map?range=7d`).then(r => r.ok ? r.json() : null),
       ]);
       if (sum.status === 'fulfilled' && sum.value) setSummary(sum.value);
       if (sc.status === 'fulfilled' && sc.value) setScenarioChart(sc.value);
       if (noi.status === 'fulfilled' && noi.value) setNoiChart(noi.value);
       if (hm.status === 'fulfilled' && hm.value) setHeatmap(hm.value);
+      if (em.status === 'fulfilled' && em.value) setEventMap(em.value);
       setError(null);
     } catch (e) {
       setError('Unable to connect to API');
@@ -223,15 +227,35 @@ export default function DashboardPageEN() {
         </div>
       </div>
 
-      {/* Event Map */}
+      {/* Event Heatmap */}
       <div className="card">
-        <div className="text-[13px] font-semibold text-white/80 mb-1">Event Map by Category (7 days)</div>
+        <div className="text-[13px] font-semibold text-white/80 mb-1">Events by Category (7 days)</div>
         <p className="text-[10px] text-white/30 mb-3">Event distribution by type and day — stacked bars</p>
         {heatmap ? (
           <PlotlyWrapper data={heatmap.data} layout={heatmap.layout} config={heatmap.config} height={240} />
         ) : (
           <div className="h-56 flex items-center justify-center text-white/30 text-sm">Data incoming — events will appear after the first collection cycle</div>
         )}
+      </div>
+
+      {/* Interactive Map + Event Feed */}
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
+        <div className="lg:col-span-3 card">
+          <div className="text-[13px] font-semibold text-white/80 mb-1">Event Map — Middle East</div>
+          <p className="text-[10px] text-white/30 mb-3">Geographic location of events by category (7 days)</p>
+          {eventMap && eventMap.data?.length > 0 ? (
+            <PlotlyWrapper data={eventMap.data} layout={eventMap.layout} config={eventMap.config} height={380} />
+          ) : (
+            <div className="h-[380px] flex items-center justify-center text-white/30 text-sm">
+              Map will appear after the first geolocated event collection
+            </div>
+          )}
+        </div>
+        <div className="lg:col-span-2 card">
+          <div className="text-[13px] font-semibold text-white/80 mb-1">Real-Time Event Feed</div>
+          <p className="text-[10px] text-white/30 mb-3">Latest events collected from monitored sources</p>
+          <EventFeed lang="en" maxItems={15} />
+        </div>
       </div>
     </div>
   );
