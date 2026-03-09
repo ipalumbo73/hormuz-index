@@ -31,3 +31,20 @@ Thumbs.db
 
 # Alembic
 backend/alembic/versions/__pycache__/
+
+# Celery
+backend/celerybeat-schedule
+celerybeat-schedule
+
+# Railway scripts (local only)
+railway_*.js
+
+# Claude
+.claude/
+CLAUDE.md
+
+# Misc
+*.jsx
+*-spec.md
+claude.md.txt
+nul
