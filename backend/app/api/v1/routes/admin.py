@@ -30,12 +30,28 @@ async def seed_db(db: AsyncSession = Depends(get_db)):
 
 @router.post("/reingest")
 async def reingest(db: AsyncSession = Depends(get_db)):
-    """Trigger a manual re-ingestion cycle."""
+    """Trigger a manual re-ingestion cycle via Celery."""
     from app.services.tasks.collect_tasks import collect_gdelt, collect_newsdata, collect_rss
     collect_gdelt.delay()
     collect_newsdata.delay()
     collect_rss.delay()
     return {"status": "ingestion tasks queued"}
+
+
+@router.post("/reingest-sync")
+async def reingest_sync():
+    """Run ingestion synchronously (no Celery needed). Returns when done."""
+    from app.services.tasks.collect_tasks import collect_gdelt, collect_rss
+    results = {}
+    try:
+        results["gdelt"] = collect_gdelt()
+    except Exception as e:
+        results["gdelt"] = {"error": str(e)}
+    try:
+        results["rss"] = collect_rss()
+    except Exception as e:
+        results["rss"] = {"error": str(e)}
+    return {"status": "done", "results": results}
 
 
 @router.post("/recompute-indices")
@@ -44,6 +60,17 @@ async def recompute_indices(db: AsyncSession = Depends(get_db)):
     from app.services.tasks.score_tasks import recompute_all
     recompute_all.delay()
     return {"status": "recompute task queued"}
+
+
+@router.post("/recompute-sync")
+async def recompute_sync():
+    """Run index/scenario recomputation synchronously."""
+    from app.services.tasks.score_tasks import recompute_all
+    try:
+        result = recompute_all()
+        return {"status": "done", "result": result}
+    except Exception as e:
+        return {"status": "error", "error": str(e)}
 
 
 @router.post("/source/{source_id}/toggle")
