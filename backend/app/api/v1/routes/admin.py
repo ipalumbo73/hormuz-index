@@ -1,13 +1,24 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Header, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update
 from uuid import UUID
 from app.db.session import get_db
 from app.db.models import Source, TuningConfig
+from app.core.config import settings
 import structlog
 
 logger = structlog.get_logger()
-router = APIRouter(prefix="/admin", tags=["admin"])
+
+
+async def require_admin_key(x_admin_key: str = Header(None)):
+    """Verify admin API key from X-Admin-Key header."""
+    if not settings.ADMIN_API_KEY:
+        raise HTTPException(status_code=503, detail="Admin access not configured")
+    if x_admin_key != settings.ADMIN_API_KEY:
+        raise HTTPException(status_code=403, detail="Invalid admin key")
+
+
+router = APIRouter(prefix="/admin", tags=["admin"], dependencies=[Depends(require_admin_key)])
 
 
 @router.post("/seed")

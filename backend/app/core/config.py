@@ -30,6 +30,7 @@ class Settings(BaseSettings):
     SMTP_USER: str = ""
     SMTP_PASSWORD: str = ""
     ALERT_EMAIL_TO: str = ""
+    ADMIN_API_KEY: str = ""
     CORS_ORIGINS: str = "*"
 
     model_config = {"env_file": ".env", "extra": "ignore"}

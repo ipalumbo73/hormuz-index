@@ -30,11 +30,53 @@ interface ActionResult {
 }
 
 export default function AdminPageEN() {
+  const [adminKey, setAdminKey] = useState('');
+  const [authenticated, setAuthenticated] = useState(false);
+  const [authError, setAuthError] = useState('');
   const [sources, setSources] = useState<Source[]>([]);
   const [tuning, setTuning] = useState<TuningConfig | null>(null);
   const [indicesChart, setIndicesChart] = useState<PlotlyFigure | null>(null);
   const [logs, setLogs] = useState<ActionResult[]>([]);
   const [running, setRunning] = useState<string | null>(null);
+
+  const headers = { 'X-Admin-Key': adminKey };
+
+  const handleLogin = async () => {
+    try {
+      const r = await fetch(`${API}/admin/tuning-config`, { headers: { 'X-Admin-Key': adminKey } });
+      if (r.ok) {
+        setAuthenticated(true);
+        setAuthError('');
+      } else {
+        setAuthError('Invalid key');
+      }
+    } catch {
+      setAuthError('Connection error');
+    }
+  };
+
+  if (!authenticated) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="card p-8 max-w-sm w-full space-y-4">
+          <h2 className="text-lg font-bold text-white text-center">Admin</h2>
+          <p className="text-xs text-white/40 text-center">Enter access key</p>
+          <input
+            type="password"
+            value={adminKey}
+            onChange={e => setAdminKey(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && handleLogin()}
+            placeholder="API Key"
+            className="w-full px-3 py-2 rounded-lg text-sm text-white bg-white/5 border border-white/10 focus:border-orange-500/50 focus:outline-none"
+          />
+          {authError && <p className="text-xs text-red-400 text-center">{authError}</p>}
+          <button onClick={handleLogin} className="w-full py-2 rounded-lg text-sm font-medium text-white bg-orange-600 hover:bg-orange-500 transition-colors">
+            Login
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   const addLog = (action: string, status: 'success' | 'error', message: string) => {
     setLogs(prev => [{
@@ -53,10 +95,10 @@ export default function AdminPageEN() {
 
   const fetchTuning = useCallback(async () => {
     try {
-      const r = await fetch(`${API}/admin/tuning-config`);
+      const r = await fetch(`${API}/admin/tuning-config`, { headers });
       setTuning(await r.json());
     } catch { setTuning(null); }
-  }, []);
+  }, [adminKey]);
 
   const fetchIndicesChart = useCallback(async () => {
     try {
@@ -74,7 +116,7 @@ export default function AdminPageEN() {
   const runAction = async (label: string, endpoint: string, method = 'POST') => {
     setRunning(label);
     try {
-      const r = await fetch(`${API}${endpoint}`, { method });
+      const r = await fetch(`${API}${endpoint}`, { method, headers });
       const data = await r.json();
       addLog(label, 'success', JSON.stringify(data));
       if (label.includes('Seed') || label.includes('Source')) fetchSources();
@@ -89,7 +131,7 @@ export default function AdminPageEN() {
 
   const toggleSource = async (source: Source) => {
     try {
-      const r = await fetch(`${API}/admin/source/${source.id}/toggle`, { method: 'POST' });
+      const r = await fetch(`${API}/admin/source/${source.id}/toggle`, { method: 'POST', headers });
       const data = await r.json();
       addLog(`Toggle ${source.name}`, 'success', `active: ${data.active}`);
       fetchSources();
