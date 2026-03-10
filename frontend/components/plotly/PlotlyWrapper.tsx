@@ -28,17 +28,20 @@ interface PlotlyWrapperProps {
 }
 
 export default function PlotlyWrapper({ data, layout, config, className = '', height = 300 }: PlotlyWrapperProps) {
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 640;
+
   const mergedLayout = useMemo(() => ({
     autosize: true,
-    height,
-    margin: { t: 40, r: 20, b: 40, l: 50 },
+    height: isMobile ? Math.min(height, 200) : height,
+    margin: isMobile ? { t: 30, r: 10, b: 30, l: 35 } : { t: 40, r: 20, b: 40, l: 50 },
     paper_bgcolor: 'rgba(0,0,0,0)',
     plot_bgcolor: 'rgba(0,0,0,0)',
-    font: { color: '#9ca3af', size: 11 },
+    font: { color: '#9ca3af', size: isMobile ? 9 : 11 },
     xaxis: { gridcolor: '#374151', ...layout?.xaxis },
     yaxis: { gridcolor: '#374151', ...layout?.yaxis },
+    legend: isMobile ? { font: { size: 8 }, orientation: 'h' as const, y: -0.3 } : undefined,
     ...layout,
-  }), [layout, height]);
+  }), [layout, height, isMobile]);
 
   const mergedConfig = useMemo(() => ({
     responsive: true,

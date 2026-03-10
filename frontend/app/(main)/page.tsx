@@ -118,27 +118,27 @@ export default function DashboardPage() {
       <MethodologyDisclaimer />
 
       {/* What Changed Summary */}
-      <div className="rounded-[10px] px-4 py-3 flex items-start gap-2.5" style={{
+      <div className="rounded-[10px] px-3 sm:px-4 py-3 flex items-start gap-2.5" style={{
         background: 'rgba(59,130,246,0.06)',
         border: '1px solid rgba(59,130,246,0.15)',
       }}>
         <span className="text-blue-400 flex-shrink-0 mt-0.5">📊</span>
-        <span className="text-[13px] text-white/65 leading-relaxed">{generateSummary()}</span>
+        <span className="text-[12px] sm:text-[13px] text-white/65 leading-relaxed">{generateSummary()}</span>
       </div>
 
       {/* Title Bar */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-[22px] font-bold text-white tracking-tight">Crisis Dashboard</h2>
-          <p className="text-xs font-mono text-white/35 mt-0.5">
+      <div className="flex items-start sm:items-center justify-between gap-2 flex-wrap">
+        <div className="min-w-0">
+          <h2 className="text-lg sm:text-[22px] font-bold text-white tracking-tight">Crisis Dashboard</h2>
+          <p className="text-[10px] sm:text-xs font-mono text-white/35 mt-0.5 truncate">
             {summary?.events_24h_count || 0} eventi nelle ultime 24h
             {summary?.last_updated && (
               <span> · Aggiornato alle {new Date(summary.last_updated).toLocaleTimeString()}</span>
             )}
           </p>
         </div>
-        <div className="flex gap-2">
-          <button onClick={fetchData} className="px-4 py-1.5 text-xs font-medium rounded-lg transition-all" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#e2e8f0' }}>
+        <div className="flex gap-2 flex-shrink-0">
+          <button onClick={fetchData} className="px-3 sm:px-4 py-1.5 text-xs font-medium rounded-lg transition-all" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#e2e8f0' }}>
             ↻ Refresh
           </button>
         </div>
@@ -146,12 +146,12 @@ export default function DashboardPage() {
 
       {/* Nuclear Escalation Gauge */}
       {ner && (
-        <div className="rounded-[14px] px-6 py-5 flex flex-col sm:flex-row items-center gap-6" style={{
+        <div className="rounded-[14px] px-4 sm:px-6 py-4 sm:py-5 flex flex-col sm:flex-row items-center gap-4 sm:gap-6" style={{
           background: 'linear-gradient(135deg, rgba(15,23,42,0.8), rgba(20,27,45,0.8))',
           border: '1px solid rgba(255,255,255,0.06)',
         }}>
           <div className="flex-1">
-            <h3 className="text-base font-semibold text-white mb-1.5">Rischio Escalation Nucleare</h3>
+            <h3 className="text-sm sm:text-base font-semibold text-white mb-1.5">Rischio Escalation Nucleare</h3>
             <p className="text-xs text-white/40 leading-relaxed">
               Probabilità complessiva che la dimensione nucleare entri nel conflitto — da qualsiasi parte
               (USA/Israele che le armi le hanno, o Iran che potrebbe costruirle).
@@ -185,7 +185,7 @@ export default function DashboardPage() {
           Quando un termometro sale (da 0 a 100), significa che nelle ultime ore sono arrivate molte notizie preoccupanti su quel tema.
           Se scende, la situazione su quel fronte si sta calmando. Il colore (verde → giallo → rosso) indica il livello di allarme.
         </p>
-        <div className="grid gap-2.5" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(165px, 1fr))' }}>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-2 sm:gap-2.5">
           {INDEX_ORDER.map(name => {
             const idx = indices[name] || { value: 0, delta: 0, level: 'green', history: [] };
             return <IndexGauge key={name} name={name} value={idx.value} delta={idx.delta} level={idx.level} history={idx.history} ci_low={idx.ci_low} ci_high={idx.ci_high} />;
@@ -205,7 +205,7 @@ export default function DashboardPage() {
           Le percentuali sommano sempre a 100% — se uno scenario sale, un altro scende.
           Esempio: se &quot;Conflitto Contenuto&quot; è al 55%, significa che le notizie attuali suggeriscono che la situazione probabilmente resta sotto controllo.
         </p>
-        <div className="grid gap-2.5" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))' }}>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-2 sm:gap-2.5">
           {SCENARIO_ORDER.map(name => {
             const sc = scenarios[name] || { probability: 0, score: 0, delta: 0 };
             return <ScenarioCard key={name} name={name} probability={sc.probability} score={sc.score} delta={sc.delta} ci_low={sc.ci_low} ci_high={sc.ci_high} />;
@@ -262,7 +262,7 @@ export default function DashboardPage() {
         <div className="lg:col-span-3 card">
           <div className="text-[13px] font-semibold text-white/80 mb-1">Mappa Eventi — Medio Oriente</div>
           <p className="text-[10px] text-white/30 mb-3">Mappa interattiva con zoom — posizione degli eventi per categoria (7 giorni)</p>
-          <EventMapLeaflet lang="it" height={420} />
+          <EventMapLeaflet lang="it" height={320} />
         </div>
         <div className="lg:col-span-2 card">
           <div className="text-[13px] font-semibold text-white/80 mb-1">Feed Eventi in Tempo Reale</div>

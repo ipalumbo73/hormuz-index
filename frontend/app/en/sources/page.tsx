@@ -29,8 +29,8 @@ export default function SourcesPage() {
       <h2 className="text-2xl font-bold text-white">Data Sources</h2>
       <p className="text-sm text-gray-400">Sources feeding the geopolitical risk model.</p>
 
-      <div className="card overflow-hidden">
-        <table className="w-full text-sm">
+      <div className="card overflow-x-auto -mx-1 sm:mx-0">
+        <table className="w-full text-sm min-w-[600px]">
           <thead>
             <tr className="border-b border-gray-700 text-gray-400 text-xs uppercase">
               <th className="text-left py-3 px-4">Name</th>

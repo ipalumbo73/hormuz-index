@@ -46,10 +46,10 @@ export default function NuclearPage() {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-white">Nuclear Opacity Index (NOI)</h2>
+      <h2 className="text-xl sm:text-2xl font-bold text-white">Nuclear Opacity Index (NOI)</h2>
       <p className="text-sm text-gray-400">Measures the loss of international verification capability on Iran's nuclear program. Range 0-100.</p>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <div className="card">
           <h3 className="text-sm font-semibold text-gray-400 mb-4">NOI Radar Breakdown</h3>
           {noiChart ? (

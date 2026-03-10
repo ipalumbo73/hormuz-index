@@ -8,6 +8,12 @@ body {
   font-family: 'Space Grotesk', sans-serif;
   background-color: #0a0e17;
   color: #e2e8f0;
+  overflow-x: hidden;
+  -webkit-text-size-adjust: 100%;
+}
+
+html {
+  overflow-x: hidden;
 }
 
 ::-webkit-scrollbar { width: 8px; }
@@ -20,8 +26,14 @@ body {
   background: rgba(15,23,42,0.6);
   border: 1px solid rgba(255,255,255,0.06);
   border-radius: 10px;
-  padding: 14px;
+  padding: 10px;
   transition: border-color 0.2s;
+}
+
+@media (min-width: 640px) {
+  .card {
+    padding: 14px;
+  }
 }
 .card:hover {
   border-color: rgba(255,255,255,0.12);

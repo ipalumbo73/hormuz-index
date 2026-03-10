@@ -128,7 +128,7 @@ export default function ExplainPage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h2 className="text-[22px] font-bold text-white tracking-tight">Come funziona il modello</h2>
+        <h2 className="text-lg sm:text-[22px] font-bold text-white tracking-tight">Come funziona il modello</h2>
         <p className="text-xs text-white/40 mt-1">
           Questa pagina mostra in dettaglio come ogni indice viene calcolato, quali notizie lo alimentano, e come gli indici determinano le probabilità degli scenari.
           {data.last_updated && (
@@ -140,11 +140,11 @@ export default function ExplainPage() {
       {/* Formula Overview */}
       <div className="rounded-[10px] p-4" style={{ background: 'rgba(59,130,246,0.06)', border: '1px solid rgba(59,130,246,0.15)' }}>
         <h3 className="text-sm font-semibold text-blue-300 mb-2">Formula del modello</h3>
-        <div className="grid gap-2 text-[11px] font-mono text-white/60">
+        <div className="grid gap-2 text-[10px] sm:text-[11px] font-mono text-white/60 overflow-x-auto">
           {Object.entries(data.formula).map(([key, val]) => (
-            <div key={key} className="flex gap-3">
-              <span className="text-blue-400 min-w-[140px]">{key}:</span>
-              <span>{val}</span>
+            <div key={key} className="flex gap-2 sm:gap-3 min-w-0">
+              <span className="text-blue-400 min-w-[100px] sm:min-w-[140px] flex-shrink-0">{key}:</span>
+              <span className="break-all">{val}</span>
             </div>
           ))}
         </div>
@@ -168,15 +168,15 @@ export default function ExplainPage() {
                   className="w-full px-4 py-3 flex items-center justify-between text-left transition-colors hover:bg-white/[0.02]"
                   style={{ background: `linear-gradient(135deg, ${meta.color}08, transparent)` }}
                 >
-                  <div className="flex items-center gap-3">
-                    <span className="text-lg">{meta.icon}</span>
-                    <div>
+                  <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                    <span className="text-base sm:text-lg">{meta.icon}</span>
+                    <div className="min-w-0">
                       <span className="text-sm font-bold text-white">{name}</span>
-                      <span className="text-xs text-white/40 ml-2">{meta.label}</span>
+                      <span className="text-[10px] sm:text-xs text-white/40 ml-1 sm:ml-2 hidden sm:inline">{meta.label}</span>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <span className="text-2xl font-bold font-mono" style={{ color: meta.color }}>{idx.value.toFixed(1)}</span>
+                  <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+                    <span className="text-xl sm:text-2xl font-bold font-mono" style={{ color: meta.color }}>{idx.value.toFixed(1)}</span>
                     {idx.delta !== 0 && (
                       <span className={`text-xs font-mono ${
                         name === 'DCI'
@@ -214,7 +214,7 @@ export default function ExplainPage() {
                             const cl = compLabels[comp] || { label: comp, weight: '?' };
                             return (
                               <div key={comp} className="flex items-center gap-2">
-                                <span className="text-[10px] text-white/40 w-[180px] truncate">{cl.label} ({cl.weight})</span>
+                                <span className="text-[9px] sm:text-[10px] text-white/40 w-[120px] sm:w-[180px] truncate">{cl.label} ({cl.weight})</span>
                                 <div className="flex-1 h-1.5 bg-gray-700/60 rounded-full overflow-hidden">
                                   <div className="h-full rounded-full" style={{ width: `${Math.min(100, numVal)}%`, backgroundColor: meta.color }} />
                                 </div>

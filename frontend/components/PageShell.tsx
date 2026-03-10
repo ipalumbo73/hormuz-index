@@ -13,7 +13,7 @@ export default function PageShell({ lang = 'it', children }: PageShellProps) {
   return (
     <>
       <NavHeader lang={lang} />
-      <main className="max-w-[1280px] mx-auto px-6 py-5">
+      <main className="max-w-[1280px] mx-auto px-3 sm:px-6 py-4 sm:py-5">
         {children}
       </main>
       <footer className="text-center py-5 pb-10 text-[11px] font-mono text-white/20">
