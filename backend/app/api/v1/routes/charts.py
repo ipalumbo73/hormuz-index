@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, desc
 from app.db.session import get_db
-from app.db.models import IndexSnapshot, ScenarioSnapshot, Event
+from app.db.models import IndexSnapshot, ScenarioSnapshot, Event, Article
 from app.utils.dates import parse_range
 
 router = APIRouter(prefix="/charts", tags=["charts"])
@@ -715,6 +715,17 @@ async def event_map(
     )
     events = result.scalars().all()
 
+    # Batch-fetch article URLs for these events (match by title + source_id)
+    event_titles = [(ev.title, ev.source_id) for ev in events]
+    article_url_map: dict[tuple, str] = {}
+    if event_titles:
+        art_result = await db.execute(
+            select(Article.title, Article.source_id, Article.url)
+            .where(Article.title.in_([t for t, _ in event_titles]))
+        )
+        for row in art_result.all():
+            article_url_map[(row[0], row[1])] = row[2]
+
     map_events = []
     for ev in events:
         resolved = _resolve_coords(ev)
@@ -742,6 +753,7 @@ async def event_map(
             "actors": ev.actor_tags or [],
             "locations": ev.location_tags or [],
             "countries": ev.country_tags or [],
+            "article_url": article_url_map.get((ev.title, ev.source_id), ""),
         })
 
     # Category stats

@@ -22,6 +22,7 @@ interface MapEvent {
   actors: string[];
   locations: string[];
   countries: string[];
+  article_url?: string;
 }
 
 interface MapStats {
@@ -284,6 +285,20 @@ function InnerMap({
                 day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
               }) : ''}
             </div>
+            ${ev.article_url ? `
+            <div style="margin-top:6px;">
+              <a href="${ev.article_url}" target="_blank" rel="noopener noreferrer"
+                 style="display:inline-flex;align-items:center;gap:4px;font-size:11px;color:#3b82f6;text-decoration:none;font-weight:600;"
+                 onmouseover="this.style.color='#2563eb';this.style.textDecoration='underline'"
+                 onmouseout="this.style.color='#3b82f6';this.style.textDecoration='none'">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                  <polyline points="15 3 21 3 21 9"></polyline>
+                  <line x1="10" y1="14" x2="21" y2="3"></line>
+                </svg>
+                ${lang === 'it' ? 'Leggi la notizia' : 'Read article'}
+              </a>
+            </div>` : ''}
           </div>
         `;
 
