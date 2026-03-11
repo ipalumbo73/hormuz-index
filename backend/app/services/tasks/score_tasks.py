@@ -65,6 +65,15 @@ def recompute_all():
             e["category"] == "nuclear_transfer_signal" for e in events_24h
         )
 
+        # Load tuning config from DB (custom priors and weights)
+        from app.db.models import TuningConfig
+        tuning_result = session.execute(
+            select(TuningConfig).where(TuningConfig.active == True).limit(1)
+        )
+        tuning = tuning_result.scalar_one_or_none()
+        custom_priors = tuning.priors if tuning and tuning.priors else None
+        custom_weights = tuning.weights if tuning and tuning.weights else None
+
         # Compute scenarios
         idx_values = {
             "NOI": indices["NOI"],
@@ -78,7 +87,7 @@ def recompute_all():
         if has_nuclear_transfer:
             idx_values["_nuclear_transfer_active"] = 1.0
             logger.warning("nuclear_transfer_signal_detected")
-        scenario_result = compute_scenarios(idx_values)
+        scenario_result = compute_scenarios(idx_values, custom_priors=custom_priors, custom_weights=custom_weights)
 
         # Persist index snapshot
         from app.db.models import IndexSnapshot, ScenarioSnapshot, Alert

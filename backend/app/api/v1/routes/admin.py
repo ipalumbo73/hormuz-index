@@ -170,6 +170,69 @@ async def reclassify_events(db: AsyncSession = Depends(get_db)):
     return {"status": "reclassified", "events_updated": updated}
 
 
+@router.post("/tuning-config/update")
+async def update_tuning_config(
+    payload: dict,
+    db: AsyncSession = Depends(get_db),
+):
+    """Update the active tuning config (priors, weights, thresholds).
+
+    Accepts partial updates — only provided fields are changed.
+    Creates a new versioned config and deactivates the old one.
+    """
+    from app.core.seed import DEFAULT_TUNING
+    import uuid
+
+    # Get current active config
+    result = await db.execute(select(TuningConfig).where(TuningConfig.active == True).limit(1))
+    current = result.scalar_one_or_none()
+
+    base_priors = current.priors if current else DEFAULT_TUNING["priors"]
+    base_weights = current.weights if current else DEFAULT_TUNING["weights"]
+    base_thresholds = current.thresholds if current else DEFAULT_TUNING["thresholds"]
+    base_version = current.version if current else DEFAULT_TUNING["version"]
+
+    # Merge updates
+    new_priors = {**base_priors, **(payload.get("priors") or {})}
+    new_weights = base_weights.copy()
+    for idx_name, scenario_weights in (payload.get("weights") or {}).items():
+        if idx_name in new_weights:
+            new_weights[idx_name] = {**new_weights[idx_name], **scenario_weights}
+        else:
+            new_weights[idx_name] = scenario_weights
+    new_thresholds = {**base_thresholds, **(payload.get("thresholds") or {})}
+
+    # Bump version
+    parts = base_version.split(".")
+    parts[-1] = str(int(parts[-1]) + 1)
+    new_version = ".".join(parts)
+
+    # Deactivate old
+    if current:
+        current.active = False
+
+    # Create new config
+    config = TuningConfig(
+        id=uuid.uuid4(),
+        version=new_version,
+        active=True,
+        priors=new_priors,
+        weights=new_weights,
+        thresholds=new_thresholds,
+    )
+    db.add(config)
+    await db.commit()
+
+    logger.info("tuning_config_updated", version=new_version)
+    return {
+        "status": "updated",
+        "version": new_version,
+        "priors": new_priors,
+        "weights": new_weights,
+        "thresholds": new_thresholds,
+    }
+
+
 @router.get("/tuning-config")
 async def get_tuning_config(db: AsyncSession = Depends(get_db)):
     result = await db.execute(

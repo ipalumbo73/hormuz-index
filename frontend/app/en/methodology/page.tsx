@@ -515,6 +515,21 @@ export default function MethodologyPage() {
             the sum-to-100% normalization across scenarios. Probabilities should always be read
             as relative plausibilities, never as absolute predictions.
           </LimitItem>
+          <LimitItem n={12} title="Arbitrary rolling window">
+            The temporal window weights (50% last 24h, 30% last 7 days, 20% last 30 days)
+            are a heuristic choice declared as such, <strong>not derived from a formal
+            EWMA analysis</strong>. In a rapidly evolving crisis the 50% weight on 24h data
+            may be too low; in a stalemate it may be too high. There is no quantitative
+            reason why 50/30/20 is optimal compared to other distributions
+            (e.g. 45/35/20 or 55/25/20).
+          </LimitItem>
+          <LimitItem n={13} title="Cascade effects between indices">
+            In reality, a military attack (GAI) simultaneously causes rhetorical escalation (SRI),
+            Strait disruption (HDI) and proxy activation (PAI). The model treats these as
+            <strong>statistical coincidences, not causal cascade effects</strong>.
+            Trigger rules (TR-1 to TR-5) partially capture these non-linear interactions,
+            but the structural correlation between indices during an acute crisis remains unmodeled.
+          </LimitItem>
         </div>
       </Section>
 

@@ -257,6 +257,7 @@ def compute_scenarios_with_uncertainty(
     indices: dict,
     n_iterations: int = 500,
     custom_priors: dict = None,
+    custom_weights: dict = None,
 ) -> dict:
     """Monte Carlo bootstrap for scenario probability confidence intervals.
 
@@ -288,8 +289,9 @@ def compute_scenarios_with_uncertainty(
             perturbed_indices[k] = max(0.0, min(100.0, float(v) * noise))
 
         # Perturb weights: normal +/-20%, clipped to +/-40%
+        base_wm = custom_weights or WEIGHT_MATRIX
         perturbed_weights = {}
-        for idx_name, weights in WEIGHT_MATRIX.items():
+        for idx_name, weights in base_wm.items():
             perturbed_weights[idx_name] = {}
             for scenario, w in weights.items():
                 noise = random.gauss(1.0, 0.20)
@@ -319,7 +321,7 @@ def compute_scenarios_with_uncertainty(
 # Public API
 # ---------------------------------------------------------------------------
 
-def compute_scenarios(indices: dict, custom_priors: dict = None) -> dict:
+def compute_scenarios(indices: dict, custom_priors: dict = None, custom_weights: dict = None) -> dict:
     """Compute scenario probabilities from current index values.
 
     Combines Bayesian priors, a calibrated weight matrix, non-linear trigger
@@ -329,6 +331,7 @@ def compute_scenarios(indices: dict, custom_priors: dict = None) -> dict:
     Args:
         indices: dict with NOI, GAI, HDI, PAI, SRI, BSI, DCI (0-100 each).
         custom_priors: optional override for base priors.
+        custom_weights: optional override for weight matrix.
 
     Returns:
         dict with keys:
@@ -339,11 +342,12 @@ def compute_scenarios(indices: dict, custom_priors: dict = None) -> dict:
             - confidence_intervals: 90% CI from Monte Carlo bootstrap
     """
     priors = custom_priors or PRIORS.copy()
+    wm = custom_weights or WEIGHT_MATRIX
     scores = {s: priors.get(s, PRIORS[s]) for s in SCENARIOS}
 
     # Apply weight matrix and track contributions for explanations
     contributions: dict[str, list] = {s: [] for s in SCENARIOS}
-    for idx_name, weights in WEIGHT_MATRIX.items():
+    for idx_name, weights in wm.items():
         idx_val = float(indices.get(idx_name, 0))
         for scenario, weight in weights.items():
             delta = weight * idx_val
@@ -393,7 +397,7 @@ def compute_scenarios(indices: dict, custom_priors: dict = None) -> dict:
         }
 
     # Monte Carlo confidence intervals
-    ci = compute_scenarios_with_uncertainty(indices, custom_priors=custom_priors)
+    ci = compute_scenarios_with_uncertainty(indices, custom_priors=custom_priors, custom_weights=custom_weights)
 
     return {
         "scores": {s: round(scores[s], 2) for s in SCENARIOS},

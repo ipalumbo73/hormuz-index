@@ -515,6 +515,21 @@ export default function MethodologyPage() {
             artefatti della normalizzazione a somma 100% tra scenari. Le probabilità vanno sempre
             lette come plausibilità relative, mai come previsioni assolute.
           </LimitItem>
+          <LimitItem n={12} title="Rolling window arbitraria">
+            I pesi della finestra temporale (50% ultime 24h, 30% ultimi 7 giorni, 20% ultimi 30 giorni)
+            sono una scelta euristica dichiarata come tale, <strong>non derivano da un&apos;analisi
+            formale EWMA</strong>. In una crisi che evolve rapidamente il peso del 50% sulle 24h
+            potrebbe essere troppo basso; in una fase di stallo potrebbe essere troppo alto.
+            Non esiste una ragione quantitativa per cui 50/30/20 sia ottimale rispetto ad altre
+            distribuzioni (es. 45/35/20 o 55/25/20).
+          </LimitItem>
+          <LimitItem n={13} title="Effetti a cascata tra indici">
+            Nella realtà, un attacco militare (GAI) causa simultaneamente escalation retorica (SRI),
+            disruption dello Stretto (HDI) e attivazione proxy (PAI). Il modello tratta queste come
+            <strong>coincidenze statistiche, non come effetti a cascata causali</strong>.
+            Le trigger rules (TR-1 a TR-5) catturano parzialmente queste interazioni non-lineari,
+            ma la correlazione strutturale tra indici durante una crisi acuta resta non modellata.
+          </LimitItem>
         </div>
       </Section>
 

@@ -45,6 +45,24 @@ DEFAULT_FEEDS: list[dict] = [
         "url": "https://news.google.com/rss/search?q=Iran+Israel+nuclear+Gulf+Hormuz&hl=en&gl=US&ceid=US:en",
         "reliability": 0.80,
     },
+    # ── Tier 1.5: State media & alternative perspectives (reduce anglophone bias) ──
+    {
+        "name": "IRNA (Islamic Republic News Agency)",
+        "url": "https://en.irna.ir/rss",
+        "reliability": 0.75,
+        "official": True,
+    },
+    {
+        "name": "Press TV",
+        "url": "https://www.presstv.ir/RSS",
+        "reliability": 0.70,
+        "official": True,
+    },
+    {
+        "name": "Tasnim News Agency",
+        "url": "https://www.tasnimnews.com/en/rss",
+        "reliability": 0.72,
+    },
     # ── Tier 2: Regional & specialized (reliability 0.80-0.90) ──
     {
         "name": "Times of Israel",
