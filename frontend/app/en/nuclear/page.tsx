@@ -13,7 +13,7 @@ export default function NuclearPage() {
 
   useEffect(() => {
     Promise.allSettled([
-      fetch(`${API}/charts/noi-breakdown?range=7d`).then(r => r.json()),
+      fetch(`${API}/charts/noi-breakdown?range=7d&lang=en`).then(r => r.json()),
       fetch(`${API}/charts/indices-gauges`).then(r => r.json()),
       fetch(`${API}/dashboard/summary`).then(r => r.json()),
     ]).then(([noi, g, sum]) => {

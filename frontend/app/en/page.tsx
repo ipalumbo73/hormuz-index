@@ -38,7 +38,7 @@ export default function DashboardPageEN() {
         fetch(`${API}/dashboard/summary`).then(r => r.ok ? r.json() : null),
         fetch(`${API}/charts/scenario-timeline?range=7d`).then(r => r.ok ? r.json() : null),
         fetch(`${API}/charts/indices-timeline?range=7d`).then(r => r.ok ? r.json() : null),
-        fetch(`${API}/charts/noi-breakdown?range=7d`).then(r => r.ok ? r.json() : null),
+        fetch(`${API}/charts/noi-breakdown?range=7d&lang=en`).then(r => r.ok ? r.json() : null),
         fetch(`${API}/charts/event-heatmap?range=7d`).then(r => r.ok ? r.json() : null),
       ]);
       if (sum.status === 'fulfilled' && sum.value) setSummary(sum.value);

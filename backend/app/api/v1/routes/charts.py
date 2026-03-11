@@ -250,7 +250,7 @@ async def indices_gauges(db: AsyncSession = Depends(get_db)):
     }
 
 
-NOI_COMPONENTS = [
+NOI_COMPONENTS_IT = [
     ("site_access_loss", "Perdita accesso ai siti", "Peso 25%", "#a855f7"),
     ("material_knowledge_loss", "Perdita conoscenza materiali", "Peso 25%", "#9333ea"),
     ("enrichment_verification_gap", "Gap verifica arricchimento", "Peso 20%", "#7c3aed"),
@@ -259,10 +259,20 @@ NOI_COMPONENTS = [
     ("conflicting_narratives_uncertainty", "Narrative contrastanti", "Peso 10%", "#4c1d95"),
 ]
 
+NOI_COMPONENTS_EN = [
+    ("site_access_loss", "Site Access Loss", "Weight 25%", "#a855f7"),
+    ("material_knowledge_loss", "Material Knowledge Loss", "Weight 25%", "#9333ea"),
+    ("enrichment_verification_gap", "Enrichment Verification Gap", "Weight 20%", "#7c3aed"),
+    ("underground_activity_signal", "Underground Activity", "Weight 10%", "#6d28d9"),
+    ("technical_diplomatic_breakdown", "Technical Diplomatic Breakdown", "Weight 10%", "#5b21b6"),
+    ("conflicting_narratives_uncertainty", "Conflicting Narratives", "Weight 10%", "#4c1d95"),
+]
+
 
 @router.get("/noi-breakdown")
 async def noi_breakdown(
     range: str = Query("7d", regex=r"^\d+[hd]$"),
+    lang: str = Query("it", regex=r"^(it|en)$"),
     db: AsyncSession = Depends(get_db),
 ):
     result = await db.execute(
@@ -271,16 +281,19 @@ async def noi_breakdown(
     snapshot = result.scalar_one_or_none()
     components = snapshot.noi_components if snapshot else {}
 
+    noi_components = NOI_COMPONENTS_EN if lang == "en" else NOI_COMPONENTS_IT
+    value_label = "Value" if lang == "en" else "Valore"
+
     labels = []
     values = []
     colors = []
     hover_texts = []
-    for key, label, weight, color in NOI_COMPONENTS:
+    for key, label, weight, color in noi_components:
         val = components.get(key, 0)
         labels.append(label)
         values.append(val)
         colors.append(color)
-        hover_texts.append(f"{label}<br>Valore: {val:.1f}/100<br>{weight}")
+        hover_texts.append(f"{label}<br>{value_label}: {val:.1f}/100<br>{weight}")
 
     return {
         "data": [{
