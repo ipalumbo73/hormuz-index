@@ -202,7 +202,7 @@ TRIGGER_RULES = [
 # Core computation (reusable by Monte Carlo)
 # ---------------------------------------------------------------------------
 
-def _compute_raw(indices: dict, weight_matrix: dict, priors: dict = None) -> dict:
+def _compute_raw(indices: dict, weight_matrix: dict, priors: dict = None, flags: dict = None) -> dict:
     """Compute raw scenario scores and normalize to probabilities.
 
     This is the inner scoring function used by both the public API and the
@@ -213,6 +213,7 @@ def _compute_raw(indices: dict, weight_matrix: dict, priors: dict = None) -> dic
         indices: dict with index names as keys and float values (0-100).
         weight_matrix: weight matrix (may be perturbed for MC runs).
         priors: base priors dict. Defaults to module-level PRIORS.
+        flags: dict of boolean flags (e.g. _nuclear_transfer_active) for trigger rules.
 
     Returns:
         dict mapping each scenario name to its probability (summing to 100).
@@ -226,10 +227,11 @@ def _compute_raw(indices: dict, weight_matrix: dict, priors: dict = None) -> dic
         for scenario, weight in weights.items():
             scores[scenario] += weight * idx_val
 
-    # Apply trigger rules
-    float_indices = {k: float(v) for k, v in indices.items()}
+    # Apply trigger rules (merge indices + flags for condition evaluation)
+    trigger_context = {k: float(v) for k, v in indices.items()}
+    trigger_context.update(flags or {})
     for rule in TRIGGER_RULES:
-        if rule["condition"](float_indices):
+        if rule["condition"](trigger_context):
             for s, boost in rule.get("boost", {}).items():
                 scores[s] += boost
             for s, factor in rule.get("dampen", {}).items():
@@ -258,6 +260,7 @@ def compute_scenarios_with_uncertainty(
     n_iterations: int = 500,
     custom_priors: dict = None,
     custom_weights: dict = None,
+    flags: dict = None,
 ) -> dict:
     """Monte Carlo bootstrap for scenario probability confidence intervals.
 
@@ -299,7 +302,7 @@ def compute_scenarios_with_uncertainty(
                 perturbed_weights[idx_name][scenario] = w * noise
 
         # Compute with perturbed values
-        result = _compute_raw(perturbed_indices, perturbed_weights, priors)
+        result = _compute_raw(perturbed_indices, perturbed_weights, priors, flags=flags)
         for s in SCENARIOS:
             all_probs[s].append(result[s])
 
@@ -321,7 +324,7 @@ def compute_scenarios_with_uncertainty(
 # Public API
 # ---------------------------------------------------------------------------
 
-def compute_scenarios(indices: dict, custom_priors: dict = None, custom_weights: dict = None) -> dict:
+def compute_scenarios(indices: dict, custom_priors: dict = None, custom_weights: dict = None, flags: dict = None) -> dict:
     """Compute scenario probabilities from current index values.
 
     Combines Bayesian priors, a calibrated weight matrix, non-linear trigger
@@ -332,6 +335,7 @@ def compute_scenarios(indices: dict, custom_priors: dict = None, custom_weights:
         indices: dict with NOI, GAI, HDI, PAI, SRI, BSI, DCI (0-100 each).
         custom_priors: optional override for base priors.
         custom_weights: optional override for weight matrix.
+        flags: dict of boolean flags for trigger rules (e.g. _nuclear_transfer_active).
 
     Returns:
         dict with keys:
@@ -360,11 +364,12 @@ def compute_scenarios(indices: dict, custom_priors: dict = None, custom_weights:
                     "contribution": round(delta, 2),
                 })
 
-    # Apply trigger rules
-    float_indices = {k: float(v) for k, v in indices.items()}
+    # Apply trigger rules (merge indices + flags for condition evaluation)
+    trigger_context = {k: float(v) for k, v in indices.items()}
+    trigger_context.update(flags or {})
     triggers_fired = []
     for rule in TRIGGER_RULES:
-        if rule["condition"](float_indices):
+        if rule["condition"](trigger_context):
             triggers_fired.append(rule["label"])
             for s, boost in rule.get("boost", {}).items():
                 scores[s] += boost
@@ -397,7 +402,7 @@ def compute_scenarios(indices: dict, custom_priors: dict = None, custom_weights:
         }
 
     # Monte Carlo confidence intervals
-    ci = compute_scenarios_with_uncertainty(indices, custom_priors=custom_priors, custom_weights=custom_weights)
+    ci = compute_scenarios_with_uncertainty(indices, custom_priors=custom_priors, custom_weights=custom_weights, flags=flags)
 
     return {
         "scores": {s: round(scores[s], 2) for s in SCENARIOS},

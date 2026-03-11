@@ -84,10 +84,11 @@ def recompute_all():
             "BSI": indices["BSI"],
             "DCI": indices["DCI"],
         }
+        flags = {}
         if has_nuclear_transfer:
-            idx_values["_nuclear_transfer_active"] = 1.0
+            flags["_nuclear_transfer_active"] = 1.0
             logger.warning("nuclear_transfer_signal_detected")
-        scenario_result = compute_scenarios(idx_values, custom_priors=custom_priors, custom_weights=custom_weights)
+        scenario_result = compute_scenarios(idx_values, custom_priors=custom_priors, custom_weights=custom_weights, flags=flags)
 
         # Persist index snapshot
         from app.db.models import IndexSnapshot, ScenarioSnapshot, Alert

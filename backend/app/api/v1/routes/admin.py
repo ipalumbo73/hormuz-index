@@ -1,11 +1,49 @@
 from fastapi import APIRouter, Depends, Header, HTTPException
+from pydantic import BaseModel, field_validator
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update
 from uuid import UUID
+from typing import Optional
 from app.db.session import get_db
 from app.db.models import Source, TuningConfig
 from app.core.config import settings
 import structlog
+
+VALID_SCENARIOS = {"contained", "regional", "threshold", "coercive", "actual"}
+VALID_INDICES = {"NOI", "GAI", "HDI", "PAI", "SRI", "BSI", "DCI"}
+
+
+class TuningConfigUpdate(BaseModel):
+    priors: Optional[dict[str, float]] = None
+    weights: Optional[dict[str, dict[str, float]]] = None
+    thresholds: Optional[dict[str, float]] = None
+
+    @field_validator("priors")
+    @classmethod
+    def validate_priors(cls, v):
+        if v is None:
+            return v
+        for key, val in v.items():
+            if key not in VALID_SCENARIOS:
+                raise ValueError(f"Unknown scenario: {key}. Valid: {VALID_SCENARIOS}")
+            if not isinstance(val, (int, float)) or val < 0:
+                raise ValueError(f"Prior for {key} must be a non-negative number")
+        return v
+
+    @field_validator("weights")
+    @classmethod
+    def validate_weights(cls, v):
+        if v is None:
+            return v
+        for idx_name, scenario_weights in v.items():
+            if idx_name not in VALID_INDICES:
+                raise ValueError(f"Unknown index: {idx_name}. Valid: {VALID_INDICES}")
+            for sc_name, weight in scenario_weights.items():
+                if sc_name not in VALID_SCENARIOS:
+                    raise ValueError(f"Unknown scenario: {sc_name}. Valid: {VALID_SCENARIOS}")
+                if not isinstance(weight, (int, float)):
+                    raise ValueError(f"Weight for {idx_name}.{sc_name} must be a number")
+        return v
 
 logger = structlog.get_logger()
 
@@ -123,6 +161,7 @@ async def toggle_source(source_id: UUID, db: AsyncSession = Depends(get_db)):
     if not source:
         raise HTTPException(status_code=404, detail="Source not found")
     source.active = not source.active
+    await db.commit()
     logger.info("source_toggled", source=source.name, active=source.active)
     return {"source": source.name, "active": source.active}
 
@@ -172,7 +211,7 @@ async def reclassify_events(db: AsyncSession = Depends(get_db)):
 
 @router.post("/tuning-config/update")
 async def update_tuning_config(
-    payload: dict,
+    payload: TuningConfigUpdate,
     db: AsyncSession = Depends(get_db),
 ):
     """Update the active tuning config (priors, weights, thresholds).
@@ -193,19 +232,22 @@ async def update_tuning_config(
     base_version = current.version if current else DEFAULT_TUNING["version"]
 
     # Merge updates
-    new_priors = {**base_priors, **(payload.get("priors") or {})}
+    new_priors = {**base_priors, **(payload.priors or {})}
     new_weights = base_weights.copy()
-    for idx_name, scenario_weights in (payload.get("weights") or {}).items():
+    for idx_name, scenario_weights in (payload.weights or {}).items():
         if idx_name in new_weights:
             new_weights[idx_name] = {**new_weights[idx_name], **scenario_weights}
         else:
             new_weights[idx_name] = scenario_weights
-    new_thresholds = {**base_thresholds, **(payload.get("thresholds") or {})}
+    new_thresholds = {**base_thresholds, **(payload.thresholds or {})}
 
-    # Bump version
-    parts = base_version.split(".")
-    parts[-1] = str(int(parts[-1]) + 1)
-    new_version = ".".join(parts)
+    # Bump version (safe parsing)
+    try:
+        parts = base_version.split(".")
+        parts[-1] = str(int(parts[-1]) + 1)
+        new_version = ".".join(parts)
+    except (ValueError, IndexError):
+        new_version = "1.0.1"
 
     # Deactivate old
     if current:

@@ -1,19 +1,9 @@
-import re
 from pydantic import BaseModel, field_validator
 from datetime import datetime
 from uuid import UUID
 from typing import Optional
 
-
-def _strip_html(text: str) -> str:
-    if not text:
-        return text
-    text = re.sub(r'<img[^>]*>', '', text, flags=re.IGNORECASE)
-    text = re.sub(r'<[^>]+>', ' ', text)
-    text = text.replace('&amp;', '&').replace('&lt;', '<').replace('&gt;', '>')
-    text = text.replace('&quot;', '"').replace('&#39;', "'").replace('&nbsp;', ' ')
-    text = re.sub(r'\s+', ' ', text).strip()
-    return text
+from app.services.parsing.normalizer import strip_html as _strip_html
 
 
 class EventBase(BaseModel):

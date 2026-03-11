@@ -43,9 +43,10 @@ async def list_events(
     article_url_map: dict[tuple, str] = {}
     if events:
         titles = [ev.title for ev in events]
+        source_ids = [ev.source_id for ev in events]
         art_result = await db.execute(
             select(Article.title, Article.source_id, Article.url)
-            .where(Article.title.in_(titles))
+            .where(Article.title.in_(titles), Article.source_id.in_(source_ids))
         )
         for row in art_result.all():
             article_url_map[(row[0], row[1])] = row[2]
