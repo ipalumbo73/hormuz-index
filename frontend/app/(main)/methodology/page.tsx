@@ -482,7 +482,14 @@ export default function MethodologyPage() {
             30 min per API). Eventi che si sviluppano rapidamente possono non essere catturati
             in tempo reale.
           </LimitItem>
-          <LimitItem n={8} title="Retorica nucleare e deterrenza">
+          <LimitItem n={8} title="Nessuna distinzione tattico/strategico">
+            Il modello tratta &quot;uso nucleare&quot; come categoria unica, senza distinguere tra
+            un&apos;arma tattica a basso rendimento (es. B61 mod 12 contro un&apos;infrastruttura sotterranea)
+            e uno scambio strategico su larga scala. Nella crisi attuale, un eventuale uso nucleare
+            sarebbe quasi certamente tattico — con conseguenze e soglia decisionale radicalmente
+            diverse da un impiego strategico. Questa distinzione non è catturabile con fonti aperte.
+          </LimitItem>
+          <LimitItem n={9} title="Retorica nucleare e deterrenza">
             L&apos;indice SRI (Strategic Rhetoric) è il driver primario degli scenari di coercizione e uso
             nucleare, ma <strong>non può distinguere tra retorica deterrente strumentale e segnali di
             preparazione reale</strong>. Storicamente, la retorica nucleare è stata usata costantemente

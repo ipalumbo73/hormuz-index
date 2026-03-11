@@ -178,6 +178,18 @@ TRIGGER_RULES = [
         "boost": {"actual": 2},
     },
     {
+        # TR-5: Nuclear transfer signal (Russia/China → Iran) detected.
+        # This is a qualitative game-changer: if Iran receives a nuclear
+        # device, the asymmetry assumption (NOI weight=0 on actual) breaks.
+        # Boost threshold and actual significantly, and temporarily give
+        # NOI influence on actual use scenario.
+        # The _nuclear_transfer_active flag is set by score_tasks when
+        # a nuclear_transfer_signal event exists in the 24h window.
+        "label": "NUCLEAR_TRANSFER_ACTIVE",
+        "condition": lambda idx: idx.get("_nuclear_transfer_active", 0) >= 1,
+        "boost": {"threshold": 8, "coercive": 6, "actual": 4},
+    },
+    {
         # Active diplomacy dampens all escalation scenarios
         "label": "DCI>=65_REDUCE_10PCT",
         "condition": lambda idx: idx.get("DCI", 0) >= 65,

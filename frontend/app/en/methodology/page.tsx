@@ -481,7 +481,15 @@ export default function MethodologyPage() {
             The system updates indices at each Celery cycle (default: every 15 minutes for RSS,
             30 min for APIs). Rapidly evolving events may not be captured in real time.
           </LimitItem>
-          <LimitItem n={8} title="Nuclear rhetoric and deterrence">
+          <LimitItem n={8} title="No tactical/strategic distinction">
+            The model treats &quot;nuclear use&quot; as a single category, without distinguishing between
+            a low-yield tactical weapon (e.g. B61 mod 12 against an underground facility)
+            and a large-scale strategic exchange. In the current crisis, any nuclear use would
+            almost certainly be tactical — with radically different consequences and decision
+            thresholds compared to strategic employment. This distinction cannot be captured
+            from open sources.
+          </LimitItem>
+          <LimitItem n={9} title="Nuclear rhetoric and deterrence">
             The SRI (Strategic Rhetoric) index is the primary driver of coercion and nuclear use
             scenarios, but <strong>cannot distinguish between instrumental deterrence rhetoric and
             genuine preparation signals</strong>. Historically, nuclear rhetoric has been consistently

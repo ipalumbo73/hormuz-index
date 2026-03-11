@@ -60,6 +60,11 @@ def recompute_all():
         # Compute indices
         indices = compute_all_indices(events_24h, events_7d, events_30d)
 
+        # Check for active nuclear transfer signals in last 24h
+        has_nuclear_transfer = any(
+            e["category"] == "nuclear_transfer_signal" for e in events_24h
+        )
+
         # Compute scenarios
         idx_values = {
             "NOI": indices["NOI"],
@@ -70,6 +75,9 @@ def recompute_all():
             "BSI": indices["BSI"],
             "DCI": indices["DCI"],
         }
+        if has_nuclear_transfer:
+            idx_values["_nuclear_transfer_active"] = 1.0
+            logger.warning("nuclear_transfer_signal_detected")
         scenario_result = compute_scenarios(idx_values)
 
         # Persist index snapshot
