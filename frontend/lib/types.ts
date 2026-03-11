@@ -36,6 +36,7 @@ export interface EventItem {
   country_tags: string[];
   location_tags: string[];
   signal_payload: Record<string, number>;
+  article_url?: string | null;
 }
 
 export interface EventListResponse {

@@ -79,7 +79,13 @@ export default function TimelinePage() {
                   <span className="text-xs text-gray-500">{new Date(event.timestamp_utc).toLocaleString()}</span>
                   <span className="text-xs text-gray-500">Severity: {(event.severity * 100).toFixed(0)}%</span>
                 </div>
-                <h4 className="text-sm font-medium text-white mt-1">{event.title}</h4>
+                {event.article_url ? (
+                  <a href={event.article_url} target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-blue-400 hover:text-blue-300 hover:underline mt-1 inline-block">
+                    {event.title} ↗
+                  </a>
+                ) : (
+                  <h4 className="text-sm font-medium text-white mt-1">{event.title}</h4>
+                )}
                 {event.summary && <p className="text-xs text-gray-400 mt-1 line-clamp-2">{event.summary}</p>}
                 <div className="flex gap-1 mt-1 flex-wrap">
                   {event.actor_tags?.map(tag => (

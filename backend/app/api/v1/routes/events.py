@@ -5,6 +5,7 @@ from uuid import UUID
 from typing import Optional
 from app.db.session import get_db
 from app.db.models import Event
+from app.db.models.article import Article
 from app.schemas.event import EventRead, EventListResponse
 
 router = APIRouter(prefix="/events", tags=["events"])
@@ -38,8 +39,25 @@ async def list_events(
     result = await db.execute(query)
     events = result.scalars().all()
 
+    # Batch-fetch article URLs (match by title + source_id, same as event-map)
+    article_url_map: dict[tuple, str] = {}
+    if events:
+        titles = [ev.title for ev in events]
+        art_result = await db.execute(
+            select(Article.title, Article.source_id, Article.url)
+            .where(Article.title.in_(titles))
+        )
+        for row in art_result.all():
+            article_url_map[(row[0], row[1])] = row[2]
+
+    event_reads = []
+    for e in events:
+        er = EventRead.model_validate(e)
+        er.article_url = article_url_map.get((e.title, e.source_id), None)
+        event_reads.append(er)
+
     return EventListResponse(
-        events=[EventRead.model_validate(e) for e in events],
+        events=event_reads,
         total=total,
         page=page,
         page_size=page_size,
@@ -53,4 +71,11 @@ async def get_event(event_id: UUID, db: AsyncSession = Depends(get_db)):
     event = result.scalar_one_or_none()
     if not event:
         raise HTTPException(status_code=404, detail="Event not found")
-    return EventRead.model_validate(event)
+    er = EventRead.model_validate(event)
+    art_result = await db.execute(
+        select(Article.url).where(Article.title == event.title, Article.source_id == event.source_id).limit(1)
+    )
+    url = art_result.scalar_one_or_none()
+    if url:
+        er.article_url = url
+    return er

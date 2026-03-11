@@ -1,7 +1,20 @@
-from pydantic import BaseModel
+import re
+from pydantic import BaseModel, field_validator
 from datetime import datetime
 from uuid import UUID
 from typing import Optional
+
+
+def _strip_html(text: str) -> str:
+    if not text:
+        return text
+    text = re.sub(r'<img[^>]*>', '', text, flags=re.IGNORECASE)
+    text = re.sub(r'<[^>]+>', ' ', text)
+    text = text.replace('&amp;', '&').replace('&lt;', '<').replace('&gt;', '>')
+    text = text.replace('&quot;', '"').replace('&#39;', "'").replace('&nbsp;', ' ')
+    text = re.sub(r'\s+', ' ', text).strip()
+    return text
+
 
 class EventBase(BaseModel):
     title: str
@@ -29,7 +42,13 @@ class EventRead(EventBase):
     source_reliability: float
     dedupe_hash: Optional[str] = None
     created_at: datetime
+    article_url: Optional[str] = None
     model_config = {"from_attributes": True}
+
+    @field_validator("title", "summary", mode="before")
+    @classmethod
+    def clean_html(cls, v: str) -> str:
+        return _strip_html(v) if isinstance(v, str) else v
 
 class EventListResponse(BaseModel):
     events: list[EventRead]

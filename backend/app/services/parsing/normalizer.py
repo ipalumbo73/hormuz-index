@@ -6,11 +6,28 @@ import structlog
 
 logger = structlog.get_logger()
 
+
+def strip_html(text: str) -> str:
+    """Remove HTML tags and decode entities from text."""
+    if not text:
+        return text
+    # Remove img tags entirely (they carry no useful text)
+    text = re.sub(r'<img[^>]*>', '', text, flags=re.IGNORECASE)
+    # Remove all other HTML tags but keep their text content
+    text = re.sub(r'<[^>]+>', ' ', text)
+    # Decode common HTML entities
+    text = text.replace('&amp;', '&').replace('&lt;', '<').replace('&gt;', '>')
+    text = text.replace('&quot;', '"').replace('&#39;', "'").replace('&nbsp;', ' ')
+    # Collapse whitespace
+    text = re.sub(r'\s+', ' ', text).strip()
+    return text
+
+
 def normalize_article(raw: dict) -> dict:
     """Normalize a raw article/event from any source into canonical schema."""
-    title = (raw.get("title") or "").strip()
+    title = strip_html((raw.get("title") or "").strip())
     url = (raw.get("url") or raw.get("link") or "").strip()
-    summary = (raw.get("summary") or raw.get("description") or raw.get("raw_summary") or "").strip()
+    summary = strip_html((raw.get("summary") or raw.get("description") or raw.get("raw_summary") or "").strip())
     source_name = (raw.get("source_name") or "unknown").strip()
 
     pub = raw.get("published_at")

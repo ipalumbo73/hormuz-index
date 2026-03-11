@@ -136,7 +136,11 @@ export default function EventFeed({ lang = 'it', maxItems = 15 }: EventFeedProps
             style={{ borderLeft: `3px solid ${color}` }}
           >
             <div className="flex-1 min-w-0">
-              <p className="text-[12.5px] text-white/80 leading-snug line-clamp-2">{ev.title}</p>
+              {ev.article_url ? (
+                <a href={ev.article_url} target="_blank" rel="noopener noreferrer" className="text-[12.5px] text-blue-400/80 hover:text-blue-300 hover:underline leading-snug line-clamp-2 block">{ev.title} ↗</a>
+              ) : (
+                <p className="text-[12.5px] text-white/80 leading-snug line-clamp-2">{ev.title}</p>
+              )}
               <div className="flex items-center gap-2 mt-1">
                 <span className="text-[10px] font-medium px-1.5 py-0.5 rounded" style={{ background: `${color}20`, color }}>{catLabel}</span>
                 <span className="text-[10px] text-white/25 font-mono">{timeAgo(ev.timestamp_utc, lang)}</span>
