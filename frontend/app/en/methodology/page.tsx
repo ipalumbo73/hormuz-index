@@ -481,6 +481,13 @@ export default function MethodologyPage() {
             The system updates indices at each Celery cycle (default: every 15 minutes for RSS,
             30 min for APIs). Rapidly evolving events may not be captured in real time.
           </LimitItem>
+          <LimitItem n={8} title="Nuclear rhetoric and deterrence">
+            The SRI (Strategic Rhetoric) index is the primary driver of coercion and nuclear use
+            scenarios, but <strong>cannot distinguish between instrumental deterrence rhetoric and
+            genuine preparation signals</strong>. Historically, nuclear rhetoric has been consistently
+            used as a deterrence tool without intention of actual use. The model may therefore
+            overestimate the probability of nuclear scenarios during periods of intense rhetoric.
+          </LimitItem>
         </div>
       </Section>
 

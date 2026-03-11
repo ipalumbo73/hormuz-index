@@ -482,6 +482,13 @@ export default function MethodologyPage() {
             30 min per API). Eventi che si sviluppano rapidamente possono non essere catturati
             in tempo reale.
           </LimitItem>
+          <LimitItem n={8} title="Retorica nucleare e deterrenza">
+            L&apos;indice SRI (Strategic Rhetoric) è il driver primario degli scenari di coercizione e uso
+            nucleare, ma <strong>non può distinguere tra retorica deterrente strumentale e segnali di
+            preparazione reale</strong>. Storicamente, la retorica nucleare è stata usata costantemente
+            come strumento di deterrenza senza intenzione di uso effettivo. Il modello può quindi
+            sovrastimare la probabilità degli scenari nucleari durante fasi di retorica intensa.
+          </LimitItem>
         </div>
       </Section>
 

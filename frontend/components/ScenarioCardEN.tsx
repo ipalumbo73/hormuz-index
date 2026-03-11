@@ -97,10 +97,10 @@ export default function ScenarioCardEN({ name, probability, score, delta, ci_low
 
       {/* Probability with CI */}
       <div className="flex items-end gap-2 flex-wrap">
-        <span className="text-3xl font-bold leading-none" style={{ color }}>{probability.toFixed(1)}%</span>
+        <span className="text-2xl font-bold leading-none" style={{ color }}>{probability.toFixed(1)}%</span>
         {ci_low != null && ci_high != null && (
-          <span className="text-[10px] text-gray-500 font-mono pb-0.5" title="90% confidence interval (Monte Carlo)">
-            [{ci_low.toFixed(0)}-{ci_high.toFixed(0)}%]
+          <span className="text-xs text-gray-400 font-mono pb-0.5" title="90% confidence interval (Monte Carlo)">
+            [{ci_low.toFixed(0)}&ndash;{ci_high.toFixed(0)}%]
           </span>
         )}
         {delta != null && delta !== 0 && (

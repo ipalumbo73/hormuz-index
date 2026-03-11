@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import IndexGauge from '@/components/IndexGauge';
 import ScenarioCard from '@/components/ScenarioCard';
+import ScenarioComparisonBar from '@/components/ScenarioComparisonBar';
 import AlertBanner from '@/components/AlertBanner';
 import MethodologyDisclaimer from '@/components/MethodologyDisclaimer';
 import GaugeArc from '@/components/GaugeArc';
@@ -147,32 +148,40 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Nuclear Escalation Gauge */}
+      {/* Nuclear Escalation Monitor */}
       {ner && (
-        <div className="rounded-[14px] px-4 sm:px-6 py-4 sm:py-5 flex flex-col sm:flex-row items-center gap-4 sm:gap-6" style={{
+        <div className="rounded-[14px] px-4 sm:px-6 py-4 sm:py-5 flex flex-col gap-4" style={{
           background: 'linear-gradient(135deg, rgba(15,23,42,0.8), rgba(20,27,45,0.8))',
           border: '1px solid rgba(255,255,255,0.06)',
         }}>
-          <div className="flex-1">
-            <h3 className="text-sm sm:text-base font-semibold text-white mb-1.5">Rischio Escalation Nucleare</h3>
-            <p className="text-xs text-white/40 leading-relaxed">
-              Probabilità complessiva che la dimensione nucleare entri nel conflitto — da qualsiasi parte
-              (USA/Israele che le armi le hanno, o Iran che potrebbe costruirle).
-              Somma di: Soglia Nucleare ({scenarios.threshold?.probability?.toFixed(1) || 0}%)
-              + Coercizione ({scenarios.coercive?.probability?.toFixed(1) || 0}%)
-              + Uso Effettivo ({scenarios.actual?.probability?.toFixed(1) || 0}%).
-            </p>
+          <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
+            <div className="flex-1">
+              <h3 className="text-sm sm:text-base font-semibold text-white mb-1.5">Monitor Escalation Nucleare</h3>
+              <p className="text-xs text-white/40 leading-relaxed">
+                Tracciamento della dimensione nucleare nel conflitto — da qualsiasi parte
+                (USA/Israele che le armi le hanno, o Iran che potrebbe costruirle).
+                Somma di: Soglia Nucleare ({scenarios.threshold?.probability?.toFixed(1) || 0}%)
+                + Coercizione ({scenarios.coercive?.probability?.toFixed(1) || 0}%)
+                + Uso Effettivo ({scenarios.actual?.probability?.toFixed(1) || 0}%).
+              </p>
+            </div>
+            <div className="flex flex-col items-center flex-shrink-0">
+              <GaugeArc value={ner.value} size={200} />
+              {ner.delta !== 0 && (
+                <div className="font-mono text-xs flex items-center gap-1 mt-1">
+                  <span style={{ color: ner.delta > 0 ? '#ef4444' : '#22c55e' }}>
+                    {ner.delta > 0 ? '▲' : '▼'} {ner.delta > 0 ? '+' : ''}{ner.delta.toFixed(1)}
+                  </span>
+                  <span className="text-white/30">vs 24h fa</span>
+                </div>
+              )}
+            </div>
           </div>
-          <div className="flex flex-col items-center flex-shrink-0">
-            <GaugeArc value={ner.value} size={200} />
-            {ner.delta !== 0 && (
-              <div className="font-mono text-xs flex items-center gap-1 mt-1">
-                <span style={{ color: ner.delta > 0 ? '#ef4444' : '#22c55e' }}>
-                  {ner.delta > 0 ? '▲' : '▼'} {ner.delta > 0 ? '+' : ''}{ner.delta.toFixed(1)}
-                </span>
-                <span className="text-white/30">vs 24h fa</span>
-              </div>
-            )}
+          <div className="rounded-lg px-3 py-2" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)' }}>
+            <p className="text-[11px] text-white/45 leading-relaxed">
+              Le probabilit&agrave; indicano la plausibilit&agrave; relativa tra i 5 scenari del modello, non la probabilit&agrave; assoluta dell&apos;evento.
+              L&apos;uso nucleare resta un evento storicamente senza precedenti dal 1945. I valori riflettono segnali nelle notizie, non intelligence classificata.
+            </p>
           </div>
         </div>
       )}
@@ -208,7 +217,8 @@ export default function DashboardPage() {
           Le percentuali sommano sempre a 100% — se uno scenario sale, un altro scende.
           Esempio: se &quot;Conflitto Contenuto&quot; è al 55%, significa che le notizie attuali suggeriscono che la situazione probabilmente resta sotto controllo.
         </p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-2 sm:gap-2.5">
+        <ScenarioComparisonBar scenarios={scenarios} lang="it" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-2 sm:gap-2.5 mt-3">
           {SCENARIO_ORDER.map(name => {
             const sc = scenarios[name] || { probability: 0, score: 0, delta: 0 };
             return <ScenarioCard key={name} name={name} probability={sc.probability} score={sc.score} delta={sc.delta} ci_low={sc.ci_low} ci_high={sc.ci_high} />;
