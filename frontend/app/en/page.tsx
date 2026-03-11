@@ -27,9 +27,11 @@ export default function DashboardPageEN() {
   const [noiChart, setNoiChart] = useState<PlotlyFigure | null>(null);
   const [heatmap, setHeatmap] = useState<PlotlyFigure | null>(null);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const fetchData = async () => {
+    setRefreshing(true);
     try {
       const [sum, sc, idx, noi, hm] = await Promise.allSettled([
         fetch(`${API}/dashboard/summary`).then(r => r.ok ? r.json() : null),
@@ -48,6 +50,7 @@ export default function DashboardPageEN() {
       setError('Unable to connect to API');
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   };
 
@@ -138,8 +141,8 @@ export default function DashboardPageEN() {
           </p>
         </div>
         <div className="flex gap-2 flex-shrink-0">
-          <button onClick={fetchData} className="px-3 sm:px-4 py-1.5 text-xs font-medium rounded-lg transition-all" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#e2e8f0' }}>
-            ↻ Refresh
+          <button onClick={fetchData} disabled={refreshing} className="px-3 sm:px-4 py-1.5 text-xs font-medium rounded-lg transition-all disabled:opacity-50" style={{ background: refreshing ? 'rgba(59,130,246,0.15)' : 'rgba(255,255,255,0.06)', border: `1px solid ${refreshing ? 'rgba(59,130,246,0.3)' : 'rgba(255,255,255,0.1)'}`, color: '#e2e8f0' }}>
+            <span className={refreshing ? 'inline-block animate-spin' : ''}>↻</span> {refreshing ? 'Updating...' : 'Refresh'}
           </button>
         </div>
       </div>
