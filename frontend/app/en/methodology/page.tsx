@@ -496,6 +496,25 @@ export default function MethodologyPage() {
             used as a deterrence tool without intention of actual use. The model may therefore
             overestimate the probability of nuclear scenarios during periods of intense rhetoric.
           </LimitItem>
+          <LimitItem n={10} title="Nuclear transfer (edge case)">
+            The scenario of a nuclear device transfer from Russia or China to Iran is monitored
+            via the <code>nuclear_transfer_signal</code> category (maximum severity 0.98).
+            If detected, a dedicated trigger rule (TR-5) significantly boosts the plausibility
+            of nuclear scenarios. However, <strong>the linear additive model does not fully capture
+            the qualitative leap</strong> that such a transfer would entail: Iran would instantly
+            shift from &quot;does not possess nuclear weapons&quot; to &quot;de facto nuclear power&quot;,
+            invalidating the asymmetry assumption (NOI weight = 0 on actual use) on which the
+            model is built. This remains the worst-case scenario but also the least probable.
+          </LimitItem>
+          <LimitItem n={11} title="Baseline calibration">
+            Scenario prior probabilities (e.g. &quot;Actual Nuclear Use&quot; starts at ~1%) are derived
+            from expert surveys and literature (0.3-1.5% annualized), but <strong>are not directly
+            comparable with the output of an additive model normalized to 100%</strong>.
+            During an acute crisis with all indices elevated, the model may produce &quot;actual use&quot;
+            values that appear high in absolute terms (e.g. 5-8%) but are in fact artifacts of
+            the sum-to-100% normalization across scenarios. Probabilities should always be read
+            as relative plausibilities, never as absolute predictions.
+          </LimitItem>
         </div>
       </Section>
 

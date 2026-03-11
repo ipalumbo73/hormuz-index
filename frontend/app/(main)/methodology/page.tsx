@@ -496,6 +496,25 @@ export default function MethodologyPage() {
             come strumento di deterrenza senza intenzione di uso effettivo. Il modello può quindi
             sovrastimare la probabilità degli scenari nucleari durante fasi di retorica intensa.
           </LimitItem>
+          <LimitItem n={10} title="Trasferimento nucleare (edge case)">
+            Lo scenario di trasferimento di un dispositivo nucleare da Russia o Cina all&apos;Iran è
+            monitorato tramite la categoria <code>nuclear_transfer_signal</code> (severità massima 0.98).
+            Se rilevato, una trigger rule dedicata (TR-5) aumenta significativamente la plausibilità
+            degli scenari nucleari. Tuttavia, <strong>il modello lineare additivo non cattura pienamente
+            il salto qualitativo</strong> che un trasferimento comporterebbe: l&apos;Iran passerebbe
+            istantaneamente da &quot;non possiede armi nucleari&quot; a &quot;potenza nucleare de facto&quot;,
+            invalidando l&apos;assunzione di asimmetria (peso NOI = 0 su uso effettivo) su cui il modello
+            è costruito. Questo resta lo scenario peggiore possibile ma anche il meno probabile.
+          </LimitItem>
+          <LimitItem n={11} title="Calibrazione dei baseline">
+            Le probabilità a priori degli scenari (es. &quot;Uso Nucleare Effettivo&quot; parte da ~1%)
+            derivano da sondaggi esperti e letteratura (0.3-1.5% annualizzato), ma <strong>non sono
+            direttamente comparabili con l&apos;output di un modello additivo normalizzato a 100%</strong>.
+            Durante una crisi acuta con indici tutti elevati, il modello può produrre valori di
+            &quot;uso effettivo&quot; che appaiono alti in termini assoluti (es. 5-8%) ma che sono in realtà
+            artefatti della normalizzazione a somma 100% tra scenari. Le probabilità vanno sempre
+            lette come plausibilità relative, mai come previsioni assolute.
+          </LimitItem>
         </div>
       </Section>
 
