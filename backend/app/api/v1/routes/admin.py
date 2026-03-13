@@ -6,6 +6,7 @@ from uuid import UUID
 from typing import Optional
 from app.db.session import get_db
 from app.db.models import Source, TuningConfig
+from app.db.models.alert import Alert
 from app.core.config import settings
 import structlog
 
@@ -290,3 +291,39 @@ async def get_tuning_config(db: AsyncSession = Depends(get_db)):
         "weights": config.weights,
         "thresholds": config.thresholds,
     }
+
+
+@router.post("/alerts/deduplicate")
+async def deduplicate_alerts(db: AsyncSession = Depends(get_db)):
+    """Acknowledge duplicate alerts, keeping only the most recent per title."""
+    from sqlalchemy import func
+    # Find all unacknowledged alerts grouped by title
+    result = await db.execute(
+        select(Alert).where(Alert.acknowledged == False).order_by(Alert.title, Alert.timestamp_utc.desc())
+    )
+    all_alerts = result.scalars().all()
+
+    # Keep only the most recent per title, acknowledge the rest
+    seen_titles: set[str] = set()
+    acked = 0
+    for a in all_alerts:
+        if a.title in seen_titles:
+            a.acknowledged = True
+            acked += 1
+        else:
+            seen_titles.add(a.title)
+    await db.commit()
+    return {"status": "deduplicated", "acknowledged": acked, "remaining": len(seen_titles)}
+
+
+@router.post("/alerts/acknowledge-all")
+async def acknowledge_all_alerts(db: AsyncSession = Depends(get_db)):
+    """Acknowledge all unacknowledged alerts."""
+    result = await db.execute(
+        select(Alert).where(Alert.acknowledged == False)
+    )
+    alerts = result.scalars().all()
+    for a in alerts:
+        a.acknowledged = True
+    await db.commit()
+    return {"status": "acknowledged", "count": len(alerts)}

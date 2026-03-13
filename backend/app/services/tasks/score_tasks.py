@@ -134,9 +134,17 @@ def recompute_all():
         )
         session.add(sc_snap)
 
-        # Evaluate and persist alerts
+        # Evaluate and persist alerts (deduplicate: skip if same title already unacknowledged)
         alerts = evaluate_alerts(idx_values, probs)
+        existing_titles = set(
+            row[0] for row in session.execute(
+                select(Alert.title).where(Alert.acknowledged == False)
+            ).all()
+        )
+        new_alerts = []
         for alert_data in alerts:
+            if alert_data["title"] in existing_titles:
+                continue
             alert = Alert(
                 id=uuid.uuid4(),
                 timestamp_utc=now,
@@ -147,6 +155,8 @@ def recompute_all():
                 trigger_payload=alert_data["trigger_payload"],
             )
             session.add(alert)
+            new_alerts.append(alert_data)
+        alerts = new_alerts
 
         session.commit()
 
