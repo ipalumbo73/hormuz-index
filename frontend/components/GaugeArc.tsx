@@ -3,9 +3,10 @@
 interface GaugeArcProps {
   value: number;
   size?: number;
+  lang?: 'it' | 'en';
 }
 
-export default function GaugeArc({ value, size = 200 }: GaugeArcProps) {
+export default function GaugeArc({ value, size = 200, lang = 'it' }: GaugeArcProps) {
   const r = size * 0.38;
   const cx = size / 2;
   const cy = size * 0.52;
@@ -44,7 +45,7 @@ export default function GaugeArc({ value, size = 200 }: GaugeArcProps) {
         {value.toFixed(1)}%
       </text>
       <text x={cx} y={cy + 16} textAnchor="middle" fill="rgba(255,255,255,0.4)" fontSize="10" fontFamily="'JetBrains Mono', monospace">
-        RISCHIO ESCALATION
+        {lang === 'en' ? 'ESCALATION RISK' : 'RISCHIO ESCALATION'}
       </text>
     </svg>
   );

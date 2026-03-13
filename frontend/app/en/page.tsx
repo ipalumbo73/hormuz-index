@@ -166,7 +166,7 @@ export default function DashboardPageEN() {
               </p>
             </div>
             <div className="flex flex-col items-center flex-shrink-0">
-              <GaugeArc value={ner.value} size={200} />
+              <GaugeArc value={ner.value} size={200} lang="en" />
               {ner.delta !== 0 && (
                 <div className="font-mono text-xs flex items-center gap-1 mt-1">
                   <span style={{ color: ner.delta > 0 ? '#ef4444' : '#22c55e' }}>
