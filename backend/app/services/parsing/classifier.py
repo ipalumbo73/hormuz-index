@@ -19,10 +19,13 @@ CATEGORY_RULES = [
     {
         "category": "nuclear_transfer_signal",
         "patterns": [
-            r"(?:russia|china|moscow|beijing).*(?:nuclear|warhead|weapon).*(?:iran|tehran|transfer|supply|provide|deliver|share)",
-            r"(?:iran|tehran).*(?:receive|obtain|acquire).*(?:nuclear|warhead|weapon).*(?:russia|china)",
-            r"nuclear\s+(?:proliferation|transfer|sharing).*(?:iran|russia|china)",
-            r"(?:russia|china).*(?:sell|export|hand\s*over).*nuclear",
+            # Tightened patterns to avoid false positives from oil/sanctions news
+            # mentioning "Russia", "nuclear", and "Iran" in unrelated contexts.
+            # Now require explicit transfer/proliferation verbs near nuclear terms.
+            r"(?:russia|china|moscow|beijing).{0,40}(?:transfer|supply|provide|deliver|share|give).{0,30}(?:nuclear|warhead|weapon).{0,30}(?:iran|tehran)",
+            r"(?:iran|tehran).{0,30}(?:receive|obtain|acquire).{0,30}(?:nuclear\s+(?:warhead|weapon|device|bomb|material))",
+            r"nuclear\s+(?:proliferation|transfer|sharing).{0,30}(?:iran|tehran)",
+            r"(?:russia|china).{0,30}(?:sell|export|hand\s*over).{0,30}(?:nuclear\s+(?:warhead|weapon|device|technology))",
         ],
         "signal_keys": ["BSI", "SRI"],
         "base_severity": 0.80,
