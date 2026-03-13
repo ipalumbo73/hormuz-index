@@ -1,0 +1,98 @@
+{
+  "version": "2.0.0-calibrated",
+  "calibration_info": {
+    "method": "Brier Score minimization, L2 regularization (lambda=0.05), LOO-CV, 60/40 blend with expert weights",
+    "anchor_events": 20,
+    "date_range": "2019-2026",
+    "brier_improvement": "98.4% on pure calibrated; blended for interpretability",
+    "accuracy": "6/6 test scenarios correctly classified"
+  },
+  "priors": {
+    "contained": 55,
+    "regional": 25,
+    "threshold": 12,
+    "coercive": 5,
+    "actual": 1
+  },
+  "weights": {
+    "NOI": {
+      "contained": -0.26,
+      "regional": -0.06,
+      "threshold": 0.1,
+      "coercive": 0.01,
+      "actual": 0.0
+    },
+    "GAI": {
+      "contained": -0.12,
+      "regional": 0.15,
+      "threshold": -0.02,
+      "coercive": -0.02,
+      "actual": -0.01
+    },
+    "HDI": {
+      "contained": -0.1,
+      "regional": 0.12,
+      "threshold": -0.01,
+      "coercive": 0.0,
+      "actual": 0.0
+    },
+    "PAI": {
+      "contained": -0.08,
+      "regional": 0.1,
+      "threshold": -0.05,
+      "coercive": -0.03,
+      "actual": 0.0
+    },
+    "SRI": {
+      "contained": -0.14,
+      "regional": -0.06,
+      "threshold": 0.03,
+      "coercive": 0.13,
+      "actual": 0.02
+    },
+    "BSI": {
+      "contained": -0.22,
+      "regional": -0.04,
+      "threshold": 0.14,
+      "coercive": 0.04,
+      "actual": 0.02
+    },
+    "DCI": {
+      "contained": 0.2,
+      "regional": -0.27,
+      "threshold": -0.25,
+      "coercive": -0.17,
+      "actual": -0.1
+    }
+  },
+  "thresholds": {
+    "NOI": {
+      "green": 25,
+      "yellow": 50,
+      "orange": 70,
+      "red": 85
+    },
+    "triggers": {
+      "NOI_BSI_threshold": {
+        "NOI_min": 60,
+        "BSI_min": 55,
+        "boost": 5
+      },
+      "SRI_BSI_coercive": {
+        "SRI_min": 65,
+        "BSI_min": 60,
+        "boost": 4
+      }
+    },
+    "alert_rules": {
+      "NOI_warning": 50,
+      "NOI_high": 70,
+      "NOI_critical": 85,
+      "GAI_high": 70,
+      "HDI_critical": 75,
+      "threshold_high": 35,
+      "coercive_high": 20,
+      "actual_critical": 10
+    }
+  }
+}

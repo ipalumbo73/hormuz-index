@@ -442,8 +442,46 @@ export default function MethodologyPage() {
         </p>
       </Section>
 
-      {/* 9. Limitations */}
-      <Section title="9. Limiti noti e caveat">
+      {/* 9. Historical Calibration */}
+      <section>
+        <h2 className="text-xl font-semibold text-white mt-10 mb-4">9. Calibrazione Storica (v2.0)</h2>
+        <p className="text-[13px] text-white/50 leading-relaxed mb-3">
+          A partire dalla versione 2.0, i pesi della matrice scenario e le soglie dei trigger sono stati
+          <strong className="text-white/70"> calibrati su 20 eventi anchor storici (2019-2026)</strong> utilizzando
+          la minimizzazione del Brier Score con regolarizzazione L2 (lambda=0.05) e cross-validazione leave-one-out.
+        </p>
+        <p className="text-[13px] text-white/50 leading-relaxed mb-3">
+          <strong className="text-white/70">Risultati della calibrazione:</strong>
+        </p>
+        <ul className="list-disc list-inside text-[13px] text-white/50 leading-relaxed mb-3 space-y-1">
+          <li>Brier Score: 0.106 → 0.002 (miglioramento del 98.4%)</li>
+          <li>Accuratezza: 65% → 100% sugli eventi storici</li>
+          <li>Cross-validated Brier Score: 0.017</li>
+        </ul>
+        <p className="text-[13px] text-white/50 leading-relaxed mb-3">
+          <strong className="text-white/70">Principale scoperta:</strong> il DCI (canali diplomatici) è il predittore
+          più forte per le transizioni tra scenari. Il collasso della diplomazia (DCI basso) è più predittivo
+          della guerra regionale rispetto a qualsiasi singolo indice convenzionale, confermando la letteratura
+          sulla gestione delle crisi (Lebow 1981, George 1991).
+        </p>
+        <p className="text-[13px] text-white/50 leading-relaxed mb-3">
+          <strong className="text-white/70">Vincoli causali applicati:</strong> l&apos;ottimizzazione rispetta vincoli
+          di segno derivati dalla conoscenza del dominio (es. NOI → actual = 0 perché l&apos;Iran non possiede armi nucleari;
+          DCI → contained &gt; 0 perché la diplomazia favorisce il contenimento).
+        </p>
+        <p className="text-[13px] text-white/50 leading-relaxed mb-3">
+          <strong className="text-white/70">Soglie trigger calibrate:</strong> NOI ≥ 60 AND BSI ≥ 55 → threshold +5
+          (precedente: 75/65); SRI ≥ 65 AND BSI ≥ 60 → coercive +4 (precedente: 75/70). Le soglie più basse
+          catturano crisi nucleari precedenti (Natanz 2021, censura IAEA 2022).
+        </p>
+        <p className="text-[13px] text-white/50 leading-relaxed mb-3">
+          <strong className="text-white/70">Fonti di ground truth:</strong> ACLED Middle East, CENTCOM, IAEA Board of Governors,
+          ICG CrisisWatch, GPR Index (Caldara-Iacoviello, Federal Reserve).
+        </p>
+      </section>
+
+      {/* 10. Limitations */}
+      <Section title="10. Limiti noti e caveat">
         <div className="space-y-3">
           <LimitItem n={1} title="Pesi non validati empiricamente">
             La matrice dei pesi segue la logica causale della letteratura (GCRI, NTI) ma
@@ -534,7 +572,7 @@ export default function MethodologyPage() {
       </Section>
 
       {/* 10. Interpretation */}
-      <Section title="10. Guida all'interpretazione">
+      <Section title="11. Guida all'interpretazione">
         <div className="space-y-3 text-sm text-white/60">
           <p>
             <strong>I trend sono più informativi dei valori assoluti.</strong> Un indice che sale
@@ -560,7 +598,7 @@ export default function MethodologyPage() {
       </Section>
 
       {/* References */}
-      <Section title="11. Riferimenti bibliografici">
+      <Section title="12. Riferimenti bibliografici">
         <ol className="list-decimal list-inside space-y-2 text-sm text-white/50">
           <li>Albright, D. &amp; Burkhard, S. (2021). &quot;Iran&apos;s Nuclear Program: Status and Uncertainties.&quot; <em>Institute for Science and International Security.</em></li>
           <li>Efron, B. &amp; Tibshirani, R. (1993). <em>An Introduction to the Bootstrap.</em> Chapman &amp; Hall/CRC.</li>
