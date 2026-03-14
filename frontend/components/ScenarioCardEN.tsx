@@ -69,11 +69,27 @@ const SEVERITY_CONFIG: { min: number; label: string; bgClass: string }[] = [
   { min: 0, label: 'MINIMAL', bgClass: 'bg-gray-800/40' },
 ];
 
+// Inverted severity for "contained": high = good (stable), low = bad (critical)
+const CONTAINED_SEVERITY_CONFIG: { min: number; label: string; bgClass: string; color: string }[] = [
+  { min: 50, label: 'STABLE', bgClass: 'bg-green-900/40', color: '#22c55e' },
+  { min: 35, label: 'PARTIAL', bgClass: 'bg-yellow-900/30', color: '#eab308' },
+  { min: 20, label: 'WEAK', bgClass: 'bg-orange-900/40', color: '#f97316' },
+  { min: 10, label: 'CRITICAL', bgClass: 'bg-red-900/40', color: '#ef4444' },
+  { min: 0, label: 'ABSENT', bgClass: 'bg-red-900/50', color: '#991b1b' },
+];
+
 export default function ScenarioCardEN({ name, probability, score, delta, ci_low, ci_high }: ScenarioCardProps) {
   const [expanded, setExpanded] = useState(false);
-  const color = SCENARIO_COLORS[name] || '#888';
   const info = SCENARIO_INFO[name] || { label: name, labelEn: name, description: '', drivers: '', example: '', icon: '?' };
-  const severity = SEVERITY_CONFIG.find(s => probability >= s.min) || SEVERITY_CONFIG[4];
+  // For "contained", use inverted severity scale and dynamic color
+  const isContained = name === 'contained';
+  const containedSev = isContained
+    ? (CONTAINED_SEVERITY_CONFIG.find(s => probability >= s.min) || CONTAINED_SEVERITY_CONFIG[4])
+    : null;
+  const color = isContained ? (containedSev?.color || '#991b1b') : (SCENARIO_COLORS[name] || '#888');
+  const severity = isContained
+    ? { label: containedSev!.label, bgClass: containedSev!.bgClass }
+    : (SEVERITY_CONFIG.find(s => probability >= s.min) || SEVERITY_CONFIG[4]);
 
   return (
     <div className="rounded-[10px] p-4 flex flex-col gap-2 cursor-pointer transition-all hover:-translate-y-px" style={{
