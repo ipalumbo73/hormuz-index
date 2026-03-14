@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <!-- Italian pages -->
+  <url>
+    <loc>https://hormuzindex.info/</loc>
+    <changefreq>hourly</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="it" href="https://hormuzindex.info/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://hormuzindex.info/en" />
+  </url>
+  <url>
+    <loc>https://hormuzindex.info/briefing</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="it" href="https://hormuzindex.info/briefing" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://hormuzindex.info/en/briefing" />
+  </url>
+  <url>
+    <loc>https://hormuzindex.info/explain</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="it" href="https://hormuzindex.info/explain" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://hormuzindex.info/en/explain" />
+  </url>
+  <url>
+    <loc>https://hormuzindex.info/methodology</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="it" href="https://hormuzindex.info/methodology" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://hormuzindex.info/en/methodology" />
+  </url>
+  <url>
+    <loc>https://hormuzindex.info/nuclear</loc>
+    <changefreq>hourly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="it" href="https://hormuzindex.info/nuclear" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://hormuzindex.info/en/nuclear" />
+  </url>
+  <url>
+    <loc>https://hormuzindex.info/sources</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="it" href="https://hormuzindex.info/sources" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://hormuzindex.info/en/sources" />
+  </url>
+  <url>
+    <loc>https://hormuzindex.info/timeline</loc>
+    <changefreq>hourly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="it" href="https://hormuzindex.info/timeline" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://hormuzindex.info/en/timeline" />
+  </url>
+
+  <!-- English pages -->
+  <url>
+    <loc>https://hormuzindex.info/en</loc>
+    <changefreq>hourly</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="it" href="https://hormuzindex.info/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://hormuzindex.info/en" />
+  </url>
+  <url>
+    <loc>https://hormuzindex.info/en/briefing</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="it" href="https://hormuzindex.info/briefing" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://hormuzindex.info/en/briefing" />
+  </url>
+  <url>
+    <loc>https://hormuzindex.info/en/explain</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="it" href="https://hormuzindex.info/explain" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://hormuzindex.info/en/explain" />
+  </url>
+  <url>
+    <loc>https://hormuzindex.info/en/methodology</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="it" href="https://hormuzindex.info/methodology" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://hormuzindex.info/en/methodology" />
+  </url>
+  <url>
+    <loc>https://hormuzindex.info/en/nuclear</loc>
+    <changefreq>hourly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="it" href="https://hormuzindex.info/nuclear" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://hormuzindex.info/en/nuclear" />
+  </url>
+  <url>
+    <loc>https://hormuzindex.info/en/sources</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="it" href="https://hormuzindex.info/sources" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://hormuzindex.info/en/sources" />
+  </url>
+  <url>
+    <loc>https://hormuzindex.info/en/timeline</loc>
+    <changefreq>hourly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="it" href="https://hormuzindex.info/timeline" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://hormuzindex.info/en/timeline" />
+  </url>
+</urlset>
