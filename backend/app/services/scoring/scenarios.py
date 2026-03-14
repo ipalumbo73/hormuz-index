@@ -63,24 +63,31 @@ SCENARIOS = ["contained", "regional", "threshold", "coercive", "actual"]
 # CrisisWatch and expert surveys.
 PRIORS = {
     # Base case: ~70% of crises remain contained per ICG CrisisWatch data.
-    # Set to 55 to reflect that most crises, even severe ones, do not
-    # escalate to nuclear dimensions.
-    "contained": 55.0,
+    # Reduced from 55 to 45 after calibration review: with prior=55,
+    # contained dominated even when single indices hit 90, because the
+    # prior was too strong for the weights to overcome. Prior=45 allows
+    # a single high-severity index (e.g., GAI=90) to shift dominance
+    # while still reflecting the historical base rate of containment.
+    "contained": 45.0,
 
     # Regional spillover occurs in ~20-30% of serious crises historically.
+    # Empirical frequency in our 20-event dataset: 55% (11/20 events).
+    # Kept at 25 as a conservative prior — the weight matrix handles
+    # the upward adjustment when conventional indices are elevated.
     "regional": 25.0,
 
     # Nuclear threshold crises (serious consideration of nuclear dimension)
     # are extremely rare -- a handful of cases in the post-1945 era.
     # Iran does NOT have nuclear weapons; "threshold" tracks proximity to
     # breakout capability, not to actual use.
-    "threshold": 12.0,
+    "threshold": 14.0,
 
     # Coercive nuclear signaling has occurred only ~5-7 times since 1945
     # (Berlin 1948, Korea 1953, Taiwan Strait 1954/58, Cuba 1962, Kargil 1999).
+    # Raised from 5 to 8 after calibration review: with prior=5, coercive
+    # was nearly impossible to activate even with SRI=80 + BSI=70.
     # In this crisis, only USA/Israel could engage in nuclear coercion.
-    # Iran cannot coerce with weapons it does not possess.
-    "coercive": 5.0,
+    "coercive": 8.0,
 
     # Actual nuclear use: zero instances since 1945. Expert surveys (GCR
     # Institute 2020) place annualized probability at 0.3-1.5%. Prior of 1.0

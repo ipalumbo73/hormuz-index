@@ -30,7 +30,7 @@ DEFAULT_TUNING = {
         "brier_improvement": "98.4% (0.106 -> 0.002)",
         "accuracy": "20/20 on historical events",
     },
-    "priors": {"contained": 55, "regional": 25, "threshold": 12, "coercive": 5, "actual": 1},
+    "priors": {"contained": 45, "regional": 25, "threshold": 14, "coercive": 8, "actual": 1},
     "weights": {
         "NOI": {"contained": -0.26, "regional": -0.06, "threshold": 0.10, "coercive": 0.01, "actual": 0.00},
         "GAI": {"contained": -0.12, "regional": 0.15, "threshold": -0.02, "coercive": -0.02, "actual": -0.01},
