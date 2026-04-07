@@ -145,13 +145,20 @@ WEIGHT_MATRIX = {
     # PAI: Proxy activation drives regional war; no nuclear pathway.
     "PAI": {"contained": -0.08, "regional": 0.10, "threshold": -0.05, "coercive": -0.03, "actual": 0.00},
     # SRI: Strategic rhetoric — primary driver of coercive posturing.
-    "SRI": {"contained": -0.14, "regional": -0.06, "threshold": 0.03, "coercive": 0.13, "actual": 0.02},
+    # actual weight raised from 0.02 to 0.04: when nuclear-armed states
+    # (USA/Israel) use annihilation rhetoric during active conflict,
+    # this is the primary pathway to actual nuclear use consideration.
+    "SRI": {"contained": -0.14, "regional": -0.06, "threshold": 0.03, "coercive": 0.13, "actual": 0.04},
     # BSI: Breakout signals — strongest driver of threshold crisis.
-    "BSI": {"contained": -0.22, "regional": -0.04, "threshold": 0.14, "coercive": 0.04, "actual": 0.02},
+    # actual weight raised from 0.02 to 0.03: nuclear capability +
+    # extreme rhetoric = non-zero actual use probability.
+    "BSI": {"contained": -0.22, "regional": -0.04, "threshold": 0.14, "coercive": 0.04, "actual": 0.03},
     # DCI: Diplomatic channels — strongest discriminator (calibration
     # finding). Collapse of diplomacy is the most predictive signal for
     # escalation across all scenarios.
-    "DCI": {"contained":  0.20, "regional": -0.27, "threshold": -0.25, "coercive": -0.17, "actual": -0.10},
+    # actual weight strengthened from -0.10 to -0.12: when no diplomatic
+    # off-ramp exists, all extreme scenarios become more plausible.
+    "DCI": {"contained":  0.20, "regional": -0.27, "threshold": -0.25, "coercive": -0.17, "actual": -0.12},
 }
 
 # ---------------------------------------------------------------------------
@@ -187,15 +194,33 @@ TRIGGER_RULES = [
         # NOI is excluded — Iran cannot use weapons it does not have.
         # This trigger represents the most extreme scenario: USA/Israel
         # considering tactical nuclear options with no diplomatic off-ramp.
-        # Thresholds set very high — this should almost never fire.
-        "label": "SRI>=90_AND_BSI>=90_AND_GAI>=90_AND_DCI<=20_ACTUAL",
+        # Thresholds lowered from 90/90/90/20 to 85/80/85/25 — during
+        # active war these convergence levels are achievable and represent
+        # genuine nuclear risk.
+        "label": "SRI>=85_AND_BSI>=80_AND_GAI>=85_AND_DCI<=25_ACTUAL",
         "condition": lambda idx: (
-            idx.get("SRI", 0) >= 90
-            and idx.get("BSI", 0) >= 90
-            and idx.get("GAI", 0) >= 90
-            and idx.get("DCI", 0) <= 20
+            idx.get("SRI", 0) >= 85
+            and idx.get("BSI", 0) >= 80
+            and idx.get("GAI", 0) >= 85
+            and idx.get("DCI", 0) <= 25
         ),
-        "boost": {"actual": 2},
+        "boost": {"actual": 3},
+    },
+    {
+        # TR-6: Annihilation rhetoric from nuclear-armed state during
+        # active conflict + diplomatic collapse.
+        # "Stone age", "obliterate", "wipe off the map" etc. from
+        # USA/Israel leadership carries implicit nuclear threat.
+        # Requires: rhetoric flag active + SRI >= 80 + DCI <= 30.
+        # Boosts actual and coercive — these statements are either
+        # nuclear coercion or precursors to actual consideration.
+        "label": "ANNIHILATION_RHETORIC_AND_DIPLO_COLLAPSE",
+        "condition": lambda idx: (
+            idx.get("_annihilation_rhetoric_active", 0) >= 1
+            and idx.get("SRI", 0) >= 80
+            and idx.get("DCI", 0) <= 30
+        ),
+        "boost": {"actual": 2, "coercive": 3},
     },
     {
         # TR-5: Nuclear transfer signal (Russia/China → Iran) detected.

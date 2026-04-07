@@ -41,9 +41,30 @@ CATEGORY_RULES = [
             r"(?:use|deploy|consider)\s+nuclear", r"nuclear.*last\s+resort",
             r"samson\s+option", r"nuclear\s+umbrella.*(?:withdraw|question)",
             r"(?:b-?61|trident|jericho).*(?:deploy|ready|alert)",
+            r"(?:massive|overwhelming|disproportionate)\s+(?:response|retaliation|force)",
         ],
         "signal_keys": ["SRI", "BSI"],
         "base_severity": 0.75,
+        "requires_geo": False,
+    },
+    {
+        # Annihilation rhetoric — implicit nuclear threat from nuclear-armed states.
+        # "Stone age", "obliterate", "wipe off the map" etc. carry nuclear
+        # implications when spoken by leaders of nuclear-armed states during
+        # active conflict. This is distinct from nuclear_posture_signal
+        # (explicitly nuclear) and strategic_rhetoric (generic escalation).
+        "category": "annihilation_rhetoric",
+        "patterns": [
+            r"(?:stone\s+age|back\s+to\s+(?:the\s+)?stone)",
+            r"(?:obliterat|annihi|exterminat|eradicat|eliminat).*(?:iran|country|nation|regime)",
+            r"(?:wipe|wip).*(?:off\s+the\s+map|from\s+(?:the\s+)?(?:map|earth|face|exist))",
+            r"(?:glass|crater|parking\s+lot|rubble|ash).*(?:iran|country|tehran)",
+            r"(?:total|complete|utter)\s+(?:destruction|annihilation|devastation)",
+            r"(?:cease\s+to\s+exist|end\s+of\s+iran|no\s+more\s+iran)",
+            r"(?:bomb|destroy|level).*(?:back\s+to|into).*(?:stone|dark|middle)\s+age",
+        ],
+        "signal_keys": ["SRI", "BSI"],
+        "base_severity": 0.92,
         "requires_geo": False,
     },
     {

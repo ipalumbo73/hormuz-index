@@ -65,6 +65,11 @@ def recompute_all():
             e["category"] == "nuclear_transfer_signal" for e in events_24h
         )
 
+        # Check for annihilation rhetoric in last 24h (stone age, obliterate, etc.)
+        has_annihilation_rhetoric = any(
+            e["category"] == "annihilation_rhetoric" for e in events_24h
+        )
+
         # Load tuning config from DB (custom priors and weights)
         from app.db.models import TuningConfig
         tuning_result = session.execute(
@@ -88,6 +93,9 @@ def recompute_all():
         if has_nuclear_transfer:
             flags["_nuclear_transfer_active"] = 1.0
             logger.warning("nuclear_transfer_signal_detected")
+        if has_annihilation_rhetoric:
+            flags["_annihilation_rhetoric_active"] = 1.0
+            logger.warning("annihilation_rhetoric_detected")
         scenario_result = compute_scenarios(idx_values, custom_priors=custom_priors, custom_weights=custom_weights, flags=flags)
 
         # Persist index snapshot
