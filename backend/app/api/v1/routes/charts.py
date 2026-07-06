@@ -1,4 +1,5 @@
 """Endpoints returning Plotly JSON figures."""
+import time
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, desc
@@ -7,6 +8,24 @@ from app.db.models import IndexSnapshot, ScenarioSnapshot, Event, Article
 from app.utils.dates import parse_range
 
 router = APIRouter(prefix="/charts", tags=["charts"])
+
+# Chart payloads only change when the scoring/ingestion tasks run (every
+# 5-10 minutes), so a short in-process TTL cache absorbs the polling load
+# from the dashboard without risking stale data.
+CHART_CACHE_TTL = 60.0
+_chart_cache: dict[str, tuple[float, dict]] = {}
+
+
+def _cache_get(key: str) -> dict | None:
+    entry = _chart_cache.get(key)
+    if entry and (time.monotonic() - entry[0]) < CHART_CACHE_TTL:
+        return entry[1]
+    return None
+
+
+def _cache_set(key: str, value: dict) -> dict:
+    _chart_cache[key] = (time.monotonic(), value)
+    return value
 
 PLOTLY_CONFIG = {
     "responsive": True,
@@ -56,9 +75,12 @@ SCENARIO_STACK_ORDER = [
 
 @router.get("/scenario-timeline")
 async def scenario_timeline(
-    range: str = Query("7d", regex=r"^\d+[hd]$"),
+    range: str = Query("7d", pattern=r"^\d+[hd]$"),
     db: AsyncSession = Depends(get_db),
 ):
+    cached = _cache_get(f"scenario-timeline:{range}")
+    if cached:
+        return cached
     since = parse_range(range)
     result = await db.execute(
         select(ScenarioSnapshot)
@@ -91,7 +113,7 @@ async def scenario_timeline(
             "hoverinfo": "text",
         })
 
-    return {
+    return _cache_set(f"scenario-timeline:{range}", {
         "data": traces,
         "layout": {
             "xaxis": {
@@ -124,15 +146,18 @@ async def scenario_timeline(
         },
         "config": PLOTLY_CONFIG,
         "meta": {"range": range},
-    }
+    })
 
 
 @router.get("/indices-timeline")
 async def indices_timeline(
-    range: str = Query("7d", regex=r"^\d+[hd]$"),
+    range: str = Query("7d", pattern=r"^\d+[hd]$"),
     db: AsyncSession = Depends(get_db),
 ):
     """Return a Plotly line chart with the 7 risk indices over time."""
+    cached = _cache_get(f"indices-timeline:{range}")
+    if cached:
+        return cached
     since = parse_range(range)
     result = await db.execute(
         select(IndexSnapshot)
@@ -175,7 +200,7 @@ async def indices_timeline(
             "hoverinfo": "text",
         })
 
-    return {
+    return _cache_set(f"indices-timeline:{range}", {
         "data": traces,
         "layout": {
             "xaxis": {
@@ -208,7 +233,7 @@ async def indices_timeline(
         },
         "config": PLOTLY_CONFIG,
         "meta": {"range": range},
-    }
+    })
 
 
 @router.get("/indices-gauges")
@@ -271,10 +296,13 @@ NOI_COMPONENTS_EN = [
 
 @router.get("/noi-breakdown")
 async def noi_breakdown(
-    range: str = Query("7d", regex=r"^\d+[hd]$"),
-    lang: str = Query("it", regex=r"^(it|en)$"),
+    range: str = Query("7d", pattern=r"^\d+[hd]$"),
+    lang: str = Query("it", pattern=r"^(it|en)$"),
     db: AsyncSession = Depends(get_db),
 ):
+    cached = _cache_get(f"noi-breakdown:{range}:{lang}")
+    if cached:
+        return cached
     result = await db.execute(
         select(IndexSnapshot).order_by(desc(IndexSnapshot.timestamp_utc)).limit(1)
     )
@@ -295,7 +323,12 @@ async def noi_breakdown(
         colors.append(color)
         hover_texts.append(f"{label}<br>{value_label}: {val:.1f}/100<br>{weight}")
 
-    return {
+    # Scale the radial axis to the data instead of a fixed [0, 20], which
+    # visually clipped any component above 20/100.
+    radial_max = max(20.0, (max(values) if values else 0) * 1.15)
+    radial_max = min(100.0, radial_max)
+
+    return _cache_set(f"noi-breakdown:{range}:{lang}", {
         "data": [{
             "type": "scatterpolar",
             "r": values + [values[0]],
@@ -309,7 +342,7 @@ async def noi_breakdown(
         }],
         "layout": {
             "polar": {
-                "radialaxis": {"visible": True, "range": [0, 20], "gridcolor": "#374151"},
+                "radialaxis": {"visible": True, "range": [0, round(radial_max, 0)], "gridcolor": "#374151"},
                 "angularaxis": {"gridcolor": "#374151"},
                 "bgcolor": "rgba(0,0,0,0)",
             },
@@ -317,7 +350,7 @@ async def noi_breakdown(
             "margin": {"l": 60, "r": 60, "t": 30, "b": 30},
         },
         "config": PLOTLY_CONFIG,
-    }
+    })
 
 
 CATEGORY_LABELS = {
@@ -343,10 +376,13 @@ CATEGORY_LABELS = {
 
 @router.get("/event-heatmap")
 async def event_heatmap(
-    range: str = Query("7d", regex=r"^\d+[hd]$"),
+    range: str = Query("7d", pattern=r"^\d+[hd]$"),
     db: AsyncSession = Depends(get_db),
 ):
     from sqlalchemy import func, cast, Date
+    cached = _cache_get(f"event-heatmap:{range}")
+    if cached:
+        return cached
     since = parse_range(range)
     result = await db.execute(
         select(
@@ -422,7 +458,7 @@ async def event_heatmap(
                 tr["name"] = short
                 break
 
-    return {
+    return _cache_set(f"event-heatmap:{range}", {
         "data": traces,
         "layout": {
             "barmode": "stack",
@@ -450,7 +486,7 @@ async def event_heatmap(
             "margin": {"l": 35, "r": 110, "t": 8, "b": 35},
         },
         "config": PLOTLY_CONFIG,
-    }
+    })
 
 
 # ---------------------------------------------------------------------------
@@ -716,10 +752,13 @@ def _jitter_coords(
 
 @router.get("/event-map")
 async def event_map(
-    range: str = Query("7d", regex=r"^\d+[hd]$"),
+    range: str = Query("7d", pattern=r"^\d+[hd]$"),
     db: AsyncSession = Depends(get_db),
 ):
     """Return flat event list with coordinates for the Leaflet map."""
+    cached = _cache_get(f"event-map:{range}")
+    if cached:
+        return cached
     since = parse_range(range)
     result = await db.execute(
         select(Event)
@@ -734,7 +773,10 @@ async def event_map(
     if event_titles:
         art_result = await db.execute(
             select(Article.title, Article.source_id, Article.url)
-            .where(Article.title.in_([t for t, _ in event_titles]))
+            .where(
+                Article.title.in_([t for t, _ in event_titles]),
+                Article.source_id.in_([sid for _, sid in event_titles]),
+            )
         )
         for row in art_result.all():
             article_url_map[(row[0], row[1])] = row[2]
@@ -780,7 +822,7 @@ async def event_map(
         for country in (e["countries"] or []):
             region_counts[country] = region_counts.get(country, 0) + 1
 
-    return {
+    return _cache_set(f"event-map:{range}", {
         "events": map_events,
         "stats": {
             "total": len(map_events),
@@ -789,4 +831,4 @@ async def event_map(
             "regions": dict(sorted(region_counts.items(), key=lambda x: -x[1])[:15]),
         },
         "meta": {"range": range},
-    }
+    })

@@ -64,14 +64,14 @@ router = APIRouter(prefix="/admin", tags=["admin"], dependencies=[Depends(requir
 async def seed_db(db: AsyncSession = Depends(get_db)):
     """Seed sources into database."""
     from app.core.seed import INITIAL_SOURCES
+    from app.utils.dates import utcnow
     import uuid
-    from datetime import datetime
     count = 0
     for src in INITIAL_SOURCES:
         existing = await db.execute(select(Source).where(Source.name == src["name"]))
         if existing.scalar_one_or_none():
             continue
-        s = Source(id=uuid.uuid4(), **src, active=True, created_at=datetime.utcnow())
+        s = Source(id=uuid.uuid4(), **src, active=True, created_at=utcnow())
         db.add(s)
         count += 1
     await db.commit()
@@ -143,13 +143,17 @@ async def recompute_indices(db: AsyncSession = Depends(get_db)):
 async def recompute_sync():
     """Run index/scenario recomputation synchronously."""
     from app.services.tasks.score_tasks import recompute_all
+    import asyncio
     import concurrent.futures
     try:
         with concurrent.futures.ThreadPoolExecutor() as pool:
-            import asyncio
             loop = asyncio.get_event_loop()
-            result = await loop.run_in_executor(pool, recompute_all)
+            result = await asyncio.wait_for(
+                loop.run_in_executor(pool, recompute_all), timeout=300
+            )
         return {"status": "done", "result": result}
+    except asyncio.TimeoutError:
+        return {"status": "error", "error": "recompute timed out after 300s"}
     except Exception as e:
         return {"status": "error", "error": str(e)}
 

@@ -1,6 +1,6 @@
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func, desc, update
+from sqlalchemy import select, func, desc
 from uuid import UUID
 from typing import Optional
 from app.db.session import get_db
@@ -14,6 +14,7 @@ router = APIRouter(prefix="/alerts", tags=["alerts"])
 async def list_alerts(
     level: Optional[str] = None,
     acknowledged: Optional[bool] = None,
+    page: int = Query(1, ge=1),
     limit: int = Query(50, ge=1, le=200),
     db: AsyncSession = Depends(get_db),
 ):
@@ -29,22 +30,24 @@ async def list_alerts(
 
     total = (await db.execute(count_query)).scalar() or 0
 
-    query = query.order_by(desc(Alert.timestamp_utc)).limit(limit)
+    query = query.order_by(desc(Alert.timestamp_utc)).offset((page - 1) * limit).limit(limit)
     result = await db.execute(query)
     alerts = result.scalars().all()
 
     return AlertListResponse(
         alerts=[AlertRead.model_validate(a) for a in alerts],
         total=total,
+        page=page,
+        page_size=limit,
     )
 
 
 @router.post("/{alert_id}/acknowledge")
 async def acknowledge_alert(alert_id: UUID, db: AsyncSession = Depends(get_db)):
-    from fastapi import HTTPException
     result = await db.execute(select(Alert).where(Alert.id == alert_id))
     alert = result.scalar_one_or_none()
     if not alert:
         raise HTTPException(status_code=404, detail="Alert not found")
     alert.acknowledged = True
+    await db.commit()
     return {"status": "acknowledged"}

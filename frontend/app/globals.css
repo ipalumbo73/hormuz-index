@@ -17,17 +17,26 @@ html {
 }
 
 ::-webkit-scrollbar { width: 8px; }
-::-webkit-scrollbar-track { background: #0f172a; }
+::-webkit-scrollbar-track { background: rgba(255,255,255,0.04); }
 ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #475569; }
 
 .font-mono { font-family: 'JetBrains Mono', monospace !important; }
+
+/* Visible keyboard focus on interactive elements */
+button:focus-visible,
+a:focus-visible {
+  outline: 2px solid rgba(148,163,184,0.7);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
 
 .card {
   background: rgba(15,23,42,0.6);
   border: 1px solid rgba(255,255,255,0.06);
   border-radius: 10px;
   padding: 10px;
-  transition: border-color 0.2s;
+  transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 @media (min-width: 640px) {
@@ -36,7 +45,9 @@ html {
   }
 }
 .card:hover {
-  border-color: rgba(255,255,255,0.12);
+  border-color: rgba(255,255,255,0.14);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.25);
 }
 
 @keyframes pulse-dot {

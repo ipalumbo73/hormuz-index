@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 
-const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
+import { API_URL as API } from '@/lib/api';
 
 const LEVEL_COLORS: Record<string, { bg: string; text: string; dot: string }> = {
   green: { bg: 'rgba(34,197,94,0.08)', text: '#22c55e', dot: '#22c55e' },

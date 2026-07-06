@@ -4,6 +4,7 @@ from sqlalchemy import String, Boolean, DateTime
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 from app.db.base import Base
+from app.utils.dates import utcnow
 
 class TuningConfig(Base):
     __tablename__ = "tuning_configs"
@@ -14,4 +15,4 @@ class TuningConfig(Base):
     weights: Mapped[dict] = mapped_column(JSONB, default=dict)
     thresholds: Mapped[dict] = mapped_column(JSONB, default=dict)
     source_rules: Mapped[dict] = mapped_column(JSONB, default=dict)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)

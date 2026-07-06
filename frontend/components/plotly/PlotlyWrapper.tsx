@@ -1,6 +1,6 @@
 'use client';
 import dynamic from 'next/dynamic';
-import { useMemo } from 'react';
+import { Component, ReactNode, useEffect, useMemo, useState } from 'react';
 
 const Plot = dynamic(
   () => {
@@ -19,6 +19,33 @@ const Plot = dynamic(
   }
 );
 
+// If the Plotly bundle fails to load or render (network hiccup, bad payload),
+// show a compact fallback instead of crashing the whole page.
+class ChartErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean }> {
+  state = { hasError: false };
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="bg-dark-800 rounded-xl h-64 flex flex-col items-center justify-center gap-2">
+          <span className="text-gray-500 text-sm">Chart unavailable</span>
+          <button
+            onClick={() => this.setState({ hasError: false })}
+            className="text-xs text-gray-400 underline underline-offset-2 hover:text-gray-200"
+          >
+            Retry
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 interface PlotlyWrapperProps {
   data: any[];
   layout?: any;
@@ -27,8 +54,20 @@ interface PlotlyWrapperProps {
   height?: number;
 }
 
+function useIsMobile(): boolean {
+  // Evaluated in an effect so the first client render matches SSR output.
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 640);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
+  return isMobile;
+}
+
 export default function PlotlyWrapper({ data, layout, config, className = '', height = 300 }: PlotlyWrapperProps) {
-  const isMobile = typeof window !== 'undefined' && window.innerWidth < 640;
+  const isMobile = useIsMobile();
 
   const mergedLayout = useMemo(() => ({
     autosize: true,
@@ -52,8 +91,10 @@ export default function PlotlyWrapper({ data, layout, config, className = '', he
 
   return (
     <div className={`w-full ${className}`}>
-      {/* @ts-ignore - dynamic import typing */}
-      <Plot data={data} layout={mergedLayout} config={mergedConfig} useResizeHandler style={{ width: '100%' }} />
+      <ChartErrorBoundary>
+        {/* @ts-ignore - dynamic import typing */}
+        <Plot data={data} layout={mergedLayout} config={mergedConfig} useResizeHandler style={{ width: '100%' }} />
+      </ChartErrorBoundary>
     </div>
   );
 }

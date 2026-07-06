@@ -23,7 +23,7 @@ async def get_latest_scenarios(db: AsyncSession = Depends(get_db)):
 
 @router.get("/history", response_model=ScenarioHistoryResponse)
 async def get_scenario_history(
-    range: str = Query("30d", regex=r"^\d+[hd]$"),
+    range: str = Query("30d", pattern=r"^\d+[hd]$"),
     db: AsyncSession = Depends(get_db),
 ):
     since = parse_range(range)

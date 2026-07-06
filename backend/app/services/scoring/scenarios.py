@@ -372,9 +372,10 @@ def compute_scenarios_with_uncertainty(
 def compute_scenarios(indices: dict, custom_priors: dict = None, custom_weights: dict = None, flags: dict = None) -> dict:
     """Compute scenario probabilities from current index values.
 
-    Combines Bayesian priors, a calibrated weight matrix, non-linear trigger
-    conditions, and Monte Carlo uncertainty estimation to produce scenario
-    probabilities with confidence intervals.
+    Combines literature-informed baseline scores (not formal Bayesian priors),
+    a calibrated weight matrix, non-linear trigger conditions, and Monte Carlo
+    uncertainty estimation to produce scenario probabilities with confidence
+    intervals.
 
     Args:
         indices: dict with NOI, GAI, HDI, PAI, SRI, BSI, DCI (0-100 each).

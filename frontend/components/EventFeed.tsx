@@ -2,7 +2,7 @@
 import { useEffect, useState, useRef } from 'react';
 import type { EventItem } from '@/lib/types';
 
-const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
+import { API_URL as API } from '@/lib/api';
 
 const CATEGORY_COLORS: Record<string, string> = {
   military_strike: '#ef4444',
