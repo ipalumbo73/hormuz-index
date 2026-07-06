@@ -125,7 +125,14 @@ CATEGORY_RULES = [
     },
     {
         "category": "hormuz_threat",
-        "patterns": [r"hormuz.*(?:mine|threat|disrupt|tension|confront|warning)", r"strait.*(?:mine|threat|disrupt)", r"hormuz.*(?:naval|military)", r"hormuz.*escort"],
+        "patterns": [
+            r"hormuz.*(?:mine|threat|disrupt|tension|confront|warning)",
+            r"strait.*(?:mine|threat|disrupt)",
+            r"hormuz.*(?:naval|military)",
+            r"hormuz.*escort",
+            # Threats/warnings to close the strait (announced, not enacted)
+            r"(?:threat|warn|vow)\w*.*(?:clos|shut|block|min\w).*(?:strait|hormuz)",
+        ],
         "signal_keys": ["HDI"],
         "base_severity": 0.72,
         "requires_geo": False,
@@ -213,7 +220,10 @@ CATEGORY_RULES = [
     {
         "category": "iaea_cooperation_breakdown",
         "patterns": [
-            r"iaea.*(?:expel|withdraw|ban|block|refuse|reject|suspend|unable|cannot|fail)",
+            # "cannot/unable to verify" belongs to nuclear_verification_gap;
+            # this rule targets the cooperation relationship breaking down.
+            r"iaea.*(?:expel|withdraw|ban|block|refuse|reject|suspend|fail)",
+            r"iaea.*(?:cannot|unable\s+to)\s+(?:access|enter|inspect|monitor|continue|operate)",
             r"(?:expel|ban|block|deny).*(?:inspector|iaea)",
             r"iran.*(?:end|terminate|suspend|halt).*(?:cooperation|agreement).*iaea",
             r"safeguards.*(?:terminate|suspend|end|void)",
@@ -256,7 +266,9 @@ CATEGORY_RULES = [
             r"hormuz.*(?:closed|shut|sealed|blocked|blockade)",
             r"strait.*(?:closed|shut|sealed|blocked|blockade)",
             r"hormuz.*(?:closure|shutdown|blockade)",
-            r"(?:close|shut|seal|block).*(?:strait|hormuz)",
+            # Enacted closure only (past/progressive forms) — announced threats
+            # to close belong to hormuz_threat.
+            r"(?:closes|closed|closing|shuts|shutting|sealed|blocked|blockades?).*(?:strait|hormuz)",
             r"shipping.*(?:halt|stop|suspend|strand).*(?:hormuz|strait|gulf)",
             r"(?:tanker|ship|vessel).*(?:strand|trap|unable).*(?:transit|pass|hormuz)",
             r"seafarer.*(?:strand|trap|crisis).*(?:hormuz|strait)",
@@ -333,6 +345,7 @@ def classify_event(title: str, summary: str = "") -> dict:
 
     best_match = None
     best_score = 0
+    best_severity = 0.0
     matches_found = []
 
     for rule in CATEGORY_RULES:
@@ -356,8 +369,12 @@ def classify_event(title: str, summary: str = "") -> dict:
                 "signal_keys": rule["signal_keys"],
                 "matched_patterns": matched_patterns,
             })
-            if score > best_score:
+            # Tie-break equal scores by base severity, so a high-stakes
+            # category (e.g. hormuz_threat) beats a generic one (sanctions)
+            # instead of depending on rule ordering.
+            if (score, rule["base_severity"]) > (best_score, best_severity):
                 best_score = score
+                best_severity = rule["base_severity"]
                 best_match = rule
 
     if not best_match:

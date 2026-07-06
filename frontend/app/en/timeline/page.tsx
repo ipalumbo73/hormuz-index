@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import type { EventItem } from '@/lib/types';
 
-const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
+import { API_URL as API } from '@/lib/api';
 
 const CATEGORY_INFO: Record<string, { color: string; label: string }> = {
   nuclear_posture_signal: { color: 'bg-red-500', label: 'Nuclear Posture (armed states)' },

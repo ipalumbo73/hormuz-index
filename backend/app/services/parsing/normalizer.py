@@ -1,8 +1,9 @@
 import hashlib
 import re
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from typing import Optional
 import structlog
+from app.utils.dates import utcnow, to_naive_utc
 
 logger = structlog.get_logger()
 
@@ -35,11 +36,18 @@ def normalize_article(raw: dict) -> dict:
         try:
             published_at = datetime.fromisoformat(pub.replace("Z", "+00:00"))
         except ValueError:
-            published_at = datetime.now(timezone.utc)
+            published_at = utcnow()
     elif isinstance(pub, datetime):
         published_at = pub
     else:
-        published_at = datetime.now(timezone.utc)
+        published_at = utcnow()
+
+    # DB columns are timezone-naive UTC; also guard against sources reporting
+    # bogus future dates, which would inflate the 24h scoring window.
+    published_at = to_naive_utc(published_at)
+    now = utcnow()
+    if published_at > now + timedelta(hours=1):
+        published_at = now
 
     content_hash = hashlib.sha256(f"{url}|{title}".encode()).hexdigest()
 

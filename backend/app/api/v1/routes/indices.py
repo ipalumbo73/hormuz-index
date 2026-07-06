@@ -23,7 +23,7 @@ async def get_latest_indices(db: AsyncSession = Depends(get_db)):
 
 @router.get("/history", response_model=IndexHistoryResponse)
 async def get_index_history(
-    range: str = Query("7d", regex=r"^\d+[hd]$"),
+    range: str = Query("7d", pattern=r"^\d+[hd]$"),
     db: AsyncSession = Depends(get_db),
 ):
     since = parse_range(range)

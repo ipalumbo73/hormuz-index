@@ -1,4 +1,6 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
+// Single source of truth for the backend base URL. Import this instead of
+// re-reading process.env in every page/component.
+export const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
 
 export async function fetchApi<T>(endpoint: string): Promise<T> {
   const res = await fetch(`${API_URL}${endpoint}`, {

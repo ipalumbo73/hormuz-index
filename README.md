@@ -43,13 +43,13 @@ Each index uses a rolling window formula: `Index = 0.50 × score_24h + 0.30 × s
 
 Five scenarios with probability estimates and Monte Carlo confidence intervals:
 
-| Scenario | Description | Calibration Note |
-|----------|-------------|------------------|
-| **Contained Conflict** | Crisis remains managed through conventional means | Prior: 55% — most crises historically stay contained |
-| **Regional War** | Conventional military escalation across multiple states | Prior: 25% — based on ICG CrisisWatch data |
-| **Nuclear Threshold** | Approach to nuclear capability (Iran enrichment) | Prior: 12% — extremely rare historically |
-| **Coercive Nuclear** | Nuclear threats used as political leverage | Prior: 5% — only USA/Israel possess nuclear weapons |
-| **Actual Nuclear Use** | Nuclear weapon detonation | Prior: 1% — zero instances since 1945 |
+| Scenario | Description | Baseline Score (v2.0 calibrated) |
+|----------|-------------|----------------------------------|
+| **Contained Conflict** | Crisis remains managed through conventional means | 45 — most crises historically stay contained (reduced from 55 after calibration review) |
+| **Regional War** | Conventional military escalation across multiple states | 25 — based on ICG CrisisWatch data |
+| **Nuclear Threshold** | Approach to nuclear capability (Iran enrichment) | 14 — extremely rare historically |
+| **Coercive Nuclear** | Nuclear threats used as political leverage | 8 — only USA/Israel possess nuclear weapons (raised from 5 after calibration review) |
+| **Actual Nuclear Use** | Nuclear weapon detonation | 1 — zero instances since 1945 |
 
 > **Note on nuclear scenarios:** Iran does not possess nuclear weapons. The "coercive" and "actual use" scenarios refer exclusively to the possibility that the USA or Israel might use theirs. The model explicitly assigns zero weight from Iran's nuclear program (NOI) to the "actual use" scenario.
 
@@ -168,6 +168,7 @@ Requires PostgreSQL and Redis running locally.
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | `GET` | `/api/v1/health` | Health check |
+| `GET` | `/api/v1/health/detailed` | Deep health check (DB reachability, snapshot freshness) |
 | `GET` | `/api/v1/dashboard/summary` | Full dashboard data (indices, scenarios, alerts, charts) |
 | `GET` | `/api/v1/events?limit=50&page=1` | Paginated event list with filters |
 | `GET` | `/api/v1/indices/latest` | Latest risk index values with confidence intervals |
@@ -210,7 +211,7 @@ event_impact = source_reliability × confidence × severity × novelty
 - **source_reliability** (0-1): Adapted from NATO Admiralty Code (STANAG 2511) reliability grading
 - **confidence** (0-1): Classifier confidence based on pattern match ratio
 - **severity** (0-1): Base severity per event category, calibrated to reflect media-sourced data
-- **novelty** (0-1): Deduplication factor via RapidFuzz clustering (88% similarity threshold)
+- **novelty** (0-1): Deduplication factor via RapidFuzz clustering (88% similarity threshold). The first article of a story cluster has novelty 1.0; repetitions decay harmonically (0.5, 0.33, ...) down to a 0.15 floor, so media echo does not inflate the indices. Exact duplicates (same fingerprint within a 6h bucket) produce no new event at all.
 
 ### NOI Sub-components
 

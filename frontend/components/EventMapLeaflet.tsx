@@ -2,7 +2,7 @@
 import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import dynamic from 'next/dynamic';
 
-const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
+import { API_URL as API } from '@/lib/api';
 
 // ---------- types ----------
 interface MapEvent {

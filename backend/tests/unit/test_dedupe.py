@@ -1,7 +1,21 @@
 """Tests for deduplication."""
 import pytest
 from app.services.dedupe.fingerprint import compute_fingerprint, time_bucket
-from app.services.dedupe.clustering import find_cluster_match
+from app.services.dedupe.clustering import find_cluster_match, novelty_for_repetition, NOVELTY_FLOOR
+
+
+def test_novelty_first_occurrence_is_full():
+    assert novelty_for_repetition(0) == 1.0
+
+
+def test_novelty_decays_harmonically():
+    assert novelty_for_repetition(1) == pytest.approx(0.5)
+    assert novelty_for_repetition(2) == pytest.approx(1 / 3)
+    assert novelty_for_repetition(3) == pytest.approx(0.25)
+
+
+def test_novelty_has_floor():
+    assert novelty_for_repetition(1000) == NOVELTY_FLOOR
 
 
 def test_fingerprint_same_event():

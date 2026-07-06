@@ -10,16 +10,19 @@ interface IndexGaugeProps {
   history?: number[];
   ci_low?: number;
   ci_high?: number;
+  lang?: 'it' | 'en';
 }
 
-const INDEX_INFO: Record<string, {
+interface IndexInfo {
   label: string;
   what: string;
   how: string;
   feeds: string;
   scale: [string, string];
   icon: string;
-}> = {
+}
+
+const INDEX_INFO_IT: Record<string, IndexInfo> = {
   NOI: {
     label: 'Nuclear Opacity',
     what: "Quanto il programma nucleare iraniano è opaco e non verificabile dall'IAEA.",
@@ -78,6 +81,65 @@ const INDEX_INFO: Record<string, {
   },
 };
 
+const INDEX_INFO_EN: Record<string, IndexInfo> = {
+  NOI: {
+    label: 'Nuclear Opacity',
+    what: "How opaque and unverifiable Iran's nuclear program is to the IAEA.",
+    how: '6 weighted sub-components: loss of site access (25%), loss of material knowledge (25%), enrichment verification gap (20%), underground activity (10%), technical-diplomatic breakdown (10%), conflicting narratives (10%).',
+    feeds: 'News about IAEA, denied inspections, uranium enrichment, activity at Fordow/Natanz, agreement breakdowns.',
+    scale: ['Transparent', 'Opaque'],
+    icon: '🔬',
+  },
+  GAI: {
+    label: 'Gulf Attack',
+    what: 'Intensity of attacks on military and civilian infrastructure in the Persian Gulf.',
+    how: 'Weighted average of events classified as military attacks, missiles/drones, attacks on oil infrastructure, and cyber operations in the region.',
+    feeds: 'Air strikes, bombings, missile strikes, attacks on refineries/ports, cyber-attacks on infrastructure.',
+    scale: ['No attacks', 'Massive attacks'],
+    icon: '💥',
+  },
+  HDI: {
+    label: 'Hormuz Disruption',
+    what: 'Risk of blockage or disruption of navigation in the Strait of Hormuz.',
+    how: 'Weighted average of events related to navigation threats, tanker attacks, ship seizures, and direct threats to the Strait.',
+    feeds: 'Attacks on cargo ships/tankers, threats to close the Strait, maritime incidents in the Red Sea.',
+    scale: ['Free navigation', 'Strait blocked'],
+    icon: '🚢',
+  },
+  PAI: {
+    label: 'Proxy Activation',
+    what: "Activation level of Iranian proxies: Hezbollah, Houthis, and Iraqi militias.",
+    how: 'Weighted average of proxy events (Hezbollah attacks, Houthi missiles, militia actions) and civilian casualties linked to proxies.',
+    feeds: 'Hezbollah rockets, Houthi drones on ships, militia attacks in Iraq/Syria, civilian casualties from proxies.',
+    scale: ['Proxies inactive', 'Full activation'],
+    icon: '⚔️',
+  },
+  SRI: {
+    label: 'Strategic Rhetoric',
+    what: "How escalatory and threatening the official language of states and leaders is.",
+    how: "Weighted average of statements with extreme tones: nuclear threats, 'red lines', 'all options on the table', sanctions, and economic pressures.",
+    feeds: "Leader statements on 'existential threat', nuclear options, sanctions, ultimatums, regime change.",
+    scale: ['Moderate tones', 'Extreme rhetoric'],
+    icon: '🎙️',
+  },
+  BSI: {
+    label: 'Breakout Signal',
+    what: "Signals that Iran is approaching the capability to build a nuclear weapon (breakout), or that the USA/Israel are considering nuclear options.",
+    how: "Weighted average of events on high-level enrichment, nuclear posture of armed states, attacks on nuclear sites, and underground activities.",
+    feeds: "Enrichment at 60-90%, activity at Fordow, USA/Israel nuclear posture, deployment of tactical nuclear weapons.",
+    scale: ['No signal', 'Imminent breakout'],
+    icon: '☢️',
+  },
+  DCI: {
+    label: 'Diplomatic Cooling',
+    what: "Signals of diplomatic dialogue and de-escalation between the parties. This is the only 'positive' index: the higher it is, the better.",
+    how: "Weighted average of diplomatic events: resumed negotiations, Oman mediation, diplomatic channels, ceasefire, peace proposals.",
+    feeds: 'Diplomatic talks, mediation, hotlines, ceasefire, troop withdrawal, de-escalation signals.',
+    scale: ['No dialogue', 'Strong diplomacy'],
+    icon: '🕊️',
+  },
+};
+
 const LEVEL_COLORS: Record<string, string> = {
   green: '#22c55e',
   yellow: '#f59e0b',
@@ -94,20 +156,41 @@ const LEVEL_BG: Record<string, string> = {
   dark_red: 'rgba(220,38,38,0.12)',
 };
 
-const LEVEL_LABEL: Record<string, string> = {
-  green: 'Basso',
-  yellow: 'Moderato',
-  orange: 'Elevato',
-  red: 'Alto',
-  dark_red: 'Critico',
+const UI = {
+  it: {
+    levelLabel: {
+      green: 'Basso', yellow: 'Moderato', orange: 'Elevato', red: 'Alto', dark_red: 'Critico',
+    } as Record<string, string>,
+    ciTitle: 'Intervallo di confidenza al 90%',
+    vs24h: 'vs 24h fa',
+    hideDetails: 'Nascondi dettagli',
+    showDetails: 'Come si calcola?',
+    formula: 'Formula:',
+    feeds: 'Cosa lo alimenta:',
+    window: 'Finestra temporale: 50% ultime 24h + 30% ultimi 7gg + 20% ultimi 30gg',
+  },
+  en: {
+    levelLabel: {
+      green: 'Low', yellow: 'Moderate', orange: 'Elevated', red: 'High', dark_red: 'Critical',
+    } as Record<string, string>,
+    ciTitle: '90% confidence interval',
+    vs24h: 'vs 24h ago',
+    hideDetails: 'Hide details',
+    showDetails: 'How is it calculated?',
+    formula: 'Formula:',
+    feeds: 'What feeds it:',
+    window: 'Time window: 50% last 24h + 30% last 7d + 20% last 30d',
+  },
 };
 
-export default function IndexGauge({ name, value, delta, level, history, ci_low, ci_high }: IndexGaugeProps) {
+export default function IndexGauge({ name, value, delta, level, history, ci_low, ci_high, lang = 'it' }: IndexGaugeProps) {
   const [expanded, setExpanded] = useState(false);
-  const info = INDEX_INFO[name] || { label: name, what: '', how: '', feeds: '', scale: ['0', '100'], icon: '?' };
+  const infoDict = lang === 'en' ? INDEX_INFO_EN : INDEX_INFO_IT;
+  const t = UI[lang];
+  const info = infoDict[name] || { label: name, what: '', how: '', feeds: '', scale: ['0', '100'] as [string, string], icon: '?' };
   const color = LEVEL_COLORS[level] || LEVEL_COLORS.green;
   const bg = LEVEL_BG[level] || LEVEL_BG.green;
-  const levelText = LEVEL_LABEL[level] || 'N/A';
+  const levelText = t.levelLabel[level] || 'N/A';
   const deltaStr = delta >= 0 ? `+${delta.toFixed(1)}` : delta.toFixed(1);
   const deltaColor = delta > 0
     ? (name === 'DCI' ? '#22c55e' : '#ef4444')
@@ -115,7 +198,7 @@ export default function IndexGauge({ name, value, delta, level, history, ci_low,
 
   return (
     <div
-      className="rounded-[10px] p-3 flex flex-col gap-1.5 transition-all"
+      className="rounded-[10px] p-3 flex flex-col gap-1.5 transition-all duration-200 hover:-translate-y-0.5"
       style={{
         borderLeft: `3px solid ${color}`,
         border: '1px solid rgba(255,255,255,0.06)',
@@ -127,7 +210,7 @@ export default function IndexGauge({ name, value, delta, level, history, ci_low,
       {/* Header: icon + name + badge */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1.5">
-          <span className="text-sm">{info.icon}</span>
+          <span className="text-sm" role="img" aria-label={info.label}>{info.icon}</span>
           <span className="text-[11px] text-white/50 font-medium">{info.label}</span>
         </div>
         <span
@@ -142,7 +225,7 @@ export default function IndexGauge({ name, value, delta, level, history, ci_low,
       <div className="flex items-baseline gap-1.5 flex-wrap">
         <span className="font-mono text-[22px] font-bold" style={{ color }}>{value.toFixed(1)}</span>
         {ci_low != null && ci_high != null && (
-          <span className="text-[9px] text-white/20 font-mono" title="Intervallo di confidenza al 90%">
+          <span className="text-[9px] text-white/20 font-mono" title={t.ciTitle} aria-label={`${t.ciTitle}: ${ci_low.toFixed(0)}-${ci_high.toFixed(0)}`}>
             [{ci_low.toFixed(0)}-{ci_high.toFixed(0)}]
           </span>
         )}
@@ -172,31 +255,32 @@ export default function IndexGauge({ name, value, delta, level, history, ci_low,
 
       {/* Sparkline + delta label */}
       <div className="flex items-center justify-between mt-auto">
-        {delta !== 0 && <div className="text-[8px] text-white/25 font-mono">vs 24h fa</div>}
+        {delta !== 0 && <div className="text-[8px] text-white/25 font-mono">{t.vs24h}</div>}
         {history && history.length >= 2 && <Sparkline data={history} color={color} />}
       </div>
 
       {/* Expand for technical details */}
       <button
         onClick={() => setExpanded(!expanded)}
+        aria-expanded={expanded}
         className="text-[9px] text-gray-500 hover:text-gray-300 text-left flex items-center gap-1 transition-colors"
       >
-        <span className={`inline-block transition-transform ${expanded ? 'rotate-90' : ''}`}>&#9654;</span>
-        {expanded ? 'Nascondi dettagli' : 'Come si calcola?'}
+        <span aria-hidden="true" className={`inline-block transition-transform ${expanded ? 'rotate-90' : ''}`}>&#9654;</span>
+        {expanded ? t.hideDetails : t.showDetails}
       </button>
 
       {expanded && (
         <div className="space-y-1.5 border-t border-gray-700/50 pt-1.5">
           <div>
-            <p className="text-[9px] font-semibold text-gray-400 mb-0.5">Formula:</p>
+            <p className="text-[9px] font-semibold text-gray-400 mb-0.5">{t.formula}</p>
             <p className="text-[9px] text-gray-500 leading-relaxed">{info.how}</p>
           </div>
           <div>
-            <p className="text-[9px] font-semibold text-gray-400 mb-0.5">Cosa lo alimenta:</p>
+            <p className="text-[9px] font-semibold text-gray-400 mb-0.5">{t.feeds}</p>
             <p className="text-[9px] text-gray-500 leading-relaxed">{info.feeds}</p>
           </div>
           <div className="text-[8px] text-gray-600 font-mono">
-            Finestra temporale: 50% ultime 24h + 30% ultimi 7gg + 20% ultimi 30gg
+            {t.window}
           </div>
         </div>
       )}

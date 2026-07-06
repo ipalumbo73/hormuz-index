@@ -1,7 +1,7 @@
 """Scoring tasks - recompute indices and scenarios periodically."""
 import asyncio
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime
 from sqlalchemy import select
 from app.services.tasks.celery_app import celery_app
 from app.services.scoring.indices import compute_all_indices
@@ -9,18 +9,13 @@ from app.services.scoring.scenarios import compute_scenarios
 from app.services.alerts.rules import evaluate_alerts
 from app.services.alerts.notifier import dispatch_alerts
 from app.core.config import settings
-from app.utils.dates import hours_ago, days_ago
+from app.utils.dates import utcnow, hours_ago, days_ago
+# Share the sync engine/pool with the collection tasks instead of building a
+# separate engine per task invocation.
+from app.services.tasks.collect_tasks import _get_sync_session
 import structlog
 
 logger = structlog.get_logger()
-
-
-def _get_sync_session():
-    from sqlalchemy import create_engine
-    from sqlalchemy.orm import sessionmaker
-    engine = create_engine(settings.DATABASE_URL_SYNC, pool_size=5, max_overflow=10)
-    Session = sessionmaker(bind=engine)
-    return Session()
 
 
 def _fetch_events_in_window(session, since: datetime) -> list[dict]:
@@ -52,7 +47,7 @@ def recompute_all():
 
     session = _get_sync_session()
     try:
-        now = datetime.now(timezone.utc)
+        now = utcnow()
         events_24h = _fetch_events_in_window(session, hours_ago(24))
         events_7d = _fetch_events_in_window(session, days_ago(7))
         events_30d = _fetch_events_in_window(session, days_ago(30))

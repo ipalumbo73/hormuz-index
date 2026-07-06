@@ -11,7 +11,7 @@ import EventFeed from '@/components/EventFeed';
 import EventMapLeaflet from '@/components/EventMapLeaflet';
 import type { DashboardSummary, PlotlyFigure } from '@/lib/types';
 
-const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
+import { API_URL as API } from '@/lib/api';
 
 function InfoIcon({ tooltip }: { tooltip: string }) {
   return (
