@@ -2,11 +2,11 @@
 import asyncio
 import uuid
 from datetime import datetime
-from sqlalchemy import select
+from sqlalchemy import select, update
 from app.services.tasks.celery_app import celery_app
 from app.services.scoring.indices import compute_all_indices
 from app.services.scoring.scenarios import compute_scenarios
-from app.services.alerts.rules import evaluate_alerts
+from app.services.alerts.transitions import evaluate_transitions
 from app.services.alerts.notifier import dispatch_alerts
 from app.core.config import settings
 from app.utils.dates import utcnow, hours_ago, days_ago
@@ -137,33 +137,56 @@ def recompute_all():
         )
         session.add(sc_snap)
 
-        # Evaluate and persist alerts (deduplicate: skip if same title already unacknowledged)
-        alerts = evaluate_alerts(idx_values, probs)
-        existing_titles = set(
+        # Alert lifecycle: open the rules that just fired, close the ones whose
+        # clear condition now holds, and refresh those still firing so their message
+        # reports the current value rather than the one that triggered them.
+        active_keys = frozenset(
             row[0] for row in session.execute(
-                select(Alert.title).where(Alert.acknowledged == False)
+                select(Alert.rule_key).where(
+                    Alert.resolved_at.is_(None), Alert.rule_key.isnot(None)
+                )
             ).all()
         )
-        new_alerts = []
-        for alert_data in alerts:
-            if alert_data["title"] in existing_titles:
-                continue
-            alert = Alert(
+        transitions = evaluate_transitions(idx_values, probs, active_keys)
+
+        # Alerts predating rule_key can never be matched to a clear condition,
+        # so they would stay active forever. Retire them.
+        session.execute(
+            update(Alert)
+            .where(Alert.resolved_at.is_(None), Alert.rule_key.is_(None))
+            .values(resolved_at=now)
+        )
+
+        if transitions.to_clear:
+            session.execute(
+                update(Alert)
+                .where(Alert.resolved_at.is_(None), Alert.rule_key.in_(transitions.to_clear))
+                .values(resolved_at=now)
+            )
+
+        for refresh in transitions.to_refresh:
+            session.execute(
+                update(Alert)
+                .where(Alert.resolved_at.is_(None), Alert.rule_key == refresh["rule_key"])
+                .values(message=refresh["message"], trigger_payload=refresh["trigger_payload"])
+            )
+
+        for alert_data in transitions.to_fire:
+            session.add(Alert(
                 id=uuid.uuid4(),
                 timestamp_utc=now,
+                rule_key=alert_data["rule_key"],
                 level=alert_data["level"],
                 title=alert_data["title"],
                 message=alert_data["message"],
                 trigger_type=alert_data["trigger_type"],
                 trigger_payload=alert_data["trigger_payload"],
-            )
-            session.add(alert)
-            new_alerts.append(alert_data)
-        alerts = new_alerts
+            ))
 
         session.commit()
 
-        # Dispatch alerts async
+        # Only newly opened alerts notify; refreshes and closures stay silent.
+        alerts = list(transitions.to_fire)
         if alerts:
             asyncio.run(dispatch_alerts(alerts))
 

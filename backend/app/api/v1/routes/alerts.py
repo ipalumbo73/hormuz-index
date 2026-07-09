@@ -14,6 +14,7 @@ router = APIRouter(prefix="/alerts", tags=["alerts"])
 async def list_alerts(
     level: Optional[str] = None,
     acknowledged: Optional[bool] = None,
+    active: Optional[bool] = Query(None, description="true = still firing, false = resolved"),
     page: int = Query(1, ge=1),
     limit: int = Query(50, ge=1, le=200),
     db: AsyncSession = Depends(get_db),
@@ -27,6 +28,10 @@ async def list_alerts(
     if acknowledged is not None:
         query = query.where(Alert.acknowledged == acknowledged)
         count_query = count_query.where(Alert.acknowledged == acknowledged)
+    if active is not None:
+        condition = Alert.resolved_at.is_(None) if active else Alert.resolved_at.isnot(None)
+        query = query.where(condition)
+        count_query = count_query.where(condition)
 
     total = (await db.execute(count_query)).scalar() or 0
 

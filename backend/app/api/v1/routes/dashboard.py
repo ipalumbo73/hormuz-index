@@ -42,10 +42,10 @@ async def get_dashboard_summary(db: AsyncSession = Depends(get_db)):
     )
     prev_sc = sc_24h_result.scalar_one_or_none()
 
-    # Recent alerts (unacknowledged)
+    # Banner shows alerts that are still firing, not merely unacknowledged.
     alerts_result = await db.execute(
         select(Alert)
-        .where(Alert.acknowledged == False)
+        .where(Alert.resolved_at.is_(None))
         .order_by(desc(Alert.timestamp_utc))
         .limit(10)
     )

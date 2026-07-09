@@ -212,10 +212,10 @@ async def get_daily_briefing(db: AsyncSession = Depends(get_db)):
         )
     ).scalar() or 0
 
-    # Active (unacknowledged) alerts count
+    # Active = still firing. An acknowledged alert stays active until its condition clears.
     alerts_active = (
         await db.execute(
-            select(func.count(Alert.id)).where(Alert.acknowledged == False)  # noqa: E712
+            select(func.count(Alert.id)).where(Alert.resolved_at.is_(None))
         )
     ).scalar() or 0
 

@@ -16,6 +16,8 @@ class AlertCreate(AlertBase):
 class AlertRead(AlertBase):
     id: UUID
     timestamp_utc: datetime
+    rule_key: Optional[str] = None
+    resolved_at: Optional[datetime] = None
     acknowledged: bool = False
     created_at: datetime
     model_config = {"from_attributes": True}

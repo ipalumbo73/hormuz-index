@@ -31,6 +31,32 @@ _STARTUP_INDEXES = (
     "CREATE INDEX IF NOT EXISTS ix_event_clusters_last_seen_at ON event_clusters (last_seen_at)",
 )
 
+# create_all never alters an existing table, so columns added after a deployment
+# went live must be introduced explicitly. Each statement is idempotent.
+_STARTUP_COLUMNS = (
+    "ALTER TABLE alerts ADD COLUMN IF NOT EXISTS rule_key VARCHAR(50)",
+    "ALTER TABLE alerts ADD COLUMN IF NOT EXISTS resolved_at TIMESTAMP",
+    "CREATE INDEX IF NOT EXISTS ix_alerts_rule_key ON alerts (rule_key)",
+    "CREATE INDEX IF NOT EXISTS ix_alerts_resolved_at ON alerts (resolved_at)",
+)
+
+
+def _backfill_rule_keys_sql() -> tuple[str, dict]:
+    """Map pre-existing alerts onto their rule via title, so they can be resolved."""
+    from app.services.alerts.rules import TITLE_TO_KEY
+
+    cases, params = [], {}
+    for i, (title, key) in enumerate(TITLE_TO_KEY.items()):
+        cases.append(f"WHEN title = :title_{i} THEN :key_{i}")
+        params[f"title_{i}"] = title
+        params[f"key_{i}"] = key
+
+    sql = (
+        f"UPDATE alerts SET rule_key = CASE {' '.join(cases)} ELSE NULL END "
+        "WHERE rule_key IS NULL"
+    )
+    return sql, params
+
 
 @app.on_event("startup")
 async def on_startup():
@@ -42,6 +68,10 @@ async def on_startup():
             await conn.run_sync(Base.metadata.create_all)
             for ddl in _STARTUP_INDEXES:
                 await conn.execute(text(ddl))
+            for ddl in _STARTUP_COLUMNS:
+                await conn.execute(text(ddl))
+            backfill_sql, backfill_params = _backfill_rule_keys_sql()
+            await conn.execute(text(backfill_sql), backfill_params)
         _logger.info("on_startup: tables and indexes created OK")
     except Exception as e:
         _logger.error("on_startup: FAILED", error=str(e))

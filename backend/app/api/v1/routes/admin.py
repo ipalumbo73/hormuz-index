@@ -299,25 +299,31 @@ async def get_tuning_config(db: AsyncSession = Depends(get_db)):
 
 @router.post("/alerts/deduplicate")
 async def deduplicate_alerts(db: AsyncSession = Depends(get_db)):
-    """Acknowledge duplicate alerts, keeping only the most recent per title."""
-    from sqlalchemy import func
-    # Find all unacknowledged alerts grouped by title
+    """Resolve duplicate active alerts, keeping only the most recent per title.
+
+    The recompute task now closes alerts on its own, so this is a manual repair for
+    duplicates left behind by earlier runs.
+    """
+    from app.utils.dates import utcnow
+
     result = await db.execute(
-        select(Alert).where(Alert.acknowledged == False).order_by(Alert.title, Alert.timestamp_utc.desc())
+        select(Alert)
+        .where(Alert.resolved_at.is_(None))
+        .order_by(Alert.title, Alert.timestamp_utc.desc())
     )
     all_alerts = result.scalars().all()
 
-    # Keep only the most recent per title, acknowledge the rest
+    now = utcnow()
     seen_titles: set[str] = set()
-    acked = 0
+    resolved = 0
     for a in all_alerts:
         if a.title in seen_titles:
-            a.acknowledged = True
-            acked += 1
+            a.resolved_at = now
+            resolved += 1
         else:
             seen_titles.add(a.title)
     await db.commit()
-    return {"status": "deduplicated", "acknowledged": acked, "remaining": len(seen_titles)}
+    return {"status": "deduplicated", "resolved": resolved, "remaining": len(seen_titles)}
 
 
 @router.post("/alerts/acknowledge-all")
