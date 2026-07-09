@@ -41,6 +41,23 @@ _STARTUP_COLUMNS = (
 )
 
 
+# At most one alert per rule may be active at a time. Runs from before `resolved_at`
+# existed left hundreds of duplicates behind, because the old dedupe keyed off
+# `acknowledged` and stopped matching as soon as an alert was marked as seen.
+# Self-healing and idempotent: once the invariant holds, this updates nothing.
+_DEDUPE_ACTIVE_ALERTS = """
+UPDATE alerts a SET resolved_at = (NOW() AT TIME ZONE 'utc')
+WHERE a.resolved_at IS NULL
+  AND a.rule_key IS NOT NULL
+  AND a.id <> (
+      SELECT b.id FROM alerts b
+      WHERE b.rule_key = a.rule_key AND b.resolved_at IS NULL
+      ORDER BY b.timestamp_utc DESC, b.id DESC
+      LIMIT 1
+  )
+"""
+
+
 def _backfill_rule_keys_sql() -> tuple[str, dict]:
     """Map pre-existing alerts onto their rule via title, so they can be resolved."""
     from app.services.alerts.rules import TITLE_TO_KEY
@@ -72,6 +89,9 @@ async def on_startup():
                 await conn.execute(text(ddl))
             backfill_sql, backfill_params = _backfill_rule_keys_sql()
             await conn.execute(text(backfill_sql), backfill_params)
+            deduped = await conn.execute(text(_DEDUPE_ACTIVE_ALERTS))
+            if deduped.rowcount:
+                _logger.info("on_startup: resolved duplicate alerts", count=deduped.rowcount)
         _logger.info("on_startup: tables and indexes created OK")
     except Exception as e:
         _logger.error("on_startup: FAILED", error=str(e))
