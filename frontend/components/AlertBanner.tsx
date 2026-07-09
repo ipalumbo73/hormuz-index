@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { usePathname } from 'next/navigation';
+import { localeFromPathname } from '@/lib/locale';
 import type { Alert } from '@/lib/types';
 
 interface AlertBannerProps {
@@ -17,7 +18,7 @@ const LEVEL_STYLES: Record<string, { bg: string; color: string; label_it: string
 export default function AlertBanner({ alerts }: AlertBannerProps) {
   const [expanded, setExpanded] = useState(false);
   const pathname = usePathname();
-  const isEn = pathname.startsWith('/en');
+  const isEn = localeFromPathname(pathname) === 'en';
 
   if (!alerts.length) return null;
 

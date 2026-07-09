@@ -2,12 +2,13 @@
 import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import Script from 'next/script';
+import { localeFromPathname } from '@/lib/locale';
 
 const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
 
 export default function CookieBanner() {
   const pathname = usePathname();
-  const isEn = pathname.startsWith('/en');
+  const isEn = localeFromPathname(pathname) === 'en';
   const [consent, setConsent] = useState<'pending' | 'accepted' | 'rejected'>('pending');
   const [visible, setVisible] = useState(false);
 
