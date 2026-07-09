@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- Landmass: Iran above, Arabian peninsula below. -->
+  <rect width="64" height="64" rx="13" fill="#1e293b"/>
+  <!-- The strait itself, narrowing to a chokepoint at the centre. -->
+  <path d="M0 6 C 16 22, 24 28, 32 28 C 40 28, 48 22, 64 6 L64 58 C 48 42, 40 36, 32 36 C 24 36, 16 42, 0 58 Z" fill="#f97316"/>
+  <!-- Chokepoint under pressure. -->
+  <circle cx="32" cy="32" r="11" fill="#ef4444"/>
+  <circle cx="32" cy="32" r="4" fill="#fca5a5"/>
+</svg>
