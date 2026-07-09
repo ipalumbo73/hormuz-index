@@ -28,6 +28,14 @@ export const metadata: Metadata = {
   creator: 'Hormuz Index',
   publisher: 'Hormuz Index',
   formatDetection: { telephone: false },
+  // Read at build time. Unset means Next emits no verification tag, so the token
+  // never lands in this public repository.
+  verification: {
+    google: process.env.GOOGLE_SITE_VERIFICATION,
+    other: process.env.BING_SITE_VERIFICATION
+      ? { 'msvalidate.01': process.env.BING_SITE_VERIFICATION }
+      : undefined,
+  },
   robots: {
     index: true,
     follow: true,
