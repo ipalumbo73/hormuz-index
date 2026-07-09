@@ -3,6 +3,9 @@
 .env.local
 .env.production
 
+# Contains the admin panel key in plaintext
+admin.txt
+
 # Python
 __pycache__/
 *.pyc
