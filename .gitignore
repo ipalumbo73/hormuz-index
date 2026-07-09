@@ -51,6 +51,7 @@ CLAUDE.md
 *-spec.md
 claude.md.txt
 nul
+promotion_posts.md
 
 # Local test venv
 .venv-test/
