@@ -1,33 +1,33 @@
 import type { Metadata } from 'next'
 import './globals.css'
 import CookieBanner from '@/components/CookieBanner'
+import { SITE_URL } from '@/lib/seo'
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://hormuzindex.info'),
+  metadataBase: new URL(SITE_URL),
   title: {
-    default: 'Hormuz Index — Crisis Dashboard',
+    default: 'Hormuz Index Live — Iran War & Nuclear Risk Tracker',
     template: '%s | Hormuz Index',
   },
-  description: 'Sistema di early warning geopolitico per la crisi Iran-USA-Israele. 7 indici di rischio in tempo reale, 5 scenari di escalation con calibrazione storica.',
-  keywords: ['Hormuz Index', 'geopolitica', 'Iran', 'Israele', 'USA', 'crisi nucleare', 'risk index', 'early warning', 'escalation', 'IAEA', 'Stretto di Hormuz'],
+  description:
+    'Live tracking of the Iran war and the Strait of Hormuz. 7 geopolitical risk indices updated in real time, 5 escalation scenarios, and Iran nuclear capacity signals.',
+  keywords: [
+    'Hormuz Index',
+    'Hormuz Index Live',
+    'Iran war live',
+    'Hormuz war live',
+    'Strait of Hormuz',
+    'Iran nuclear capacity',
+    'nuclear breakout',
+    'escalation scenarios',
+    'geopolitical risk index',
+    'early warning system',
+    'IAEA',
+  ],
   authors: [{ name: 'Hormuz Index' }],
   creator: 'Hormuz Index',
   publisher: 'Hormuz Index',
   formatDetection: { telephone: false },
-  openGraph: {
-    title: 'Hormuz Index — Crisis Dashboard',
-    description: 'Sistema di early warning geopolitico per la crisi Iran-USA-Israele.',
-    url: 'https://hormuzindex.info',
-    siteName: 'Hormuz Index',
-    locale: 'it_IT',
-    alternateLocale: 'en_US',
-    type: 'website',
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'Hormuz Index — Crisis Dashboard',
-    description: 'Sistema di early warning geopolitico per la crisi Iran-USA-Israele.',
-  },
   robots: {
     index: true,
     follow: true,
@@ -38,28 +38,26 @@ export const metadata: Metadata = {
       'max-image-preview': 'large',
     },
   },
-  alternates: {
-    canonical: 'https://hormuzindex.info',
-    languages: {
-      'it': 'https://hormuzindex.info',
-      'en': 'https://hormuzindex.info/en',
-    },
-  },
 }
 
+// Per-page canonical and hreflang links are emitted from each page's `alternates`
+// metadata. Do not hardcode them here: a static <link rel="canonical"> in <head>
+// would point every page at the homepage.
 const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'WebApplication',
   name: 'Hormuz Index',
-  description: 'Geopolitical early warning system for the Iran-USA-Israel crisis. Real-time risk indices, escalation scenarios, and event monitoring.',
-  url: 'https://hormuzindex.info',
+  alternateName: 'Hormuz Index Live',
+  description:
+    'Live tracker for the Iran war, Strait of Hormuz disruption, and Iran nuclear capacity. Seven real-time geopolitical risk indices and five escalation scenarios with explainable alerts.',
+  url: SITE_URL,
   applicationCategory: 'SecurityApplication',
   operatingSystem: 'Web',
-  inLanguage: ['it', 'en'],
+  inLanguage: ['en', 'it'],
   author: {
     '@type': 'Organization',
     name: 'Hormuz Index',
-    url: 'https://hormuzindex.info',
+    url: SITE_URL,
   },
   offers: {
     '@type': 'Offer',
@@ -70,12 +68,8 @@ const jsonLd = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="it" className="dark">
+    <html lang="en" className="dark">
       <head>
-        <link rel="canonical" href="https://hormuzindex.info" />
-        <link rel="alternate" hrefLang="it" href="https://hormuzindex.info" />
-        <link rel="alternate" hrefLang="en" href="https://hormuzindex.info/en" />
-        <link rel="alternate" hrefLang="x-default" href="https://hormuzindex.info" />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}

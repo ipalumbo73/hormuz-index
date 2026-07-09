@@ -12,31 +12,31 @@ const LEVEL_COLORS: Record<string, { bg: string; text: string; dot: string }> = 
 };
 
 const LEVEL_LABELS: Record<string, string> = {
-  green: 'Basso',
-  yellow: 'Moderato',
-  orange: 'Elevato',
-  red: 'Alto',
-  dark_red: 'Critico',
+  green: 'Low',
+  yellow: 'Moderate',
+  orange: 'Elevated',
+  red: 'High',
+  dark_red: 'Critical',
 };
 
 const CATEGORY_LABELS: Record<string, string> = {
-  military_strike: 'Strike militare',
-  missile_drone_attack: 'Missili/Droni',
-  nuclear_posture_signal: 'Postura nucleare',
-  nuclear_verification_gap: 'Gap verifica',
-  enrichment_signal: 'Arricchimento',
-  proxy_activity: 'Attività proxy',
-  gulf_infrastructure_attack: 'Infrastrutture Golfo',
-  shipping_disruption: 'Disruzione navale',
-  hormuz_threat: 'Minaccia Hormuz',
-  strategic_rhetoric: 'Retorica strategica',
-  diplomatic_contact: 'Diplomazia',
+  military_strike: 'Military Strike',
+  missile_drone_attack: 'Missiles/Drones',
+  nuclear_posture_signal: 'Nuclear Posture',
+  nuclear_verification_gap: 'Verification Gap',
+  enrichment_signal: 'Enrichment',
+  proxy_activity: 'Proxy Activity',
+  gulf_infrastructure_attack: 'Gulf Infrastructure',
+  shipping_disruption: 'Shipping Disruption',
+  hormuz_threat: 'Hormuz Threat',
+  strategic_rhetoric: 'Strategic Rhetoric',
+  diplomatic_contact: 'Diplomacy',
   deescalation_signal: 'De-escalation',
-  sanctions_or_economic_pressure: 'Sanzioni',
+  sanctions_or_economic_pressure: 'Sanctions',
   cyber_operation: 'Cyber',
-  civilian_casualty_mass_event: 'Vittime civili',
-  nuclear_site_damage: 'Siti nucleari',
-  underground_activity_signal: 'Attività sotterranea',
+  civilian_casualty_mass_event: 'Civilian Casualties',
+  nuclear_site_damage: 'Nuclear Site Damage',
+  underground_activity_signal: 'Underground Activity',
 };
 
 interface BriefingData {
@@ -52,16 +52,16 @@ interface BriefingData {
 }
 
 const SCENARIO_LABELS: Record<string, string> = {
-  contained: 'Conflitto Contenuto',
-  regional: 'Guerra Regionale',
-  threshold: 'Crisi Soglia Nucleare',
-  coercive: 'Coercizione Nucleare',
-  actual: 'Uso Nucleare Effettivo',
+  contained: 'Contained Conflict',
+  regional: 'Regional War',
+  threshold: 'Nuclear Threshold Crisis',
+  coercive: 'Coercive Nuclear Escalation',
+  actual: 'Actual Nuclear Use',
 };
 
 const INDEX_ORDER = ['NOI', 'GAI', 'HDI', 'PAI', 'SRI', 'BSI', 'DCI'];
 
-export default function BriefingPage() {
+export default function BriefingPageEN() {
   const [data, setData] = useState<BriefingData | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -77,7 +77,7 @@ export default function BriefingPage() {
       <div className="flex items-center justify-center h-96">
         <div className="text-center">
           <div className="animate-spin w-12 h-12 border-4 border-gray-600 border-t-orange-500 rounded-full mx-auto mb-4" />
-          <p className="text-white/40">Caricamento briefing...</p>
+          <p className="text-white/40">Loading briefing...</p>
         </div>
       </div>
     );
@@ -87,13 +87,13 @@ export default function BriefingPage() {
     return (
       <div className="flex items-center justify-center h-96">
         <div className="text-center card p-8">
-          <p className="text-white/50">Nessun dato disponibile per il briefing giornaliero.</p>
+          <p className="text-white/50">No data available for the daily briefing.</p>
         </div>
       </div>
     );
   }
 
-  const formattedDate = new Date(data.date + 'T00:00:00').toLocaleDateString('it-IT', {
+  const formattedDate = new Date(data.date + 'T00:00:00').toLocaleDateString('en-US', {
     weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
   });
 
@@ -101,12 +101,12 @@ export default function BriefingPage() {
     <div className="max-w-3xl mx-auto space-y-6">
       {/* Header */}
       <div className="text-center py-6">
-        <p className="text-white/30 text-xs font-mono uppercase tracking-widest mb-2">Briefing Giornaliero</p>
+        <p className="text-white/30 text-xs font-mono uppercase tracking-widest mb-2">Daily Briefing</p>
         <h1 className="text-2xl font-bold text-white">{formattedDate}</h1>
         <div className="flex items-center justify-center gap-4 mt-3 text-xs text-white/40">
-          <span>{data.events_24h_count} eventi nelle ultime 24h</span>
+          <span>{data.events_24h_count} events in the last 24h</span>
           {data.alerts_active > 0 && (
-            <span className="text-red-400">{data.alerts_active} alert attivi</span>
+            <span className="text-red-400">{data.alerts_active} active alerts</span>
           )}
         </div>
       </div>
@@ -116,8 +116,8 @@ export default function BriefingPage() {
         background: 'linear-gradient(135deg, rgba(15,23,42,0.9), rgba(30,41,59,0.7))',
         border: '1px solid rgba(255,255,255,0.08)',
       }}>
-        <h2 className="text-sm font-semibold text-white/70 mb-3">Sintesi</h2>
-        <p className="text-[14px] text-white/80 leading-relaxed">{data.summary_it}</p>
+        <h2 className="text-sm font-semibold text-white/70 mb-3">Summary</h2>
+        <p className="text-[14px] text-white/80 leading-relaxed">{data.summary_en}</p>
       </div>
 
       {/* Indices Table */}
@@ -125,7 +125,7 @@ export default function BriefingPage() {
         border: '1px solid rgba(255,255,255,0.06)',
       }}>
         <div className="px-5 py-3" style={{ background: 'rgba(255,255,255,0.03)' }}>
-          <h2 className="text-sm font-semibold text-white/70">Indici di Rischio</h2>
+          <h2 className="text-sm font-semibold text-white/70">Risk Indices</h2>
         </div>
         <div className="divide-y divide-white/[0.04]">
           {INDEX_ORDER.map(name => {
@@ -158,7 +158,7 @@ export default function BriefingPage() {
         background: 'rgba(249,115,22,0.05)',
         border: '1px solid rgba(249,115,22,0.12)',
       }}>
-        <h2 className="text-sm font-semibold text-white/70 mb-2">Scenario Dominante</h2>
+        <h2 className="text-sm font-semibold text-white/70 mb-2">Dominant Scenario</h2>
         <div className="flex items-baseline gap-3">
           <span className="text-xl font-bold text-orange-400">
             {SCENARIO_LABELS[data.dominant_scenario.name] || data.dominant_scenario.name}
@@ -173,7 +173,7 @@ export default function BriefingPage() {
           border: '1px solid rgba(255,255,255,0.06)',
         }}>
           <div className="px-5 py-3" style={{ background: 'rgba(255,255,255,0.03)' }}>
-            <h2 className="text-sm font-semibold text-white/70">Eventi Principali (ultime 24h)</h2>
+            <h2 className="text-sm font-semibold text-white/70">Top Events (last 24h)</h2>
           </div>
           <div className="divide-y divide-white/[0.04]">
             {data.top_events.map((ev, i) => (
@@ -188,7 +188,7 @@ export default function BriefingPage() {
                   </span>
                   {ev.timestamp && (
                     <span className="text-[10px] text-white/25 font-mono">
-                      {new Date(ev.timestamp).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })}
+                      {new Date(ev.timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
                     </span>
                   )}
                 </div>
@@ -200,7 +200,7 @@ export default function BriefingPage() {
 
       {/* Footer note */}
       <p className="text-center text-[11px] text-white/20 py-4">
-        Questo briefing analizza notizie pubbliche, non fatti verificati. Vedi la pagina Modello per dettagli sulla metodologia.
+        This briefing analyzes public news, not verified facts. See the Model page for methodology details.
       </p>
     </div>
   );

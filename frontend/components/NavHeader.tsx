@@ -5,29 +5,29 @@ interface NavHeaderProps {
   lang?: 'it' | 'en';
 }
 
-export default function NavHeader({ lang = 'it' }: NavHeaderProps) {
+// English is the default locale and lives at the root; Italian is nested under /it.
+export default function NavHeader({ lang = 'en' }: NavHeaderProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const isEn = lang === 'en';
-  const prefix = isEn ? '/en' : '';
-  const switchHref = isEn ? '/' : '/en';
+  const switchHref = isEn ? '/it' : '/';
   const switchLabel = isEn ? 'IT' : 'EN';
 
   const links = isEn
     ? [
-        { href: '/en', label: 'Dashboard' },
-        { href: '/en/briefing', label: 'Briefing' },
-        { href: '/en/timeline', label: 'Timeline' },
-        { href: '/en/nuclear', label: 'Nuclear' },
-        { href: '/en/sources', label: 'Sources' },
-        { href: '/en/explain', label: 'Model' },
-      ]
-    : [
         { href: '/', label: 'Dashboard' },
         { href: '/briefing', label: 'Briefing' },
         { href: '/timeline', label: 'Timeline' },
         { href: '/nuclear', label: 'Nuclear' },
         { href: '/sources', label: 'Sources' },
-        { href: '/explain', label: 'Modello' },
+        { href: '/explain', label: 'Model' },
+      ]
+    : [
+        { href: '/it', label: 'Dashboard' },
+        { href: '/it/briefing', label: 'Briefing' },
+        { href: '/it/timeline', label: 'Timeline' },
+        { href: '/it/nuclear', label: 'Nuclear' },
+        { href: '/it/sources', label: 'Sources' },
+        { href: '/it/explain', label: 'Modello' },
       ];
 
   return (

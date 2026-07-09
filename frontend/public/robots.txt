@@ -1,7 +1,0 @@
-User-agent: *
-Allow: /
-Disallow: /admin
-Disallow: /en/admin
-Disallow: /api/
-
-Sitemap: https://hormuzindex.info/sitemap.xml

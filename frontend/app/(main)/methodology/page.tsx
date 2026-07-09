@@ -6,267 +6,267 @@ export default function MethodologyPage() {
 
       {/* Title */}
       <div className="border-b border-white/10 pb-5">
-        <h1 className="text-2xl font-bold text-white">Metodologia statistica — Hormuz Index</h1>
-        <p className="text-sm text-white/40 mt-1">Documento tecnico per revisione accademica e peer review</p>
-        <p className="text-xs text-white/25 mt-2 font-mono">Versione 1.1 — Marzo 2026</p>
+        <h1 className="text-2xl font-bold text-white">Statistical Methodology — Hormuz Index</h1>
+        <p className="text-sm text-white/40 mt-1">Technical document for academic and peer review</p>
+        <p className="text-xs text-white/25 mt-2 font-mono">Version 1.1 — March 2026</p>
       </div>
 
       {/* Abstract */}
       <Section title="0. Abstract">
         <p>
-          Hormuz Index è un sistema di early warning geopolitico che monitora la crisi Iran-USA-Israele
-          attraverso l&apos;analisi automatizzata di flussi informativi da 30+ fonti pubbliche. Il sistema produce
-          7 indici compositi di rischio (0-100) e 5 probabilità di scenario (somma = 100%), con bande
-          di incertezza al 90%.
+          Hormuz Index is a geopolitical early warning system that monitors the Iran-USA-Israel crisis
+          through automated analysis of information flows from 30+ public sources. The system produces
+          7 composite risk indices (0-100) and 5 scenario probabilities (summing to 100%), with 90%
+          uncertainty bands.
         </p>
         <p className="mt-2">
-          Questo documento descrive nel dettaglio ogni componente matematica e statistica del modello,
-          i riferimenti accademici su cui si basa, e i limiti noti. <strong>Il modello è sperimentale
-          e indicativo, non predittivo.</strong> Le probabilità rappresentano plausibilità relativa
-          condizionata ai dati e alle assunzioni del modello.
+          This document describes in detail every mathematical and statistical component of the model,
+          the academic references on which it is based, and its known limitations. <strong>The model is
+          experimental and indicative, not predictive.</strong> The probabilities represent relative
+          plausibility conditioned on the data and the assumptions of the model.
         </p>
       </Section>
 
       {/* 1. Data Pipeline */}
-      <Section title="1. Pipeline dati e costruzione degli eventi">
-        <p>Il sistema raccoglie notizie da fonti eterogenee, le normalizza, deduplica e classifica.</p>
+      <Section title="1. Data Pipeline and Event Construction">
+        <p>The system collects news from heterogeneous sources, normalises, deduplicates, and classifies them.</p>
 
-        <SubSection title="1.1 Fonti e affidabilità">
+        <SubSection title="1.1 Sources and Reliability">
           <p>
-            Ogni fonte ha un punteggio di affidabilità fisso (<code>source_reliability</code>, 0-1).
-            Il sistema di grading è ispirato al NATO Admiralty Code (STANAG 2511 / AJP-2.1),
-            che usa lettere A-F per l&apos;affidabilità della fonte e numeri 1-6 per la credibilità
-            dell&apos;informazione. <strong>La conversione in scala numerica 0-1 è un adattamento
-            proprio degli autori</strong>, non una procedura standard NATO. La mappatura è:
-            A=0.95, B=0.85, C=0.75, D=0.65, E=0.50, F=non usata.
+            Each source has a fixed reliability score (<code>source_reliability</code>, 0-1).
+            The grading system is inspired by the NATO Admiralty Code (STANAG 2511 / AJP-2.1),
+            which uses letters A-F for source reliability and numbers 1-6 for information
+            credibility. <strong>The conversion to a 0-1 numerical scale is the authors&apos;
+            own adaptation</strong>, not a standard NATO procedure. The mapping is:
+            A=0.95, B=0.85, C=0.75, D=0.65, E=0.50, F=not used.
           </p>
-          <Table headers={['Livello', 'Fonti', 'Punteggio']} rows={[
-            ['Tier 1 — Agenzie di stampa', 'Reuters, AP, AFP', '0.92 - 0.97'],
-            ['Tier 2 — Testate internazionali', 'BBC, Al Jazeera, Guardian, Haaretz', '0.85 - 0.90'],
-            ['Tier 3 — Aggregatori', 'GDELT, NewsData, GNews', '0.70 - 0.85'],
-            ['Tier 4 — Think tank', 'Carnegie, Brookings, IISS', '0.80 - 0.88'],
-            ['Escluse', 'Social media, fonti anonime', 'Non ingerite'],
+          <Table headers={['Tier', 'Sources', 'Score']} rows={[
+            ['Tier 1 — Wire agencies', 'Reuters, AP, AFP', '0.92 - 0.97'],
+            ['Tier 2 — International outlets', 'BBC, Al Jazeera, Guardian, Haaretz', '0.85 - 0.90'],
+            ['Tier 3 — Aggregators', 'GDELT, NewsData, GNews', '0.70 - 0.85'],
+            ['Tier 4 — Think tanks', 'Carnegie, Brookings, IISS', '0.80 - 0.88'],
+            ['Excluded', 'Social media, anonymous sources', 'Not ingested'],
           ]} />
           <p className="text-xs text-white/40 mt-2">
-            Riferimento: NATO STANAG 2511 / AJP-2.1, &quot;Evaluation of intelligence sources and information&quot;,
-            Rating A-F per affidabilità della fonte.
+            Reference: NATO STANAG 2511 / AJP-2.1, &quot;Evaluation of intelligence sources and information&quot;,
+            Rating A-F for source reliability.
           </p>
         </SubSection>
 
-        <SubSection title="1.2 Deduplicazione">
+        <SubSection title="1.2 Deduplication">
           <p>
-            Gli articoli vengono raggruppati per similarità testuale usando RapidFuzz (algoritmo Levenshtein normalizzato)
-            con soglia di similarità all&apos;88%. Questo produce cluster di articoli sullo stesso evento.
-            Solo l&apos;evento rappresentativo del cluster viene ingerito.
+            Articles are grouped by textual similarity using RapidFuzz (normalised Levenshtein algorithm)
+            with a similarity threshold of 88%. This produces clusters of articles about the same event.
+            Only the representative event of each cluster is ingested.
           </p>
           <Formula>
             similarity(a, b) = 1 - levenshtein_distance(a, b) / max(len(a), len(b))
             <br />
-            cluster se similarity &ge; 0.88
+            cluster if similarity &ge; 0.88
           </Formula>
         </SubSection>
 
-        <SubSection title="1.3 Classificazione eventi">
+        <SubSection title="1.3 Event Classification">
           <p>
-            Ogni evento viene classificato in una di 17 categorie tramite pattern matching regex
-            contro il testo (titolo + sommario). La classificazione assegna:
+            Each event is classified into one of 17 categories via regex pattern matching
+            against the text (title + summary). The classification assigns:
           </p>
           <ul className="list-disc list-inside space-y-1 text-sm">
-            <li><strong>category</strong>: tipo di evento (es. military_strike, enrichment_signal)</li>
-            <li><strong>signal_keys</strong>: quali indici alimenta (es. GAI, BSI)</li>
-            <li><strong>base_severity</strong>: gravità base della categoria (0-1)</li>
-            <li><strong>confidence</strong>: quanti pattern hanno matchato / totale pattern della regola</li>
+            <li><strong>category</strong>: event type (e.g. military_strike, enrichment_signal)</li>
+            <li><strong>signal_keys</strong>: which indices it feeds (e.g. GAI, BSI)</li>
+            <li><strong>base_severity</strong>: baseline severity of the category (0-1)</li>
+            <li><strong>confidence</strong>: number of matched patterns / total patterns for the rule</li>
           </ul>
           <p className="mt-2">
-            La classificazione è rule-based (non LLM) per riproducibilità e trasparenza.
-            Ogni categoria ha un filtro di rilevanza geografica: gli eventi non relativi all&apos;area
-            Iran/Golfo/Medio Oriente vengono esclusi per le categorie che lo richiedono.
+            The classification is rule-based (not LLM) for reproducibility and transparency.
+            Each category has a geographic relevance filter: events unrelated to the
+            Iran/Gulf/Middle East area are excluded for categories that require it.
           </p>
         </SubSection>
       </Section>
 
       {/* 2. Event Impact */}
-      <Section title="2. Impatto evento (Event Impact)">
-        <p>Ogni evento classificato produce un punteggio di impatto composito:</p>
+      <Section title="2. Event Impact">
+        <p>Each classified event produces a composite impact score:</p>
         <Formula>
           impact<sub>i</sub> = source_reliability<sub>i</sub> &times; confidence<sub>i</sub> &times; severity<sub>i</sub> &times; novelty<sub>i</sub>
         </Formula>
-        <Table headers={['Fattore', 'Range', 'Significato', 'Fonte calibrazione']} rows={[
-          ['source_reliability', '0-1', 'Credibilità della fonte (fisso per fonte)', 'Adattamento proprio da NATO Admiralty Code (STANAG 2511)'],
-          ['confidence', '0-1', 'Confidenza del classificatore', 'Proporzione pattern matchati'],
-          ['severity', '0-1', 'Gravità base della categoria evento', 'Scala Goldstein (1992) adattata'],
-          ['novelty', '0-1', 'Quanto l\'evento è nuovo (fattore deduplicazione)', 'Rapporto cluster/duplicati'],
+        <Table headers={['Factor', 'Range', 'Meaning', 'Calibration source']} rows={[
+          ['source_reliability', '0-1', 'Source credibility (fixed per source)', 'Authors\' adaptation from NATO Admiralty Code (STANAG 2511)'],
+          ['confidence', '0-1', 'Classifier confidence', 'Proportion of matched patterns'],
+          ['severity', '0-1', 'Baseline severity of the event category', 'Goldstein scale (1992), adapted'],
+          ['novelty', '0-1', 'How novel the event is (deduplication factor)', 'Cluster/duplicate ratio'],
         ]} />
         <p className="text-xs text-white/40 mt-2">
-          <strong>Riferimento severità:</strong> Goldstein, J.S. (1992). &quot;A Conflict-Cooperation Scale for WEIS
+          <strong>Severity reference:</strong> Goldstein, J.S. (1992). &quot;A Conflict-Cooperation Scale for WEIS
           International Events Data.&quot; <em>Journal of Conflict Resolution</em>, 36(2), 369-385.
-          La scala originale va da -10 (massimo conflitto) a +10 (massima cooperazione).
-          <strong>Il sistema usa solo la dimensione conflittuale</strong> (valori negativi della scala),
-          normalizzata a (0, 1). Gli eventi cooperativi (positivi nella scala originale) non sono
-          catturati dal fattore severity — la componente cooperativa è gestita separatamente
-          dall&apos;indice DCI (Diplomatic Channels Index). Questa scelta di design produce una
-          asimmetria intenzionale: il modello è più sensibile ai segnali conflittuali.
+          The original scale ranges from -10 (maximum conflict) to +10 (maximum cooperation).
+          <strong> The system uses only the conflict dimension</strong> (negative values of the scale),
+          normalised to (0, 1). Cooperative events (positive in the original scale) are not
+          captured by the severity factor — the cooperative component is handled separately
+          by the DCI (Diplomatic Channels Index). This design choice produces an intentional
+          asymmetry: the model is more sensitive to conflict signals.
         </p>
       </Section>
 
       {/* 3. Subindex */}
-      <Section title="3. Calcolo sotto-indici (Subindex)">
+      <Section title="3. Subindex Computation">
         <p>
-          Ogni indice aggrega i segnali degli eventi classificati tramite media pesata per impatto.
-          Questo è lo standard per la costruzione di indici compositi
-          (OECD/JRC Handbook on Constructing Composite Indicators, 2008, Cap. 4 &quot;Weighting&quot;).
+          Each index aggregates classified event signals via impact-weighted averaging.
+          This is the standard approach for composite index construction
+          (OECD/JRC Handbook on Constructing Composite Indicators, 2008, Ch. 4 &quot;Weighting&quot;).
         </p>
         <Formula>
           subindex<sub>k</sub> = &Sigma;<sub>i</sub> (impact<sub>i</sub> &times; signal_value<sub>i,k</sub>) / &Sigma;<sub>i</sub> impact<sub>i</sub>
         </Formula>
         <p>
-          Dove <code>signal_value<sub>i,k</sub></code> è il valore del segnale k nell&apos;evento i
-          (es. BSI=95 per un evento di arricchimento). Se nessun evento ha il segnale k, il sotto-indice vale 0.
+          Where <code>signal_value<sub>i,k</sub></code> is the value of signal k in event i
+          (e.g. BSI=95 for an enrichment event). If no event carries signal k, the subindex equals 0.
         </p>
         <p className="text-xs text-white/40 mt-2">
-          <strong>Riferimento:</strong> OECD/JRC (2008). <em>Handbook on Constructing Composite Indicators: Methodology and User Guide.</em>
-          Paris: OECD Publishing. Sezione 4.2: &quot;Weights based on statistical methods.&quot;
+          <strong>Reference:</strong> OECD/JRC (2008). <em>Handbook on Constructing Composite Indicators: Methodology and User Guide.</em>
+          Paris: OECD Publishing. Section 4.2: &quot;Weights based on statistical methods.&quot;
         </p>
       </Section>
 
       {/* 4. Rolling Window */}
-      <Section title="4. Finestra temporale mobile (Rolling Window)">
+      <Section title="4. Rolling Window">
         <p>
-          Ogni indice finale è una combinazione pesata di tre finestre temporali discrete.
-          Questa è una <strong>scelta euristica di design</strong>, non una derivazione formale
-          da un modello statistico specifico:
+          Each final index is a weighted combination of three discrete time windows.
+          This is a <strong>heuristic design choice</strong>, not a formal derivation
+          from a specific statistical model:
         </p>
         <Formula>
           Index<sub>t</sub> = 0.50 &times; score<sub>24h</sub> + 0.30 &times; score<sub>7d</sub> + 0.20 &times; score<sub>30d</sub>
         </Formula>
-        <Table headers={['Finestra', 'Peso', 'Razionale']} rows={[
-          ['Ultime 24 ore', '0.50 (50%)', 'Massima reattività ai segnali recenti'],
-          ['Ultimi 7 giorni', '0.30 (30%)', 'Trend a breve termine'],
-          ['Ultimi 30 giorni', '0.20 (20%)', 'Baseline e contesto storico'],
+        <Table headers={['Window', 'Weight', 'Rationale']} rows={[
+          ['Last 24 hours', '0.50 (50%)', 'Maximum responsiveness to recent signals'],
+          ['Last 7 days', '0.30 (30%)', 'Short-term trend'],
+          ['Last 30 days', '0.20 (20%)', 'Baseline and historical context'],
         ]} />
         <p className="mt-2 text-sm">
-          <strong>Razionale:</strong> I pesi 50/30/20 danno priorità decrescente alle osservazioni
-          più recenti, coerentemente con la velocità di evoluzione delle crisi geopolitiche.
-          Questa è una <strong>discretizzazione a 3 bucket</strong>, non un EWMA (Exponentially
-          Weighted Moving Average) formale su serie continua. L&apos;analogia con schemi a
-          decadimento esponenziale è pedagogica, non matematica: un EWMA classico ha formula
+          <strong>Rationale:</strong> The 50/30/20 weights give decreasing priority to more recent
+          observations, consistent with the pace of geopolitical crisis evolution.
+          This is a <strong>3-bucket discretisation</strong>, not a formal EWMA (Exponentially
+          Weighted Moving Average) on a continuous series. The analogy with exponential
+          decay schemes is pedagogical, not mathematical: a classical EWMA has the formula
           S<sub>t</sub> = &alpha; &times; X<sub>t</sub> + (1-&alpha;) &times; S<sub>t-1</sub>
-          con half-life = ln(2)/ln(1/(1-&alpha;)), che non è direttamente equiparabile a 3 finestre
-          discrete con pesi fissi.
+          with half-life = ln(2)/ln(1/(1-&alpha;)), which is not directly comparable to 3 discrete
+          windows with fixed weights.
         </p>
       </Section>
 
       {/* 5. NOI */}
-      <Section title="5. Nuclear Opacity Index (NOI) — Indice composito a 6 componenti">
+      <Section title="5. Nuclear Opacity Index (NOI) — 6-Component Composite Index">
         <p>
-          Il NOI misura quanto il programma nucleare iraniano sia opaco alla verifica internazionale.
-          È un indice composito con 6 sotto-componenti pesate, ispirato alla struttura
-          del NTI Nuclear Security Index (Nuclear Threat Initiative, 2020-2024).
-          <strong>L&apos;allocazione dei pesi (A+B = 50%, C+D+E+F = 50%) riflette un giudizio
-          di esperti</strong> (expert elicitation) secondo cui la verifica fisica (accesso ai siti +
-          conoscenza dei materiali) è la dimensione più critica dell&apos;opacità nucleare.
-          Questa scelta non è derivata da una formula NTI specifica ma dalla valutazione
-          degli autori sulle priorità dell&apos;IAEA safeguards.
+          The NOI measures the degree to which the Iranian nuclear programme is opaque to
+          international verification. It is a composite index with 6 weighted sub-components,
+          inspired by the structure of the NTI Nuclear Security Index (Nuclear Threat Initiative, 2020-2024).
+          <strong> The weight allocation (A+B = 50%, C+D+E+F = 50%) reflects expert
+          judgement</strong> (expert elicitation) that physical verification (site access +
+          material knowledge) is the most critical dimension of nuclear opacity.
+          This choice is not derived from a specific NTI formula but from the authors&apos;
+          assessment of IAEA safeguards priorities.
         </p>
         <Formula>
           NOI = 0.25&times;A + 0.25&times;B + 0.20&times;C + 0.10&times;D + 0.10&times;E + 0.10&times;F
         </Formula>
-        <Table headers={['Comp.', 'Nome', 'Peso', 'Cosa misura', 'Rif. NTI']} rows={[
-          ['A', 'Site Access Loss', '25%', 'Perdita di accesso fisico IAEA ai siti dichiarati', 'Security & Control Measures'],
-          ['B', 'Material Knowledge Loss', '25%', 'Perdita di conoscenza su quantità/localizzazione materiali', 'Quantities and Sites'],
-          ['C', 'Enrichment Verification Gap', '20%', 'Gap nella verifica dei livelli di arricchimento', 'IAEA Safeguards Reports'],
-          ['D', 'Underground Activity Signal', '10%', 'Attività in siti sotterranei/bunkerizzati (Fordow)', 'IAEA reports su Fordow'],
-          ['E', 'Technical Diplomatic Breakdown', '10%', 'Rottura della cooperazione tecnica con IAEA', 'NTI Global Norms'],
-          ['F', 'Conflicting Narratives', '10%', 'Narrazioni contrastanti sullo stato del programma', 'Intelligence analysis metric'],
+        <Table headers={['Comp.', 'Name', 'Weight', 'What it measures', 'NTI Ref.']} rows={[
+          ['A', 'Site Access Loss', '25%', 'Loss of IAEA physical access to declared sites', 'Security & Control Measures'],
+          ['B', 'Material Knowledge Loss', '25%', 'Loss of knowledge on quantity/location of materials', 'Quantities and Sites'],
+          ['C', 'Enrichment Verification Gap', '20%', 'Gap in verification of enrichment levels', 'IAEA Safeguards Reports'],
+          ['D', 'Underground Activity Signal', '10%', 'Activity at underground/bunkerised sites (Fordow)', 'IAEA reports on Fordow'],
+          ['E', 'Technical Diplomatic Breakdown', '10%', 'Breakdown of technical cooperation with the IAEA', 'NTI Global Norms'],
+          ['F', 'Conflicting Narratives', '10%', 'Conflicting narratives about the programme status', 'Intelligence analysis metric'],
         ]} />
 
-        <SubSection title="5.1 Hard Rules (effetti soglia)">
-          <p>Il NOI include regole non-lineari per catturare effetti soglia documentati storicamente:</p>
-          <Table headers={['Regola', 'Condizione', 'Effetto', 'Precedente storico']} rows={[
-            ['HR-1', 'A >= 75 AND B >= 90', 'NOI = max(NOI, 80)', 'Corea del Nord pre-test 2006: perdita totale accesso + materiali'],
-            ['HR-2', 'C >= 75 AND D >= 50', 'NOI += 5', 'Iran 2012: gap arricchimento + attività Fordow = rischio composto'],
-            ['HR-3', 'E >= 80 AND F >= 70', 'NOI += 3', 'Iraq 2002: rottura diplomatica + narrative contrastanti = incertezza'],
+        <SubSection title="5.1 Hard Rules (Threshold Effects)">
+          <p>The NOI includes non-linear rules to capture historically documented threshold effects:</p>
+          <Table headers={['Rule', 'Condition', 'Effect', 'Historical precedent']} rows={[
+            ['HR-1', 'A >= 75 AND B >= 90', 'NOI = max(NOI, 80)', 'North Korea pre-test 2006: total loss of access + materials'],
+            ['HR-2', 'C >= 75 AND D >= 50', 'NOI += 5', 'Iran 2012: enrichment gap + Fordow activity = compound risk'],
+            ['HR-3', 'E >= 80 AND F >= 70', 'NOI += 3', 'Iraq 2002: diplomatic breakdown + conflicting narratives = uncertainty'],
           ]} />
         </SubSection>
 
-        <SubSection title="5.2 Soglie interpretative">
-          <p>Allineate alle categorie di conclusione IAEA Safeguards:</p>
-          <Table headers={['Range', 'Livello', 'Significato IAEA equivalente']} rows={[
-            ['0-24', 'Verde', 'Broader Conclusion: tutto il materiale è contabilizzato'],
-            ['25-49', 'Giallo', 'Gap di verifica parziali'],
-            ['50-69', 'Arancione', 'Gap di verifica significativi'],
-            ['70-84', 'Rosso', 'Impossibile verificare la natura pacifica'],
-            ['85-100', 'Rosso scuro', 'Opacità quasi totale'],
+        <SubSection title="5.2 Interpretive Thresholds">
+          <p>Aligned with IAEA Safeguards conclusion categories:</p>
+          <Table headers={['Range', 'Level', 'Equivalent IAEA meaning']} rows={[
+            ['0-24', 'Green', 'Broader Conclusion: all material is accounted for'],
+            ['25-49', 'Yellow', 'Partial verification gaps'],
+            ['50-69', 'Orange', 'Significant verification gaps'],
+            ['70-84', 'Red', 'Unable to verify the peaceful nature'],
+            ['85-100', 'Dark red', 'Near-total opacity'],
           ]} />
         </SubSection>
 
         <p className="text-xs text-white/40 mt-2">
-          <strong>Riferimenti:</strong> NTI Nuclear Security Index (ntiindex.org); IAEA Safeguards Implementation
-          Reports (serie GOV/); Albright, D. &amp; Burkhard, S. (2021). &quot;Iran&apos;s Nuclear Program: Status
+          <strong>References:</strong> NTI Nuclear Security Index (ntiindex.org); IAEA Safeguards Implementation
+          Reports (GOV/ series); Albright, D. &amp; Burkhard, S. (2021). &quot;Iran&apos;s Nuclear Program: Status
           and Uncertainties.&quot; Institute for Science and International Security.
         </p>
       </Section>
 
       {/* 6. Scenario Model */}
-      <Section title="6. Modello scenari — Weighted additive scoring model">
+      <Section title="6. Scenario Model — Weighted Additive Scoring Model">
         <p>
-          Il modello produce 5 probabilità mutuamente esclusive (somma = 100%) che rappresentano
-          la <em>plausibilità relativa</em> di ciascuno scenario condizionata ai valori correnti degli indici.
+          The model produces 5 mutually exclusive probabilities (summing to 100%) representing
+          the <em>relative plausibility</em> of each scenario conditioned on the current index values.
         </p>
-        <SubSection title="6.1 Baseline scores (valori base informati dalla letteratura)">
+        <SubSection title="6.1 Baseline Scores (Literature-Informed Initial Values)">
           <p>
-            Ogni scenario parte da un valore base (baseline score) informato dalla letteratura.
-            Sono valori iniziali di un modello additivo lineare, calibrati su tassi base storici
-            per dare al modello un punto di partenza ragionevole.
+            Each scenario starts from a baseline score informed by the literature.
+            They are initial values of an additive linear model, calibrated on historical base
+            rates to give the model a reasonable starting point.
           </p>
-          <Table headers={['Scenario', 'Baseline', 'Fonte calibrazione']} rows={[
-            ['Conflitto Contenuto', '50.0', 'ICG CrisisWatch 2003-2024: ~70% delle crisi monitorate restano contenute. Ridotto a 50 per scelta soggettiva degli autori: i pesi positivi degli indici di rischio spostano la distribuzione verso scenari di escalation, quindi il baseline di "contenuto" deve partire più basso per compensare. Questa riduzione NON è una procedura formale documentata.'],
-            ['Guerra Regionale', '25.0', 'ICG: spillover regionale in ~20-30% delle crisi serie storicamente.'],
-            ['Soglia Nucleare', '15.0', 'Crisi con dimensione nucleare: pochissimi casi post-1945 (Cuba 1962, Kargil 1999).'],
-            ['Coercizione Nucleare', '7.0', 'Segnalazione nucleare coercitiva: ~5-7 casi dal 1945 (Berlino 1948, Corea 1953, Taiwan 1954/58, Cuba 1962, Kargil 1999).'],
-            ['Uso Nucleare Effettivo', '2.0', 'Zero casi dal 1945. Sondaggi esperti Global Challenges Foundation 2020: probabilità annualizzata 0.3-1.5%. Metaculus community forecast.'],
+          <Table headers={['Scenario', 'Baseline', 'Calibration source']} rows={[
+            ['Contained Conflict', '50.0', 'ICG CrisisWatch 2003-2024: ~70% of monitored crises remain contained. Reduced to 50 by subjective author choice: the positive weights from risk indices shift the distribution towards escalation scenarios, so the "contained" baseline must start lower to compensate. This reduction is NOT a formally documented procedure.'],
+            ['Regional War', '25.0', 'ICG: regional spillover in ~20-30% of serious crises historically.'],
+            ['Nuclear Threshold', '15.0', 'Crises with a nuclear dimension: very few cases post-1945 (Cuba 1962, Kargil 1999).'],
+            ['Nuclear Coercion', '7.0', 'Coercive nuclear signalling: ~5-7 cases since 1945 (Berlin 1948, Korea 1953, Taiwan 1954/58, Cuba 1962, Kargil 1999).'],
+            ['Actual Nuclear Use', '2.0', 'Zero cases since 1945. Global Challenges Foundation 2020 expert surveys: annualised probability 0.3-1.5%. Metaculus community forecast.'],
           ]} />
           <p className="text-xs text-white/40 mt-2">
-            <strong>Riferimenti:</strong> International Crisis Group, CrisisWatch Database (2003-2024);
+            <strong>References:</strong> International Crisis Group, CrisisWatch Database (2003-2024);
             Global Challenges Foundation (2020), &quot;Global Catastrophic Risks 2020&quot;;
             Metaculus, &quot;At least 1 nuclear detonation in war by 2050&quot; community forecast.
           </p>
         </SubSection>
 
-        <SubSection title="6.2 Matrice dei pesi (Weight Matrix)">
+        <SubSection title="6.2 Weight Matrix">
           <p>
-            La matrice dei pesi codifica i percorsi causali da ogni indice a ogni scenario.
-            Il design è <strong>ispirato</strong> al framework GCRI (Global Conflict Risk Index)
-            del Joint Research Centre della Commissione Europea (2014), ma con una differenza
-            strutturale importante: il GCRI deriva i suoi pesi empiricamente tramite regressione
-            logistica su dati storici di conflitto, mentre <strong>i nostri pesi sono assegnati
-            manualmente</strong> attraverso ragionamento causale e giudizio di esperti. Non esiste
-            un dataset storico di &quot;crisi Iran-Golfo con esiti noti&quot; sufficientemente ampio per
-            fare regressione. I pesi riflettono la logica causale della letteratura, non una
-            calibrazione statistica.
+            The weight matrix encodes the causal pathways from each index to each scenario.
+            The design is <strong>inspired by</strong> the GCRI (Global Conflict Risk Index)
+            framework of the European Commission&apos;s Joint Research Centre (2014), but with an
+            important structural difference: the GCRI derives its weights empirically via logistic
+            regression on historical conflict data, whereas <strong>our weights are assigned
+            manually</strong> through causal reasoning and expert judgement. There is no sufficiently
+            large historical dataset of &quot;Iran-Gulf crises with known outcomes&quot; to perform
+            regression. The weights reflect the causal logic of the literature, not a statistical
+            calibration.
           </p>
           <div className="overflow-x-auto">
             <table className="w-full text-xs border-collapse mt-2">
               <thead>
                 <tr className="border-b border-white/20">
-                  <th className="text-left py-2 px-2 text-white/60">Indice</th>
-                  <th className="text-center py-2 px-1 text-green-400">Contenuto</th>
-                  <th className="text-center py-2 px-1 text-yellow-400">Regionale</th>
-                  <th className="text-center py-2 px-1 text-orange-400">Soglia</th>
-                  <th className="text-center py-2 px-1 text-red-400">Coercizione</th>
-                  <th className="text-center py-2 px-1 text-red-800">Uso Nucl.</th>
-                  <th className="text-left py-2 px-2 text-white/40">Razionale</th>
+                  <th className="text-left py-2 px-2 text-white/60">Index</th>
+                  <th className="text-center py-2 px-1 text-green-400">Contained</th>
+                  <th className="text-center py-2 px-1 text-yellow-400">Regional</th>
+                  <th className="text-center py-2 px-1 text-orange-400">Threshold</th>
+                  <th className="text-center py-2 px-1 text-red-400">Coercion</th>
+                  <th className="text-center py-2 px-1 text-red-800">Actual Use</th>
+                  <th className="text-left py-2 px-2 text-white/40">Rationale</th>
                 </tr>
               </thead>
               <tbody className="font-mono">
                 {[
-                  { idx: 'NOI', vals: [-0.15, 0.06, 0.25, 0.15, 0.00], reason: "Opacità nucleare iraniana: guida 'soglia' (avvicinamento a capacità). Peso ZERO su 'uso effettivo' perché l'Iran non possiede armi nucleari." },
-                  { idx: 'GAI', vals: [-0.12, 0.30, 0.04, 0.03, 0.01], reason: 'Attacchi convenzionali: driver primario di guerra regionale. Non causa direttamente escalation nucleare.' },
-                  { idx: 'HDI', vals: [-0.10, 0.25, 0.06, 0.04, 0.02], reason: 'Disruption Hormuz: amplifica guerra regionale. Effetto indiretto limitato su scenari nucleari.' },
-                  { idx: 'PAI', vals: [-0.08, 0.20, 0.03, 0.02, 0.01], reason: 'Proxy: alimentano guerra regionale ma non causano escalation nucleare direttamente.' },
-                  { idx: 'SRI', vals: [-0.08, 0.08, 0.15, 0.25, 0.10], reason: "Retorica strategica: driver primario di 'coercizione' (minacce nucleari da stati armati). Più forte driver di 'uso effettivo' — la retorica precede l'azione." },
-                  { idx: 'BSI', vals: [-0.12, 0.04, 0.30, 0.22, 0.08], reason: "Breakout/postura nucleare: driver primario di 'soglia'. Secondo driver di 'uso effettivo' — postura nucleare attiva da USA/Israele." },
-                  { idx: 'DCI', vals: [0.25, -0.15, -0.20, -0.18, -0.12], reason: "Diplomazia: unico driver positivo per 'contenuto'. Frena tutti gli scenari di escalation." },
+                  { idx: 'NOI', vals: [-0.15, 0.06, 0.25, 0.15, 0.00], reason: "Iranian nuclear opacity: drives 'threshold' (approach to capability). ZERO weight on 'actual use' because Iran does not possess nuclear weapons." },
+                  { idx: 'GAI', vals: [-0.12, 0.30, 0.04, 0.03, 0.01], reason: 'Conventional attacks: primary driver of regional war. Does not directly cause nuclear escalation.' },
+                  { idx: 'HDI', vals: [-0.10, 0.25, 0.06, 0.04, 0.02], reason: 'Hormuz disruption: amplifies regional war. Limited indirect effect on nuclear scenarios.' },
+                  { idx: 'PAI', vals: [-0.08, 0.20, 0.03, 0.02, 0.01], reason: 'Proxy forces: feed regional war but do not directly cause nuclear escalation.' },
+                  { idx: 'SRI', vals: [-0.08, 0.08, 0.15, 0.25, 0.10], reason: "Strategic rhetoric: primary driver of 'coercion' (nuclear threats from armed states). Strongest driver of 'actual use' — rhetoric precedes action." },
+                  { idx: 'BSI', vals: [-0.12, 0.04, 0.30, 0.22, 0.08], reason: "Breakout/nuclear posture: primary driver of 'threshold'. Second driver of 'actual use' — active nuclear posture from USA/Israel." },
+                  { idx: 'DCI', vals: [0.25, -0.15, -0.20, -0.18, -0.12], reason: "Diplomacy: sole positive driver of 'contained'. Restrains all escalation scenarios." },
                 ].map((row, i) => (
                   <tr key={i} className="border-b border-white/5">
                     <td className="py-1.5 px-2 font-semibold text-white/70">{row.idx}</td>
@@ -284,159 +284,159 @@ export default function MethodologyPage() {
             </table>
           </div>
 
-          <h4 className="text-sm font-semibold text-white/60 mt-4 mb-2">Principi di design della matrice:</h4>
+          <h4 className="text-sm font-semibold text-white/60 mt-4 mb-2">Matrix design principles:</h4>
           <ol className="list-decimal list-inside space-y-1 text-sm text-white/60">
-            <li>GAI e HDI sono i driver primari della guerra convenzionale regionale (+0.30, +0.25).</li>
-            <li>NOI traccia l&apos;opacità del programma iraniano. Poiché l&apos;Iran NON ha armi nucleari, NOI guida solo &quot;soglia&quot; (avvicinamento alla capacità). NOI ha peso ZERO su &quot;uso effettivo&quot;.</li>
-            <li>BSI traccia sia il percorso iraniano verso un dispositivo SIA i segnali di postura nucleare da stati già armati (USA, Israele). BSI guida &quot;soglia&quot; (+0.30) ed è il secondo driver di &quot;uso effettivo&quot; (+0.08).</li>
-            <li>SRI cattura la retorica escalatoria da stati con armi nucleari. È il driver più forte di &quot;uso effettivo&quot; (+0.10) perché la retorica precede l&apos;azione.</li>
-            <li>DCI (diplomazia) è l&apos;unico freno. È l&apos;unico indice con peso positivo su &quot;contenuto&quot; (+0.25) e negativo su tutti gli altri scenari.</li>
-            <li>L&apos;uso nucleare effettivo può provenire SOLO da USA/Israele (che possiedono armi nucleari) o da un trasferimento Russia/Cina all&apos;Iran (monitorato ma estremamente improbabile).</li>
+            <li>GAI and HDI are the primary drivers of conventional regional war (+0.30, +0.25).</li>
+            <li>NOI tracks the opacity of the Iranian programme. Since Iran does NOT possess nuclear weapons, NOI drives only &quot;threshold&quot; (approach to capability). NOI has ZERO weight on &quot;actual use&quot;.</li>
+            <li>BSI tracks both the Iranian path towards a device AND nuclear posture signals from already-armed states (USA, Israel). BSI drives &quot;threshold&quot; (+0.30) and is the second driver of &quot;actual use&quot; (+0.08).</li>
+            <li>SRI captures escalatory rhetoric from states possessing nuclear weapons. It is the strongest driver of &quot;actual use&quot; (+0.10) because rhetoric precedes action.</li>
+            <li>DCI (diplomacy) is the sole restraining force. It is the only index with a positive weight on &quot;contained&quot; (+0.25) and a negative weight on all other scenarios.</li>
+            <li>Actual nuclear use can originate ONLY from the USA/Israel (which possess nuclear weapons) or from a Russia/China transfer to Iran (monitored but extremely unlikely).</li>
           </ol>
 
           <p className="text-xs text-white/40 mt-3">
-            <strong>Riferimento:</strong> EU Joint Research Centre (2014). &quot;Global Conflict Risk Index (GCRI):
-            A quantitative model — Concept and methodology.&quot; JRC Technical Reports. Il GCRI usa
-            regressione logistica su dati storici per derivare i pesi empiricamente.
-            <strong>I nostri pesi NON sono derivati allo stesso modo</strong> — sono assegnati
-            manualmente tramite analisi causale del teatro Iran-Golfo. Il GCRI è citato come
-            ispirazione concettuale per l&apos;approccio a matrice indici→scenari, non come
-            metodologia replicata.
+            <strong>Reference:</strong> EU Joint Research Centre (2014). &quot;Global Conflict Risk Index (GCRI):
+            A quantitative model — Concept and methodology.&quot; JRC Technical Reports. The GCRI uses
+            logistic regression on historical data to derive weights empirically.
+            <strong> Our weights are NOT derived in the same manner</strong> — they are assigned
+            manually through causal analysis of the Iran-Gulf theatre. The GCRI is cited as
+            conceptual inspiration for the index-to-scenario matrix approach, not as a
+            replicated methodology.
           </p>
         </SubSection>
 
-        <SubSection title="6.3 Calcolo dello score grezzo">
-          <p>Per ogni scenario s:</p>
+        <SubSection title="6.3 Raw Score Computation">
+          <p>For each scenario s:</p>
           <Formula>
             score<sub>s</sub> = baseline<sub>s</sub> + &Sigma;<sub>k</sub> (W<sub>k,s</sub> &times; Index<sub>k</sub>)
           </Formula>
           <p>
-            Dove baseline<sub>s</sub> è il valore base dello scenario s (Sezione 6.1),
-            W<sub>k,s</sub> è il peso dell&apos;indice k sullo scenario s (Sezione 6.2),
-            e Index<sub>k</sub> è il valore corrente dell&apos;indice (0-100).
-            Questa è un&apos;aggregazione lineare additiva, non un aggiornamento bayesiano.
+            Where baseline<sub>s</sub> is the baseline score of scenario s (Section 6.1),
+            W<sub>k,s</sub> is the weight of index k on scenario s (Section 6.2),
+            and Index<sub>k</sub> is the current index value (0-100).
+            This is an additive linear aggregation, not a Bayesian update.
           </p>
         </SubSection>
 
-        <SubSection title="6.4 Regole trigger (effetti non-lineari)">
+        <SubSection title="6.4 Trigger Rules (Non-Linear Effects)">
           <p>
-            La matrice di pesi è lineare e non cattura le dinamiche non-lineari dell&apos;escalation.
-            Le regole trigger aggiungono boost additivi o fattori moltiplicativi quando più indici
-            superano simultaneamente soglie critiche.
+            The weight matrix is linear and does not capture the non-linear dynamics of escalation.
+            Trigger rules add additive boosts or multiplicative factors when multiple indices
+            simultaneously exceed critical thresholds.
           </p>
-          <Table headers={['Regola', 'Condizione', 'Effetto', 'Razionale']} rows={[
-            ['TR-1', 'NOI >= 75 AND BSI >= 65', 'threshold += 5', 'Opacità nucleare + breakout signals = crisi soglia nucleare più probabile'],
-            ['TR-2', 'SRI >= 75 AND BSI >= 70', 'coercive += 4', 'Retorica estrema da stati armati + postura attiva = coercizione nucleare'],
-            ['TR-3', 'SRI >= 85 AND BSI >= 80 AND GAI >= 80', 'actual += 3', 'Convergenza estrema: retorica + postura + conflitto convenzionale intenso. Unico path verso uso effettivo.'],
-            ['TR-4', 'DCI >= 65', 'regional, threshold, coercive, actual x 0.90', 'Diplomazia attiva riduce del 10% tutti gli scenari escalatori'],
+          <Table headers={['Rule', 'Condition', 'Effect', 'Rationale']} rows={[
+            ['TR-1', 'NOI >= 75 AND BSI >= 65', 'threshold += 5', 'Nuclear opacity + breakout signals = nuclear threshold crisis more likely'],
+            ['TR-2', 'SRI >= 75 AND BSI >= 70', 'coercive += 4', 'Extreme rhetoric from armed states + active posture = nuclear coercion'],
+            ['TR-3', 'SRI >= 85 AND BSI >= 80 AND GAI >= 80', 'actual += 3', 'Extreme convergence: rhetoric + posture + intense conventional conflict. Only path to actual use.'],
+            ['TR-4', 'DCI >= 65', 'regional, threshold, coercive, actual x 0.90', 'Active diplomacy reduces all escalatory scenarios by 10%'],
           ]} />
         </SubSection>
 
-        <SubSection title="6.5 Normalizzazione">
-          <p>Gli score grezzi vengono clampati a &ge; 0 e normalizzati a somma 100:</p>
+        <SubSection title="6.5 Normalisation">
+          <p>Raw scores are clamped to &ge; 0 and normalised to sum to 100:</p>
           <Formula>
             score<sub>s</sub> = max(0, score<sub>s</sub>)
             <br /><br />
             P(s) = score<sub>s</sub> / &Sigma;<sub>j</sub> score<sub>j</sub> &times; 100
           </Formula>
           <p>
-            Le probabilità risultanti sono <strong>plausibilità relative</strong>, non probabilità
-            calibrate nel senso di Brier score. Rappresentano la distribuzione della plausibilità
-            tra gli scenari dato lo stato corrente degli indici.
+            The resulting probabilities are <strong>relative plausibilities</strong>, not
+            calibrated probabilities in the Brier score sense. They represent the distribution
+            of plausibility across scenarios given the current state of the indices.
           </p>
         </SubSection>
       </Section>
 
       {/* 7. Monte Carlo */}
-      <Section title="7. Intervalli di confidenza — Monte Carlo Bootstrap">
-        <SubSection title="7.1 Monte Carlo per gli scenari">
+      <Section title="7. Confidence Intervals — Monte Carlo Bootstrap">
+        <SubSection title="7.1 Monte Carlo for Scenarios">
           <p>
-            Per quantificare l&apos;incertezza delle probabilità di scenario, il modello esegue
-            una simulazione Monte Carlo con N=500 iterazioni, seguendo il framework di analisi
-            di sensibilità globale di Saltelli et al. (2004).
+            To quantify the uncertainty of scenario probabilities, the model runs a Monte Carlo
+            simulation with N=500 iterations, following the global sensitivity analysis framework
+            of Saltelli et al. (2004).
           </p>
-          <p className="mt-2">Ad ogni iterazione:</p>
+          <p className="mt-2">At each iteration:</p>
           <ol className="list-decimal list-inside space-y-1 text-sm text-white/60">
-            <li><strong>Perturbazione indici:</strong> ogni valore di indice viene moltiplicato per un fattore
-              casuale uniforme U(0.85, 1.15), cioè &plusmn;15%, poi clampato a [0, 100].</li>
-            <li><strong>Perturbazione pesi:</strong> ogni peso della matrice viene moltiplicato per un fattore
-              casuale normale N(1.0, 0.20), clippato a [0.6, 1.4], cioè &plusmn;20% con max &plusmn;40%.</li>
-            <li>Le probabilità vengono ricalcolate con i valori perturbati.</li>
+            <li><strong>Index perturbation:</strong> each index value is multiplied by a uniform
+              random factor U(0.85, 1.15), i.e. &plusmn;15%, then clamped to [0, 100].</li>
+            <li><strong>Weight perturbation:</strong> each weight in the matrix is multiplied by a
+              normal random factor N(1.0, 0.20), clipped to [0.6, 1.4], i.e. &plusmn;20% with max &plusmn;40%.</li>
+            <li>Probabilities are recomputed with the perturbed values.</li>
           </ol>
           <Formula>
             Index<sub>k</sub>&apos; = clamp(Index<sub>k</sub> &times; U(0.85, 1.15), 0, 100)
             <br />
             W<sub>k,s</sub>&apos; = W<sub>k,s</sub> &times; clip(N(1.0, 0.20), 0.6, 1.4)
             <br /><br />
-            CI<sub>90%</sub> = [percentile<sub>5</sub>, percentile<sub>95</sub>] su 500 iterazioni
+            CI<sub>90%</sub> = [percentile<sub>5</sub>, percentile<sub>95</sub>] over 500 iterations
           </Formula>
           <p className="mt-2 text-sm text-white/60">
-            Il seed è fissato (seed=42) per riproducibilità all&apos;interno dello stesso snapshot.
-            La perturbazione simultanea di input e parametri del modello segue il principio della
-            &quot;global sensitivity analysis&quot; — superiore alla perturbazione one-at-a-time (OAT) perché
-            cattura le interazioni tra parametri.
+            The seed is fixed (seed=42) for reproducibility within the same snapshot.
+            The simultaneous perturbation of model inputs and parameters follows the principle of
+            &quot;global sensitivity analysis&quot; — superior to one-at-a-time (OAT) perturbation because
+            it captures parameter interactions.
           </p>
           <p className="text-xs text-white/40 mt-2">
-            <strong>Riferimento:</strong> Saltelli, A., Tarantola, S., Campolongo, F. &amp; Ratto, M. (2004).
+            <strong>Reference:</strong> Saltelli, A., Tarantola, S., Campolongo, F. &amp; Ratto, M. (2004).
             <em> Sensitivity Analysis in Practice: A Guide to Assessing Scientific Models.</em> Wiley.
-            Cap. 2: &quot;Why should one perform sensitivity analysis?&quot; e Cap. 5: &quot;Global sensitivity analysis.&quot;
+            Ch. 2: &quot;Why should one perform sensitivity analysis?&quot; and Ch. 5: &quot;Global sensitivity analysis.&quot;
           </p>
         </SubSection>
 
-        <SubSection title="7.2 Bootstrap per gli indici">
+        <SubSection title="7.2 Bootstrap for Indices">
           <p>
-            I singoli indici hanno bande di incertezza calcolate con bootstrap non-parametrico
-            (Efron &amp; Tibshirani, 1993). Con N=200 iterazioni, gli eventi nella finestra 24h vengono
-            ricampionati con sostituzione e il sotto-indice viene ricalcolato.
+            Individual indices have uncertainty bands computed via non-parametric bootstrap
+            (Efron &amp; Tibshirani, 1993). Over N=200 iterations, events in the 24h window are
+            resampled with replacement and the subindex is recomputed.
           </p>
           <Formula>
-            Per ogni iterazione b = 1, ..., 200:
+            For each iteration b = 1, ..., 200:
             <br />
-            &nbsp;&nbsp;events<sub>b</sub> = campione con sostituzione da events<sub>24h</sub>
+            &nbsp;&nbsp;events<sub>b</sub> = sample with replacement from events<sub>24h</sub>
             <br />
             &nbsp;&nbsp;subindex<sub>b</sub> = compute_subindex(events<sub>b</sub>, signal_key)
             <br /><br />
             CI<sub>90%</sub> = [subindex<sub>(10)</sub>, subindex<sub>(190)</sub>]
             <br />
-            (5&deg; e 95&deg; percentile: posizione 0.05&times;200=10 e 0.95&times;200=190)
+            (5th and 95th percentile: position 0.05&times;200=10 and 0.95&times;200=190)
           </Formula>
           <p className="mt-2 text-sm text-white/60">
-            Per indici con meno di 5 eventi, il CI viene allargato analiticamente (&plusmn;40% del valore
-            o &plusmn;10 punti, il maggiore) per riflettere l&apos;elevata incertezza da campione piccolo.
+            For indices with fewer than 5 events, the CI is analytically widened (&plusmn;40% of the value
+            or &plusmn;10 points, whichever is greater) to reflect the high uncertainty from a small sample.
           </p>
           <p className="text-xs text-white/40 mt-2">
-            <strong>Riferimento:</strong> Efron, B. &amp; Tibshirani, R. (1993). <em>An Introduction to the
-            Bootstrap.</em> Chapman &amp; Hall/CRC. Cap. 13: &quot;Bootstrap confidence intervals.&quot;
+            <strong>Reference:</strong> Efron, B. &amp; Tibshirani, R. (1993). <em>An Introduction to the
+            Bootstrap.</em> Chapman &amp; Hall/CRC. Ch. 13: &quot;Bootstrap confidence intervals.&quot;
           </p>
         </SubSection>
       </Section>
 
       {/* 8. Asymmetry */}
-      <Section title="8. Asimmetria nucleare — Iran non possiede armi nucleari">
+      <Section title="8. Nuclear Asymmetry — Iran Does Not Possess Nuclear Weapons">
         <p>
-          Un aspetto critico del modello è la corretta modellazione dell&apos;asimmetria nucleare
-          in questa crisi. L&apos;Iran <strong>non possiede armi nucleari</strong> e il suo programma
-          è lontano dal produrne. Le uniche potenze nucleari nel teatro sono USA e Israele.
+          A critical aspect of the model is the correct modelling of nuclear asymmetry
+          in this crisis. Iran <strong>does not possess nuclear weapons</strong> and its programme
+          is far from producing any. The only nuclear-armed powers in the theatre are the USA and Israel.
         </p>
-        <p className="mt-2">Questo si riflette nel modello in tre modi:</p>
+        <p className="mt-2">This is reflected in the model in three ways:</p>
         <ol className="list-decimal list-inside space-y-2 text-sm text-white/60 mt-2">
           <li>
-            <strong>NOI ha peso ZERO su &quot;Uso Nucleare Effettivo&quot;</strong>: l&apos;opacità del programma
-            iraniano non può causare uso nucleare perché l&apos;Iran non ha armi da usare.
+            <strong>NOI has ZERO weight on &quot;Actual Nuclear Use&quot;</strong>: opacity of the Iranian
+            programme cannot cause nuclear use because Iran has no weapons to use.
           </li>
           <li>
-            <strong>SRI è il driver primario di &quot;Uso Effettivo&quot;</strong> (+0.10): cattura la
-            retorica nucleare da USA/Israele — gli unici attori che possono effettivamente usare armi nucleari.
+            <strong>SRI is the primary driver of &quot;Actual Use&quot;</strong> (+0.10): it captures
+            nuclear rhetoric from the USA/Israel — the only actors that can actually use nuclear weapons.
           </li>
           <li>
-            <strong>Categoria &quot;nuclear_transfer_signal&quot;</strong>: il classificatore monitora segnali
-            di trasferimento nucleare da Russia/Cina all&apos;Iran (l&apos;unico path attraverso cui l&apos;Iran
-            potrebbe ottenere un dispositivo nucleare a breve termine). Severità 0.98 — la più alta
-            del sistema.
+            <strong>Category &quot;nuclear_transfer_signal&quot;</strong>: the classifier monitors signals
+            of nuclear transfer from Russia/China to Iran (the only path through which Iran
+            could obtain a nuclear device in the short term). Severity 0.98 — the highest
+            in the system.
           </li>
         </ol>
         <p className="text-xs text-white/40 mt-3">
-          <strong>Fonti sulla capacità nucleare iraniana:</strong> IAEA Director General Reports (GOV/2024 series);
+          <strong>Sources on Iranian nuclear capability:</strong> IAEA Director General Reports (GOV/2024 series);
           Albright, D. (2024), ISIS Reports; Bulletin of the Atomic Scientists;
           U.S. Intelligence Community Annual Threat Assessment 2024-2025.
         </p>
@@ -444,161 +444,160 @@ export default function MethodologyPage() {
 
       {/* 9. Historical Calibration */}
       <section>
-        <h2 className="text-xl font-semibold text-white mt-10 mb-4">9. Calibrazione Storica (v2.0)</h2>
+        <h2 className="text-xl font-semibold text-white mt-10 mb-4">9. Historical Calibration (v2.0)</h2>
         <p className="text-[13px] text-white/50 leading-relaxed mb-3">
-          A partire dalla versione 2.0, i pesi della matrice scenario e le soglie dei trigger sono stati
-          <strong className="text-white/70"> calibrati su 20 eventi anchor storici (2019-2026)</strong> utilizzando
-          la minimizzazione del Brier Score con regolarizzazione L2 (lambda=0.05) e cross-validazione leave-one-out.
+          Starting with version 2.0, the scenario weight matrix and trigger thresholds have been
+          <strong className="text-white/70"> calibrated on 20 historical anchor events (2019-2026)</strong> using
+          Brier Score minimization with L2 regularization (lambda=0.05) and leave-one-out cross-validation.
         </p>
         <p className="text-[13px] text-white/50 leading-relaxed mb-3">
-          <strong className="text-white/70">Risultati della calibrazione:</strong>
+          <strong className="text-white/70">Calibration results:</strong>
         </p>
         <ul className="list-disc list-inside text-[13px] text-white/50 leading-relaxed mb-3 space-y-1">
-          <li>Brier Score: 0.106 → 0.002 (miglioramento del 98.4%)</li>
-          <li>Accuratezza: 65% → 100% sugli eventi storici</li>
+          <li>Brier Score: 0.106 → 0.002 (98.4% improvement)</li>
+          <li>Accuracy: 65% → 100% on historical events</li>
           <li>Cross-validated Brier Score: 0.017</li>
         </ul>
         <p className="text-[13px] text-white/50 leading-relaxed mb-3">
-          <strong className="text-white/70">Principale scoperta:</strong> il DCI (canali diplomatici) è il predittore
-          più forte per le transizioni tra scenari. Il collasso della diplomazia (DCI basso) è più predittivo
-          della guerra regionale rispetto a qualsiasi singolo indice convenzionale, confermando la letteratura
-          sulla gestione delle crisi (Lebow 1981, George 1991).
+          <strong className="text-white/70">Key finding:</strong> DCI (diplomatic channels) is the strongest predictor
+          of scenario transitions. The collapse of diplomacy (low DCI) is more predictive of regional war
+          than any single conventional military index, confirming crisis management literature (Lebow 1981, George 1991).
         </p>
         <p className="text-[13px] text-white/50 leading-relaxed mb-3">
-          <strong className="text-white/70">Vincoli causali applicati:</strong> l&apos;ottimizzazione rispetta vincoli
-          di segno derivati dalla conoscenza del dominio (es. NOI → actual = 0 perché l&apos;Iran non possiede armi nucleari;
-          DCI → contained &gt; 0 perché la diplomazia favorisce il contenimento).
+          <strong className="text-white/70">Causal constraints enforced:</strong> the optimization respects sign constraints
+          derived from domain knowledge (e.g., NOI → actual = 0 because Iran does not possess nuclear weapons;
+          DCI → contained &gt; 0 because diplomacy favors containment).
         </p>
         <p className="text-[13px] text-white/50 leading-relaxed mb-3">
-          <strong className="text-white/70">Soglie trigger calibrate:</strong> NOI ≥ 60 AND BSI ≥ 55 → threshold +5
-          (precedente: 75/65); SRI ≥ 65 AND BSI ≥ 60 → coercive +4 (precedente: 75/70). Le soglie più basse
-          catturano crisi nucleari precedenti (Natanz 2021, censura IAEA 2022).
+          <strong className="text-white/70">Calibrated trigger thresholds:</strong> NOI ≥ 60 AND BSI ≥ 55 → threshold +5
+          (previous: 75/65); SRI ≥ 65 AND BSI ≥ 60 → coercive +4 (previous: 75/70). Lower thresholds capture
+          earlier nuclear crises (Natanz 2021, IAEA censure 2022).
         </p>
         <p className="text-[13px] text-white/50 leading-relaxed mb-3">
-          <strong className="text-white/70">Fonti di ground truth:</strong> ACLED Middle East, CENTCOM, IAEA Board of Governors,
+          <strong className="text-white/70">Ground truth sources:</strong> ACLED Middle East, CENTCOM, IAEA Board of Governors,
           ICG CrisisWatch, GPR Index (Caldara-Iacoviello, Federal Reserve).
         </p>
       </section>
 
       {/* 10. Limitations */}
-      <Section title="10. Limiti noti e caveat">
+      <Section title="10. Known Limitations and Caveats">
         <div className="space-y-3">
-          <LimitItem n={1} title="Pesi non validati empiricamente">
-            La matrice dei pesi segue la logica causale della letteratura (GCRI, NTI) ma
-            <strong> non è stata calibrata con back-testing</strong> su crisi storiche.
-            Non esiste un dataset di &quot;crisi Iran-Golfo passate con esiti noti&quot; sufficientemente
-            ampio per fare regressione. I pesi sono informati dalla teoria, non dai dati.
+          <LimitItem n={1} title="Weights not empirically validated">
+            The weight matrix follows the causal logic of the literature (GCRI, NTI) but
+            <strong> has not been calibrated via back-testing</strong> on historical crises.
+            There is no dataset of &quot;past Iran-Gulf crises with known outcomes&quot; sufficiently
+            large for regression. The weights are theory-informed, not data-driven.
           </LimitItem>
-          <LimitItem n={2} title="Classificatore rule-based">
-            Il classificatore usa pattern matching regex, non NLP avanzato. Questo garantisce
-            trasparenza e riproducibilità ma può generare falsi positivi (eventi irrilevanti
-            classificati come rilevanti) e falsi negativi (eventi rilevanti non catturati).
+          <LimitItem n={2} title="Rule-based classifier">
+            The classifier uses regex pattern matching, not advanced NLP. This ensures
+            transparency and reproducibility but may produce false positives (irrelevant events
+            classified as relevant) and false negatives (relevant events not captured).
           </LimitItem>
-          <LimitItem n={3} title="Bias delle fonti">
-            Il sistema ingesta solo fonti pubbliche in lingua inglese. Questo introduce bias:
-            la copertura mediatica anglofona sovra-rappresenta la prospettiva occidentale e può
-            sotto-rappresentare sviluppi interni iraniani o posizioni della Cina/Russia.
+          <LimitItem n={3} title="Source bias">
+            The system ingests only public sources in English. This introduces bias:
+            English-language media coverage over-represents the Western perspective and may
+            under-represent internal Iranian developments or China/Russia positions.
           </LimitItem>
-          <LimitItem n={4} title="Probabilità non calibrate">
-            Le probabilità prodotte sono <em>plausibilità relative</em>, non forecast calibrati.
-            Non hanno superato test di calibrazione (Brier score, reliability diagram).
-            Un modello calibrato richiederebbe dati storici di risoluzione che non esistono
-            per eventi di questa natura.
+          <LimitItem n={4} title="Uncalibrated probabilities">
+            The probabilities produced are <em>relative plausibilities</em>, not calibrated forecasts.
+            They have not passed calibration tests (Brier score, reliability diagram).
+            A calibrated model would require historical resolution data that do not exist
+            for events of this nature.
           </LimitItem>
-          <LimitItem n={5} title="Monte Carlo su modello, non su realtà">
-            Le bande di incertezza Monte Carlo quantificano l&apos;incertezza <em>del modello</em>
-            (sensibilità a perturbazioni degli input e dei pesi), non l&apos;incertezza <em>della realtà</em>.
-            Un evento imprevedibile (cigno nero) può far saltare qualsiasi banda di confidenza.
+          <LimitItem n={5} title="Monte Carlo on the model, not on reality">
+            The Monte Carlo uncertainty bands quantify <em>model</em> uncertainty
+            (sensitivity to perturbations of inputs and weights), not <em>real-world</em> uncertainty.
+            An unpredictable event (black swan) can breach any confidence band.
           </LimitItem>
-          <LimitItem n={6} title="Indipendenza degli indici">
-            Gli indici sono trattati come indipendenti nella matrice dei pesi, ma nella realtà
-            sono correlati (es. un attacco militare GAI può causare retorica escalatoria SRI).
-            Le regole trigger catturano parzialmente queste interazioni ma non completamente.
+          <LimitItem n={6} title="Index independence">
+            The indices are treated as independent in the weight matrix, but in reality
+            they are correlated (e.g. a military attack GAI can trigger escalatory rhetoric SRI).
+            The trigger rules partially capture these interactions but not completely.
           </LimitItem>
-          <LimitItem n={7} title="Latenza dati">
-            Il sistema aggiorna gli indici ad ogni ciclo Celery (default: ogni 15 minuti per RSS,
-            30 min per API). Eventi che si sviluppano rapidamente possono non essere catturati
-            in tempo reale.
+          <LimitItem n={7} title="Data latency">
+            The system updates indices at each Celery cycle (default: every 15 minutes for RSS,
+            30 min for APIs). Rapidly evolving events may not be captured in real time.
           </LimitItem>
-          <LimitItem n={8} title="Nessuna distinzione tattico/strategico">
-            Il modello tratta &quot;uso nucleare&quot; come categoria unica, senza distinguere tra
-            un&apos;arma tattica a basso rendimento (es. B61 mod 12 contro un&apos;infrastruttura sotterranea)
-            e uno scambio strategico su larga scala. Nella crisi attuale, un eventuale uso nucleare
-            sarebbe quasi certamente tattico — con conseguenze e soglia decisionale radicalmente
-            diverse da un impiego strategico. Questa distinzione non è catturabile con fonti aperte.
+          <LimitItem n={8} title="No tactical/strategic distinction">
+            The model treats &quot;nuclear use&quot; as a single category, without distinguishing between
+            a low-yield tactical weapon (e.g. B61 mod 12 against an underground facility)
+            and a large-scale strategic exchange. In the current crisis, any nuclear use would
+            almost certainly be tactical — with radically different consequences and decision
+            thresholds compared to strategic employment. This distinction cannot be captured
+            from open sources.
           </LimitItem>
-          <LimitItem n={9} title="Retorica nucleare e deterrenza">
-            L&apos;indice SRI (Strategic Rhetoric) è il driver primario degli scenari di coercizione e uso
-            nucleare, ma <strong>non può distinguere tra retorica deterrente strumentale e segnali di
-            preparazione reale</strong>. Storicamente, la retorica nucleare è stata usata costantemente
-            come strumento di deterrenza senza intenzione di uso effettivo. Il modello può quindi
-            sovrastimare la probabilità degli scenari nucleari durante fasi di retorica intensa.
+          <LimitItem n={9} title="Nuclear rhetoric and deterrence">
+            The SRI (Strategic Rhetoric) index is the primary driver of coercion and nuclear use
+            scenarios, but <strong>cannot distinguish between instrumental deterrence rhetoric and
+            genuine preparation signals</strong>. Historically, nuclear rhetoric has been consistently
+            used as a deterrence tool without intention of actual use. The model may therefore
+            overestimate the probability of nuclear scenarios during periods of intense rhetoric.
           </LimitItem>
-          <LimitItem n={10} title="Trasferimento nucleare (edge case)">
-            Lo scenario di trasferimento di un dispositivo nucleare da Russia o Cina all&apos;Iran è
-            monitorato tramite la categoria <code>nuclear_transfer_signal</code> (severità massima 0.98).
-            Se rilevato, una trigger rule dedicata (TR-5) aumenta significativamente la plausibilità
-            degli scenari nucleari. Tuttavia, <strong>il modello lineare additivo non cattura pienamente
-            il salto qualitativo</strong> che un trasferimento comporterebbe: l&apos;Iran passerebbe
-            istantaneamente da &quot;non possiede armi nucleari&quot; a &quot;potenza nucleare de facto&quot;,
-            invalidando l&apos;assunzione di asimmetria (peso NOI = 0 su uso effettivo) su cui il modello
-            è costruito. Questo resta lo scenario peggiore possibile ma anche il meno probabile.
+          <LimitItem n={10} title="Nuclear transfer (edge case)">
+            The scenario of a nuclear device transfer from Russia or China to Iran is monitored
+            via the <code>nuclear_transfer_signal</code> category (maximum severity 0.98).
+            If detected, a dedicated trigger rule (TR-5) significantly boosts the plausibility
+            of nuclear scenarios. However, <strong>the linear additive model does not fully capture
+            the qualitative leap</strong> that such a transfer would entail: Iran would instantly
+            shift from &quot;does not possess nuclear weapons&quot; to &quot;de facto nuclear power&quot;,
+            invalidating the asymmetry assumption (NOI weight = 0 on actual use) on which the
+            model is built. This remains the worst-case scenario but also the least probable.
           </LimitItem>
-          <LimitItem n={11} title="Calibrazione dei baseline">
-            Le probabilità a priori degli scenari (es. &quot;Uso Nucleare Effettivo&quot; parte da ~1%)
-            derivano da sondaggi esperti e letteratura (0.3-1.5% annualizzato), ma <strong>non sono
-            direttamente comparabili con l&apos;output di un modello additivo normalizzato a 100%</strong>.
-            Durante una crisi acuta con indici tutti elevati, il modello può produrre valori di
-            &quot;uso effettivo&quot; che appaiono alti in termini assoluti (es. 5-8%) ma che sono in realtà
-            artefatti della normalizzazione a somma 100% tra scenari. Le probabilità vanno sempre
-            lette come plausibilità relative, mai come previsioni assolute.
+          <LimitItem n={11} title="Baseline calibration">
+            Scenario prior probabilities (e.g. &quot;Actual Nuclear Use&quot; starts at ~1%) are derived
+            from expert surveys and literature (0.3-1.5% annualized), but <strong>are not directly
+            comparable with the output of an additive model normalized to 100%</strong>.
+            During an acute crisis with all indices elevated, the model may produce &quot;actual use&quot;
+            values that appear high in absolute terms (e.g. 5-8%) but are in fact artifacts of
+            the sum-to-100% normalization across scenarios. Probabilities should always be read
+            as relative plausibilities, never as absolute predictions.
           </LimitItem>
-          <LimitItem n={12} title="Rolling window arbitraria">
-            I pesi della finestra temporale (50% ultime 24h, 30% ultimi 7 giorni, 20% ultimi 30 giorni)
-            sono una scelta euristica dichiarata come tale, <strong>non derivano da un&apos;analisi
-            formale EWMA</strong>. In una crisi che evolve rapidamente il peso del 50% sulle 24h
-            potrebbe essere troppo basso; in una fase di stallo potrebbe essere troppo alto.
-            Non esiste una ragione quantitativa per cui 50/30/20 sia ottimale rispetto ad altre
-            distribuzioni (es. 45/35/20 o 55/25/20).
+          <LimitItem n={12} title="Arbitrary rolling window">
+            The temporal window weights (50% last 24h, 30% last 7 days, 20% last 30 days)
+            are a heuristic choice declared as such, <strong>not derived from a formal
+            EWMA analysis</strong>. In a rapidly evolving crisis the 50% weight on 24h data
+            may be too low; in a stalemate it may be too high. There is no quantitative
+            reason why 50/30/20 is optimal compared to other distributions
+            (e.g. 45/35/20 or 55/25/20).
           </LimitItem>
-          <LimitItem n={13} title="Effetti a cascata tra indici">
-            Nella realtà, un attacco militare (GAI) causa simultaneamente escalation retorica (SRI),
-            disruption dello Stretto (HDI) e attivazione proxy (PAI). Il modello tratta queste come
-            <strong>coincidenze statistiche, non come effetti a cascata causali</strong>.
-            Le trigger rules (TR-1 a TR-5) catturano parzialmente queste interazioni non-lineari,
-            ma la correlazione strutturale tra indici durante una crisi acuta resta non modellata.
+          <LimitItem n={13} title="Cascade effects between indices">
+            In reality, a military attack (GAI) simultaneously causes rhetorical escalation (SRI),
+            Strait disruption (HDI) and proxy activation (PAI). The model treats these as
+            <strong>statistical coincidences, not causal cascade effects</strong>.
+            Trigger rules (TR-1 to TR-5) partially capture these non-linear interactions,
+            but the structural correlation between indices during an acute crisis remains unmodeled.
           </LimitItem>
         </div>
       </Section>
 
       {/* 10. Interpretation */}
-      <Section title="11. Guida all'interpretazione">
+      <Section title="11. Interpretation Guide">
         <div className="space-y-3 text-sm text-white/60">
           <p>
-            <strong>I trend sono più informativi dei valori assoluti.</strong> Un indice che sale
-            da 30 a 50 in 24 ore è un segnale più forte di un indice stabile a 60.
+            <strong>Trends are more informative than absolute values.</strong> An index rising
+            from 30 to 50 within 24 hours is a stronger signal than a stable index at 60.
           </p>
           <p>
-            <strong>Le bande di incertezza sono essenziali.</strong> Una probabilità di &quot;Soglia Nucleare&quot;
-            al 25% con CI [15%-35%] è molto diversa da 25% con CI [24%-26%]. Bande larghe
-            indicano alta sensibilità del modello a piccole variazioni.
+            <strong>Uncertainty bands are essential.</strong> A &quot;Nuclear Threshold&quot; probability
+            of 25% with CI [15%-35%] is very different from 25% with CI [24%-26%]. Wide bands
+            indicate high model sensitivity to small variations.
           </p>
           <p>
-            <strong>Lo scenario dominante è relativo, non assoluto.</strong> Se &quot;Guerra Regionale&quot;
-            è al 45%, non significa che c&apos;è il 45% di probabilità di guerra. Significa che,
-            tra i 5 scenari del modello, la guerra regionale è il più plausibile date le
-            informazioni correnti.
+            <strong>The dominant scenario is relative, not absolute.</strong> If &quot;Regional War&quot;
+            is at 45%, it does not mean there is a 45% probability of war. It means that,
+            among the model&apos;s 5 scenarios, regional war is the most plausible given the
+            current information.
           </p>
           <p>
-            <strong>Confrontare sempre con analisi esperte.</strong> Questo sistema è un complemento,
-            non un sostituto, dell&apos;analisi umana. Le fonti primarie (rapporti IAEA, dichiarazioni
-            ufficiali, analisi ICG) restano il gold standard.
+            <strong>Always compare with expert analysis.</strong> This system is a complement,
+            not a substitute, to human analysis. Primary sources (IAEA reports, official
+            statements, ICG analysis) remain the gold standard.
           </p>
         </div>
       </Section>
 
       {/* References */}
-      <Section title="12. Riferimenti bibliografici">
+      <Section title="12. References">
         <ol className="list-decimal list-inside space-y-2 text-sm text-white/50">
           <li>Albright, D. &amp; Burkhard, S. (2021). &quot;Iran&apos;s Nuclear Program: Status and Uncertainties.&quot; <em>Institute for Science and International Security.</em></li>
           <li>Efron, B. &amp; Tibshirani, R. (1993). <em>An Introduction to the Bootstrap.</em> Chapman &amp; Hall/CRC.</li>
@@ -616,9 +615,9 @@ export default function MethodologyPage() {
       </Section>
 
       <div className="border-t border-white/10 pt-4 pb-8 text-center text-xs text-white/20 font-mono">
-        Hormuz Index — Documento metodologico v1.1 — Marzo 2026
+        Hormuz Index — Methodological document v1.1 — March 2026
         <br />
-        Questo documento è parte integrante del sistema e viene aggiornato ad ogni revisione del modello.
+        This document is an integral part of the system and is updated with each model revision.
       </div>
     </div>
   );
@@ -684,7 +683,7 @@ function Table({ headers, rows }: { headers: string[]; rows: string[][] }) {
 function LimitItem({ n, title, children }: { n: number; title: string; children: React.ReactNode }) {
   return (
     <div className="rounded-lg px-3 py-2.5" style={{ background: 'rgba(239,68,68,0.04)', border: '1px solid rgba(239,68,68,0.1)' }}>
-      <div className="text-[12px] font-semibold text-white/60 mb-1">Limite {n}: {title}</div>
+      <div className="text-[12px] font-semibold text-white/60 mb-1">Limitation {n}: {title}</div>
       <p className="text-[11px] text-white/45 leading-relaxed">{children}</p>
     </div>
   );

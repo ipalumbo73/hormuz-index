@@ -29,7 +29,7 @@ interface ActionResult {
   timestamp: string;
 }
 
-export default function AdminPage() {
+export default function AdminPageEN() {
   const [adminKey, setAdminKey] = useState('');
   const [authenticated, setAuthenticated] = useState(false);
   const [authError, setAuthError] = useState('');
@@ -48,10 +48,10 @@ export default function AdminPage() {
         setAuthenticated(true);
         setAuthError('');
       } else {
-        setAuthError('Chiave non valida');
+        setAuthError('Invalid key');
       }
     } catch {
-      setAuthError('Errore di connessione');
+      setAuthError('Connection error');
     }
   };
 
@@ -60,7 +60,7 @@ export default function AdminPage() {
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="card p-8 max-w-sm w-full space-y-4">
           <h2 className="text-lg font-bold text-white text-center">Admin</h2>
-          <p className="text-xs text-white/40 text-center">Inserisci la chiave di accesso</p>
+          <p className="text-xs text-white/40 text-center">Enter access key</p>
           <input
             type="password"
             value={adminKey}
@@ -71,7 +71,7 @@ export default function AdminPage() {
           />
           {authError && <p className="text-xs text-red-400 text-center">{authError}</p>}
           <button onClick={handleLogin} className="w-full py-2 rounded-lg text-sm font-medium text-white bg-orange-600 hover:bg-orange-500 transition-colors">
-            Accedi
+            Login
           </button>
         </div>
       </div>
@@ -119,12 +119,11 @@ export default function AdminPage() {
       const r = await fetch(`${API}${endpoint}`, { method, headers });
       const data = await r.json();
       addLog(label, 'success', JSON.stringify(data));
-      // Refresh dependent data
-      if (label.includes('Seed') || label.includes('Sorgent')) fetchSources();
+      if (label.includes('Seed') || label.includes('Source')) fetchSources();
       if (label.includes('Tuning')) fetchTuning();
-      if (label.includes('Ricalcol') || label.includes('Riclassific')) fetchIndicesChart();
+      if (label.includes('Recompute') || label.includes('Reclassify')) fetchIndicesChart();
     } catch (e: unknown) {
-      addLog(label, 'error', e instanceof Error ? e.message : 'Errore di rete');
+      addLog(label, 'error', e instanceof Error ? e.message : 'Network error');
     } finally {
       setRunning(null);
     }
@@ -137,28 +136,28 @@ export default function AdminPage() {
       addLog(`Toggle ${source.name}`, 'success', `active: ${data.active}`);
       fetchSources();
     } catch (e: unknown) {
-      addLog(`Toggle ${source.name}`, 'error', e instanceof Error ? e.message : 'Errore');
+      addLog(`Toggle ${source.name}`, 'error', e instanceof Error ? e.message : 'Error');
     }
   };
 
   const actions = [
-    { label: 'Seed Database', endpoint: '/admin/seed', desc: 'Inserisci le sorgenti iniziali nel database' },
-    { label: 'Ingestione Sync', endpoint: '/admin/reingest-sync', desc: 'Raccogli notizie da tutte le fonti (sincrono)' },
-    { label: 'Ricalcola Indici', endpoint: '/admin/recompute-sync', desc: 'Ricalcola indici e scenari dai dati attuali' },
-    { label: 'Riclassifica Eventi', endpoint: '/admin/reclassify', desc: 'Riclassifica tutti gli eventi con il classificatore aggiornato' },
-    { label: 'Reset Tuning', endpoint: '/admin/reset-tuning', desc: 'Ripristina la configurazione di tuning ai valori predefiniti' },
+    { label: 'Seed Database', endpoint: '/admin/seed', desc: 'Insert initial sources into the database' },
+    { label: 'Sync Ingestion', endpoint: '/admin/reingest-sync', desc: 'Collect news from all sources (synchronous)' },
+    { label: 'Recompute Indices', endpoint: '/admin/recompute-sync', desc: 'Recompute indices and scenarios from current data' },
+    { label: 'Reclassify Events', endpoint: '/admin/reclassify', desc: 'Reclassify all events with updated classifier' },
+    { label: 'Reset Tuning', endpoint: '/admin/reset-tuning', desc: 'Reset tuning config to default values' },
   ];
 
   return (
     <div className="space-y-5">
       <div>
-        <h2 className="text-[22px] font-bold text-white tracking-tight">Pannello Admin</h2>
-        <p className="text-xs text-white/35 mt-0.5 font-mono">Gestione pipeline, sorgenti e configurazione del modello</p>
+        <h2 className="text-[22px] font-bold text-white tracking-tight">Admin Panel</h2>
+        <p className="text-xs text-white/35 mt-0.5 font-mono">Pipeline management, sources and model configuration</p>
       </div>
 
       {/* Action Buttons */}
       <section className="card">
-        <div className="text-[13px] font-semibold text-white/80 mb-3">Azioni Pipeline</div>
+        <div className="text-[13px] font-semibold text-white/80 mb-3">Pipeline Actions</div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {actions.map(a => (
             <button
@@ -187,8 +186,8 @@ export default function AdminPage() {
       {logs.length > 0 && (
         <section className="card">
           <div className="flex items-center justify-between mb-3">
-            <div className="text-[13px] font-semibold text-white/80">Log Operazioni</div>
-            <button onClick={() => setLogs([])} className="text-[11px] text-white/30 hover:text-white/50">Pulisci</button>
+            <div className="text-[13px] font-semibold text-white/80">Operation Log</div>
+            <button onClick={() => setLogs([])} className="text-[11px] text-white/30 hover:text-white/50">Clear</button>
           </div>
           <div className="space-y-1.5 max-h-48 overflow-y-auto custom-scroll">
             {logs.map((log, i) => (
@@ -209,27 +208,27 @@ export default function AdminPage() {
 
       {/* Indices Timeline */}
       <section className="card">
-        <div className="text-[13px] font-semibold text-white/80 mb-1">Andamento Indici (7 giorni)</div>
-        <p className="text-[10px] text-white/30 mb-3">Tutti e 7 gli indici di rischio — linea tratteggiata = DCI (Diplomatico, scala inversa)</p>
+        <div className="text-[13px] font-semibold text-white/80 mb-1">Indices Trend (7 days)</div>
+        <p className="text-[10px] text-white/30 mb-3">All 7 risk indices — dashed line = DCI (Diplomatic, inverse scale)</p>
         {indicesChart ? (
           <PlotlyWrapper data={indicesChart.data} layout={indicesChart.layout} config={indicesChart.config} height={280} />
         ) : (
-          <div className="h-56 flex items-center justify-center text-white/30 text-sm">Nessun dato disponibile</div>
+          <div className="h-56 flex items-center justify-center text-white/30 text-sm">No data available</div>
         )}
       </section>
 
       {/* Sources Management */}
       <section className="card overflow-hidden">
-        <div className="text-[13px] font-semibold text-white/80 mb-3 px-1">Gestione Sorgenti</div>
+        <div className="text-[13px] font-semibold text-white/80 mb-3 px-1">Source Management</div>
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-gray-700 text-gray-400 text-xs uppercase">
-              <th className="text-left py-2.5 px-4">Nome</th>
-              <th className="text-left py-2.5 px-4">Tipo</th>
+              <th className="text-left py-2.5 px-4">Name</th>
+              <th className="text-left py-2.5 px-4">Type</th>
               <th className="text-center py-2.5 px-4">Tier</th>
-              <th className="text-center py-2.5 px-4">Affidabilità</th>
-              <th className="text-center py-2.5 px-4">Stato</th>
-              <th className="text-center py-2.5 px-4">Azione</th>
+              <th className="text-center py-2.5 px-4">Reliability</th>
+              <th className="text-center py-2.5 px-4">Status</th>
+              <th className="text-center py-2.5 px-4">Action</th>
             </tr>
           </thead>
           <tbody>
@@ -250,7 +249,7 @@ export default function AdminPage() {
                 <td className="py-2.5 px-4 text-center">
                   <span className={`inline-flex items-center gap-1.5 text-xs px-2 py-0.5 rounded-full ${src.active ? 'bg-green-900/30 text-green-400' : 'bg-red-900/30 text-red-400'}`}>
                     <span className={`w-1.5 h-1.5 rounded-full ${src.active ? 'bg-green-500' : 'bg-red-500'}`} />
-                    {src.active ? 'Attivo' : 'Off'}
+                    {src.active ? 'Active' : 'Off'}
                   </span>
                 </td>
                 <td className="py-2.5 px-4 text-center">
@@ -263,7 +262,7 @@ export default function AdminPage() {
                       color: src.active ? '#f87171' : '#4ade80',
                     }}
                   >
-                    {src.active ? 'Disattiva' : 'Attiva'}
+                    {src.active ? 'Disable' : 'Enable'}
                   </button>
                 </td>
               </tr>
@@ -271,7 +270,7 @@ export default function AdminPage() {
           </tbody>
         </table>
         {sources.length === 0 && (
-          <div className="text-center py-8 text-gray-500 text-sm">Nessuna sorgente. Usa &quot;Seed Database&quot; per inizializzare.</div>
+          <div className="text-center py-8 text-gray-500 text-sm">No sources found. Use &quot;Seed Database&quot; to initialize.</div>
         )}
       </section>
 
@@ -279,13 +278,13 @@ export default function AdminPage() {
       {tuning && (
         <section className="card">
           <div className="text-[13px] font-semibold text-white/80 mb-3">
-            Configurazione Tuning
+            Tuning Configuration
             {tuning.version && <span className="ml-2 text-[11px] font-mono text-white/30">v{tuning.version}</span>}
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {/* Priors */}
             <div>
-              <div className="text-xs text-white/40 mb-2 uppercase tracking-wider">Prior degli Scenari</div>
+              <div className="text-xs text-white/40 mb-2 uppercase tracking-wider">Scenario Priors</div>
               <div className="space-y-1.5">
                 {Object.entries(tuning.priors).map(([k, v]) => (
                   <div key={k} className="flex items-center justify-between text-sm">
@@ -303,13 +302,13 @@ export default function AdminPage() {
 
             {/* Weight Matrix Preview */}
             <div>
-              <div className="text-xs text-white/40 mb-2 uppercase tracking-wider">Matrice Pesi (Indici → Scenari)</div>
+              <div className="text-xs text-white/40 mb-2 uppercase tracking-wider">Weight Matrix (Indices → Scenarios)</div>
               {Object.keys(tuning.weights).length > 0 ? (
                 <div className="text-xs font-mono text-white/30 overflow-auto max-h-40 custom-scroll">
                   <table className="w-full">
                     <thead>
                       <tr className="text-white/40">
-                        <th className="text-left py-1 pr-2">Indice</th>
+                        <th className="text-left py-1 pr-2">Index</th>
                         {Object.keys(tuning.priors).map(s => (
                           <th key={s} className="text-center py-1 px-1">{s.slice(0, 4)}</th>
                         ))}
@@ -330,7 +329,7 @@ export default function AdminPage() {
                   </table>
                 </div>
               ) : (
-                <div className="text-xs text-white/20">Nessun peso configurato</div>
+                <div className="text-xs text-white/20">No weights configured</div>
               )}
             </div>
           </div>

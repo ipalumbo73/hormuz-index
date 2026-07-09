@@ -54,42 +54,42 @@ interface ExplainData {
 }
 
 const INDEX_META: Record<string, { label: string; icon: string; color: string; description: string }> = {
-  NOI: { label: 'Nuclear Opacity Index', icon: '🔬', color: '#a855f7', description: "How opaque and unverifiable Iran's nuclear program is to the IAEA." },
-  GAI: { label: 'Gulf Attack Index', icon: '💥', color: '#ef4444', description: "Intensity of attacks on military and civilian infrastructure in the Persian Gulf." },
-  HDI: { label: 'Hormuz Disruption Index', icon: '🚢', color: '#f97316', description: 'Risk of blockade or disruption of the Strait of Hormuz.' },
-  PAI: { label: 'Proxy Activation Index', icon: '⚔️', color: '#eab308', description: 'Activation level of Iranian proxies (Hezbollah, Houthis, militias).' },
-  SRI: { label: 'Strategic Rhetoric Index', icon: '🎙️', color: '#f43f5e', description: "How escalatory the official language of states and leaders is." },
-  BSI: { label: 'Breakout Sensitivity Index', icon: '☢️', color: '#dc2626', description: "Signals of approaching nuclear capability or active nuclear posture by armed states." },
-  DCI: { label: 'Diplomatic Channels Index', icon: '🕊️', color: '#22c55e', description: "Signals of dialogue and de-escalation. The only 'positive' index." },
+  NOI: { label: 'Nuclear Opacity Index', icon: '🔬', color: '#a855f7', description: "Quanto il programma nucleare iraniano è opaco e non verificabile dall'IAEA." },
+  GAI: { label: 'Gulf Attack Index', icon: '💥', color: '#ef4444', description: "Intensità di attacchi a infrastrutture militari e civili nel Golfo Persico." },
+  HDI: { label: 'Hormuz Disruption Index', icon: '🚢', color: '#f97316', description: 'Rischio di blocco o disruption dello Stretto di Hormuz.' },
+  PAI: { label: 'Proxy Activation Index', icon: '⚔️', color: '#eab308', description: 'Livello di attivazione dei proxy iraniani (Hezbollah, Houthi, milizie).' },
+  SRI: { label: 'Strategic Rhetoric Index', icon: '🎙️', color: '#f43f5e', description: "Quanto il linguaggio ufficiale di stati e leader è escalatorio." },
+  BSI: { label: 'Breakout Sensitivity Index', icon: '☢️', color: '#dc2626', description: "Segnali di avvicinamento a capacità nucleare o postura nucleare attiva da stati armati." },
+  DCI: { label: 'Diplomatic Channels Index', icon: '🕊️', color: '#22c55e', description: "Segnali di dialogo e de-escalation. L'unico indice 'positivo'." },
 };
 
 const SCENARIO_META: Record<string, { label: string; color: string }> = {
-  contained: { label: 'Contained Conflict', color: '#22c55e' },
-  regional: { label: 'Regional War', color: '#ef4444' },
-  threshold: { label: 'Nuclear Threshold', color: '#f59e0b' },
-  coercive: { label: 'Nuclear Coercion', color: '#f97316' },
-  actual: { label: 'Actual Nuclear Use', color: '#991b1b' },
+  contained: { label: 'Conflitto Contenuto', color: '#22c55e' },
+  regional: { label: 'Guerra Regionale', color: '#ef4444' },
+  threshold: { label: 'Soglia Nucleare', color: '#f59e0b' },
+  coercive: { label: 'Coercizione Nucleare', color: '#f97316' },
+  actual: { label: 'Uso Nucleare Effettivo', color: '#991b1b' },
 };
 
 const CATEGORY_LABELS: Record<string, string> = {
-  military_strike: 'Military strike',
-  missile_drone_attack: 'Missiles/drones',
-  proxy_activity: 'Proxy activity',
-  gulf_infrastructure_attack: 'Infrastructure attack',
-  shipping_disruption: 'Shipping disruption',
-  hormuz_threat: 'Hormuz threat',
-  nuclear_site_damage: 'Nuclear site damage',
-  strategic_rhetoric: 'Strategic rhetoric',
-  diplomatic_contact: 'Diplomatic contact',
-  deescalation_signal: 'De-escalation signal',
-  sanctions_or_economic_pressure: 'Sanctions/economic pressure',
-  cyber_operation: 'Cyber operation',
-  civilian_casualty_mass_event: 'Civilian casualties',
-  enrichment_signal: 'Enrichment signal',
-  nuclear_posture_signal: 'Nuclear posture',
-  nuclear_verification_gap: 'Nuclear verification gap',
-  underground_activity_signal: 'Underground activity',
-  nuclear_transfer_signal: 'Nuclear transfer',
+  military_strike: 'Attacco militare',
+  missile_drone_attack: 'Missili/droni',
+  proxy_activity: 'Attività proxy',
+  gulf_infrastructure_attack: 'Attacco infrastrutture',
+  shipping_disruption: 'Disruzione marittima',
+  hormuz_threat: 'Minaccia Hormuz',
+  nuclear_site_damage: 'Danno sito nucleare',
+  strategic_rhetoric: 'Retorica strategica',
+  diplomatic_contact: 'Contatto diplomatico',
+  deescalation_signal: 'Segnale de-escalation',
+  sanctions_or_economic_pressure: 'Sanzioni/pressione eco.',
+  cyber_operation: 'Operazione cyber',
+  civilian_casualty_mass_event: 'Vittime civili',
+  enrichment_signal: 'Segnale arricchimento',
+  nuclear_posture_signal: 'Postura nucleare',
+  nuclear_verification_gap: 'Gap verifica nucleare',
+  underground_activity_signal: 'Attività sotterranea',
+  nuclear_transfer_signal: 'Trasferimento nucleare',
 };
 
 const INDEX_ORDER = ['NOI', 'GAI', 'HDI', 'PAI', 'SRI', 'BSI', 'DCI'];
@@ -119,7 +119,7 @@ export default function ExplainPage() {
   if (!data) {
     return (
       <div className="text-center py-20 text-white/40">
-        Unable to load explanation data. Please verify the backend is running.
+        Impossibile caricare i dati di spiegazione. Verifica che il backend sia attivo.
       </div>
     );
   }
@@ -128,18 +128,18 @@ export default function ExplainPage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h2 className="text-lg sm:text-[22px] font-bold text-white tracking-tight">How the model works</h2>
+        <h2 className="text-lg sm:text-[22px] font-bold text-white tracking-tight">Come funziona il modello</h2>
         <p className="text-xs text-white/40 mt-1">
-          This page shows in detail how each index is calculated, which news items feed into it, and how the indices determine scenario probabilities.
+          Questa pagina mostra in dettaglio come ogni indice viene calcolato, quali notizie lo alimentano, e come gli indici determinano le probabilità degli scenari.
           {data.last_updated && (
-            <span> · Last updated: {new Date(data.last_updated).toLocaleString('en-US')}</span>
+            <span> · Ultimo aggiornamento: {new Date(data.last_updated).toLocaleString('it-IT')}</span>
           )}
         </p>
       </div>
 
       {/* Formula Overview */}
       <div className="rounded-[10px] p-4" style={{ background: 'rgba(59,130,246,0.06)', border: '1px solid rgba(59,130,246,0.15)' }}>
-        <h3 className="text-sm font-semibold text-blue-300 mb-2">Model formula</h3>
+        <h3 className="text-sm font-semibold text-blue-300 mb-2">Formula del modello</h3>
         <div className="grid gap-2 text-[10px] sm:text-[11px] font-mono text-white/60 overflow-x-auto">
           {Object.entries(data.formula).map(([key, val]) => (
             <div key={key} className="flex gap-2 sm:gap-3 min-w-0">
@@ -152,7 +152,7 @@ export default function ExplainPage() {
 
       {/* Indices Section */}
       <section>
-        <h3 className="text-base font-semibold text-white mb-3">Risk Indices — Detail</h3>
+        <h3 className="text-base font-semibold text-white mb-3">Indici di Rischio — Dettaglio</h3>
         <div className="grid gap-3">
           {INDEX_ORDER.map(name => {
             const idx = data.indices[name];
@@ -199,22 +199,22 @@ export default function ExplainPage() {
                     {/* NOI Components */}
                     {name === 'NOI' && idx.noi_components && Object.keys(idx.noi_components).length > 0 && (
                       <div>
-                        <h4 className="text-[11px] font-semibold text-white/60 mb-2">NOI Components</h4>
+                        <h4 className="text-[11px] font-semibold text-white/60 mb-2">Componenti NOI</h4>
                         <div className="grid gap-1.5">
                           {Object.entries(idx.noi_components).map(([comp, val]) => {
                             const numVal = typeof val === 'number' ? val : 0;
                             const compLabels: Record<string, { label: string; weight: string }> = {
-                              site_access_loss: { label: 'Site access loss', weight: '25%' },
-                              material_knowledge_loss: { label: 'Material knowledge loss', weight: '25%' },
-                              enrichment_verification_gap: { label: 'Enrichment verification gap', weight: '20%' },
-                              underground_activity_signal: { label: 'Underground activity', weight: '10%' },
-                              technical_diplomatic_breakdown: { label: 'Technical-diplomatic breakdown', weight: '10%' },
-                              conflicting_narratives_uncertainty: { label: 'Conflicting narratives', weight: '10%' },
+                              site_access_loss: { label: 'Perdita accesso ai siti', weight: '25%' },
+                              material_knowledge_loss: { label: 'Perdita conoscenza materiali', weight: '25%' },
+                              enrichment_verification_gap: { label: 'Gap verifica arricchimento', weight: '20%' },
+                              underground_activity_signal: { label: 'Attività sotterranea', weight: '10%' },
+                              technical_diplomatic_breakdown: { label: 'Rottura tecnico-diplomatica', weight: '10%' },
+                              conflicting_narratives_uncertainty: { label: 'Narrazioni contrastanti', weight: '10%' },
                             };
                             const cl = compLabels[comp] || { label: comp, weight: '?' };
                             return (
                               <div key={comp} className="flex items-center gap-2">
-                                <span className="text-[10px] text-white/40 w-[180px] truncate">{cl.label} ({cl.weight})</span>
+                                <span className="text-[9px] sm:text-[10px] text-white/40 w-[120px] sm:w-[180px] truncate">{cl.label} ({cl.weight})</span>
                                 <div className="flex-1 h-1.5 bg-gray-700/60 rounded-full overflow-hidden">
                                   <div className="h-full rounded-full" style={{ width: `${Math.min(100, numVal)}%`, backgroundColor: meta.color }} />
                                 </div>
@@ -228,7 +228,7 @@ export default function ExplainPage() {
 
                     {/* How it feeds scenarios */}
                     <div>
-                      <h4 className="text-[11px] font-semibold text-white/60 mb-2">Impact on scenarios</h4>
+                      <h4 className="text-[11px] font-semibold text-white/60 mb-2">Come influenza gli scenari</h4>
                       <div className="flex flex-wrap gap-2">
                         {SCENARIO_ORDER.map(sc => {
                           const impact = idx.scenario_impact[sc];
@@ -243,7 +243,7 @@ export default function ExplainPage() {
                               <span className="font-mono font-semibold" style={{ color: impact.contribution > 0 ? '#ef4444' : '#22c55e' }}>
                                 {impact.contribution > 0 ? '+' : ''}{impact.contribution.toFixed(1)}
                               </span>
-                              <span className="text-white/30 ml-1">(weight {impact.weight > 0 ? '+' : ''}{impact.weight})</span>
+                              <span className="text-white/30 ml-1">(peso {impact.weight > 0 ? '+' : ''}{impact.weight})</span>
                             </div>
                           );
                         })}
@@ -252,7 +252,7 @@ export default function ExplainPage() {
 
                     {/* Categories tracked */}
                     <div>
-                      <h4 className="text-[11px] font-semibold text-white/60 mb-1.5">Tracked categories</h4>
+                      <h4 className="text-[11px] font-semibold text-white/60 mb-1.5">Categorie tracciate</h4>
                       <div className="flex flex-wrap gap-1.5">
                         {idx.categories_tracked.map(cat => (
                           <span key={cat} className="text-[9px] px-2 py-0.5 rounded-full bg-white/5 text-white/40">
@@ -265,11 +265,11 @@ export default function ExplainPage() {
                     {/* Contributing Events */}
                     <div>
                       <h4 className="text-[11px] font-semibold text-white/60 mb-2">
-                        News feeding this index
-                        <span className="text-white/30 font-normal ml-1">({idx.total_events_24h} in the last 24h)</span>
+                        Notizie che alimentano questo indice
+                        <span className="text-white/30 font-normal ml-1">({idx.total_events_24h} nelle ultime 24h)</span>
                       </h4>
                       {idx.contributing_events_24h.length === 0 ? (
-                        <p className="text-[10px] text-white/30 italic">No relevant events in the last 24 hours.</p>
+                        <p className="text-[10px] text-white/30 italic">Nessun evento rilevante nelle ultime 24 ore.</p>
                       ) : (
                         <div className="space-y-1">
                           {idx.contributing_events_24h.slice(0, 10).map((ev, i) => (
@@ -299,7 +299,7 @@ export default function ExplainPage() {
                           ))}
                           {idx.contributing_events_24h.length > 10 && (
                             <p className="text-[9px] text-white/25 italic pt-1">
-                              ...and {idx.contributing_events_24h.length - 10} more events
+                              ...e altri {idx.contributing_events_24h.length - 10} eventi
                             </p>
                           )}
                         </div>
@@ -315,9 +315,9 @@ export default function ExplainPage() {
 
       {/* Scenarios Section */}
       <section>
-        <h3 className="text-base font-semibold text-white mb-3">Scenarios — How probabilities are calculated</h3>
+        <h3 className="text-base font-semibold text-white mb-3">Scenari — Come si calcolano le probabilità</h3>
         <p className="text-[11px] text-white/35 mb-3">
-          Each scenario starts from a Bayesian prior (historical baseline), then weighted contributions from each index are added, and finally trigger rules are applied. The total is normalized to 100%.
+          Ogni scenario parte da un prior bayesiano (base storica), poi si aggiungono i contributi pesati di ogni indice, e infine si applicano le regole trigger. Il totale viene normalizzato a 100%.
         </p>
 
         <div className="grid gap-3">
@@ -354,10 +354,10 @@ export default function ExplainPage() {
                   <div className="px-4 pb-4 space-y-3" style={{ borderTop: `1px solid ${meta.color}15` }}>
                     {/* Calculation breakdown */}
                     <div className="pt-3">
-                      <h4 className="text-[11px] font-semibold text-white/60 mb-2">Detailed calculation</h4>
+                      <h4 className="text-[11px] font-semibold text-white/60 mb-2">Calcolo dettagliato</h4>
                       <div className="rounded-lg bg-black/20 p-3 font-mono text-[11px] space-y-1">
                         <div className="flex justify-between text-white/40">
-                          <span>Prior (historical baseline):</span>
+                          <span>Prior (base storica):</span>
                           <span className="text-white/60">{sc.prior.toFixed(1)}</span>
                         </div>
                         {sc.contributions.map((c, i) => {
@@ -374,11 +374,11 @@ export default function ExplainPage() {
                           );
                         })}
                         <div className="border-t border-white/10 pt-1 flex justify-between text-white/60">
-                          <span>Raw score:</span>
+                          <span>Score grezzo:</span>
                           <span>{sc.raw_score.toFixed(1)}</span>
                         </div>
                         <div className="flex justify-between font-semibold" style={{ color: meta.color }}>
-                          <span>Probability (normalized):</span>
+                          <span>Probabilità (normalizzata):</span>
                           <span>{sc.probability.toFixed(1)}%</span>
                         </div>
                       </div>
@@ -386,7 +386,7 @@ export default function ExplainPage() {
 
                     {/* Visual bar breakdown */}
                     <div>
-                      <h4 className="text-[11px] font-semibold text-white/60 mb-2">Contribution by index</h4>
+                      <h4 className="text-[11px] font-semibold text-white/60 mb-2">Contributo per indice</h4>
                       <div className="space-y-1.5">
                         {sc.contributions.map((c, i) => {
                           const maxAbs = Math.max(...sc.contributions.map(x => Math.abs(x.contribution)), 1);
@@ -428,9 +428,9 @@ export default function ExplainPage() {
 
       {/* Trigger Rules */}
       <section>
-        <h3 className="text-base font-semibold text-white mb-3">Trigger Rules (non-linear)</h3>
+        <h3 className="text-base font-semibold text-white mb-3">Regole Trigger (non-lineari)</h3>
         <p className="text-[11px] text-white/35 mb-3">
-          These rules activate when certain indices simultaneously exceed critical thresholds. They represent non-linear escalation dynamics.
+          Queste regole si attivano quando certi indici superano soglie critiche simultaneamente. Rappresentano dinamiche di escalation non-lineari.
         </p>
         <div className="grid gap-2">
           {data.triggers.map((t, i) => (
@@ -454,7 +454,7 @@ export default function ExplainPage() {
               <span className={`text-[10px] font-semibold px-2 py-0.5 rounded ${
                 t.fired ? 'bg-red-900/40 text-red-400' : 'bg-gray-800 text-white/30'
               }`}>
-                {t.fired ? 'ACTIVE' : 'INACTIVE'}
+                {t.fired ? 'ATTIVA' : 'INATTIVA'}
               </span>
             </div>
           ))}

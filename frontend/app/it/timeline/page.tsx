@@ -5,10 +5,10 @@ import type { EventItem } from '@/lib/types';
 import { API_URL as API } from '@/lib/api';
 
 const CATEGORY_INFO: Record<string, { color: string; label: string }> = {
-  nuclear_posture_signal: { color: 'bg-red-500', label: 'Nuclear Posture (armed states)' },
-  nuclear_verification_gap: { color: 'bg-purple-500', label: 'Nuclear Verification Gap' },
-  enrichment_signal: { color: 'bg-purple-600', label: 'Enrichment Signal' },
-  military_strike: { color: 'bg-red-600', label: 'Military Strike' },
+  nuclear_posture_signal: { color: 'bg-red-500', label: 'Postura Nucleare (stati armati)' },
+  nuclear_verification_gap: { color: 'bg-purple-500', label: 'Gap Verifica Nucleare' },
+  enrichment_signal: { color: 'bg-purple-600', label: 'Segnale Arricchimento' },
+  military_strike: { color: 'bg-red-600', label: 'Attacco Militare' },
   missile_drone_attack: { color: 'bg-red-500', label: 'Missile / Drone Attack' },
   proxy_activity: { color: 'bg-orange-500', label: 'Proxy Activity' },
   gulf_infrastructure_attack: { color: 'bg-red-700', label: 'Gulf Infrastructure Attack' },
